@@ -1,0 +1,28 @@
+CipherValidity.sign skip
+CipherValidity.encrypt skip
+
+FilterGetFolderFunc skip=false
+FilterDriver.set* skip=false
+
+// We need to skip the methods because the signals and virtual methods have the same name
+Object.state_read#method skip
+Object.state_write#method skip
+Operation.pop_message skip
+Operation.progress skip
+
+Session* skip=false
+SExp* skip=false
+
+// Recursive structs are not allowed
+MessageContentInfo.next type="void*"
+MessageContentInfo.childs type="void*"
+MessageContentInfo.parent type="void*"
+SExpTerm.value.func.terms type="void*[]"
+
+MessageInfo.ptr name="get_ptr"
+MessageInfo.uint32 name="get_uint32"
+MessageInfo.time name="get_time" type="Posix.tm"
+localtime_with_offset.tm type="Posix.tm"
+mktime_utc.tm type="Posix.tm"
+
+HeaderAddress.new_name#constructor name="with_name"
