@@ -1,8 +1,13 @@
 
 
 int main(string[] args) {
-    E.Source source;
-    var client = new E.BookClient.connect(source, 5, null);
+    try {
+        var source = new E.Source.with_uid("bla", null);
+        var client = E.BookClient.connect(source, 5, null);
+    } catch(GLib.Error e) {
+        
+    }
+    
     
     return 0;
 }
