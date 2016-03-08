@@ -988,7 +988,7 @@ namespace Camel {
 	[CCode (cheader_filename = "camel/camel.h", type_id = "camel_partition_table_get_type ()")]
 	public class PartitionTable : GLib.Object {
 		public weak Camel.BlockFile blocks;
-		public weak global::is_key is_key;
+		//public weak global::is_key is_key;
 		public void* is_key_data;
 		public weak GLib.Queue partition;
 		public Camel._block_t rootid;
@@ -1607,7 +1607,7 @@ namespace Camel {
 		public weak string name;
 		public weak string email;
 		public void* cert_data;
-		public weak global::cert_data_free cert_data_free;
+		//public weak global::cert_data_free cert_data_free;
 	}
 	[CCode (cheader_filename = "camel/camel.h", has_type_id = false)]
 	public struct DB {
@@ -1868,7 +1868,7 @@ namespace Camel {
 		public weak string translation_domain;
 		public int auto_detect (Camel.URL url, ref GLib.HashTable<void*,void*> auto_detected) throws GLib.Error;
 		public static void init ();
-		public static GLib.List<weak Camel.Provider> list (bool load);
+		public static GLib.List<weak Camel.Provider?> list (bool load);
 		public static bool load (string path) throws GLib.Error;
 		public void register ();
 	}

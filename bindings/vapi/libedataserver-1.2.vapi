@@ -346,6 +346,8 @@ namespace E {
 	public abstract class SourceCamel : E.SourceExtension {
 		[CCode (has_construct_function = false)]
 		protected SourceCamel ();
+		public unowned Camel.Settings get_settings ();
+		public static void configure_service (E.Source source, Camel.Service service);
 		public static GLib.Type generate_subtype (string protocol, GLib.Type settings_type);
 		public static unowned string get_extension_name (string protocol);
 		public static unowned string get_type_name (string protocol);
@@ -1127,6 +1129,8 @@ namespace E {
 	public const string SOURCE_EXTENSION_LOCAL_BACKEND;
 	[CCode (cheader_filename = "libedataserver/libedataserver.h", cname = "E_SOURCE_EXTENSION_MAIL_ACCOUNT")]
 	public const string SOURCE_EXTENSION_MAIL_ACCOUNT;
+	[CCode (cheader_filename = "libedataserver/libedataserver.h", cname = "E_SOURCE_EXTENSION_CAMEL")]
+	public const string SOURCE_EXTENSION_CAMEL;
 	[CCode (cheader_filename = "libedataserver/libedataserver.h", cname = "E_SOURCE_EXTENSION_MAIL_COMPOSITION")]
 	public const string SOURCE_EXTENSION_MAIL_COMPOSITION;
 	[CCode (cheader_filename = "libedataserver/libedataserver.h", cname = "E_SOURCE_EXTENSION_MAIL_IDENTITY")]
