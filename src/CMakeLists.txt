@@ -62,7 +62,7 @@ PACKAGES
  	libedataserver-1.2
  	libsoup-2.4
  	libxml-2.0
- 	camel-1.2
+# 	camel-1.2
 	posix 
 OPTIONS  
 	${VALAC_OPTIONS}
