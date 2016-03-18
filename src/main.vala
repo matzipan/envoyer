@@ -7,10 +7,9 @@ async void foo () throws GLib.Error {
     
     var providerList = Camel.Provider.list(true);
     
-    var session = new Session(Path.build_filename ("data","eds-sample"), Path.build_filename ("cache","eds-sample"));
+    var session = new Session(Path.build_filename (E.get_user_data_dir(), "mail"), Path.build_filename (E.get_user_data_dir(), "mail"));
     
-    session.set_online(true);
-    
+    session.set_online(true);    
         
     foreach(var source in sourceList) {
         message(source.get_display_name());
@@ -25,7 +24,6 @@ async void foo () throws GLib.Error {
                                 
                 if(source.get_uid() != "local" && source.get_uid() != "vfolder") {
                     var service = session.add_service(source.get_uid(), ((E.SourceBackend) extension).get_backend_name(), Camel.ProviderType.STORE);
-                    
                     // setup autorefresh?  https://git.gnome.org/browse/evolution/tree/libemail-engine/e-mail-session.c#n495
                     
                     message("%s", session.online ? "Online" : "Not online");
@@ -35,6 +33,7 @@ async void foo () throws GLib.Error {
                     
                     try {
                         service.connect_sync();
+                        
                         ((Camel.OfflineStore) service).set_online_sync(true);
 
                         GLib.HashTable<weak string,weak string> out_save_setup;
