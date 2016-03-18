@@ -55,6 +55,7 @@ set(VALAC_OPTIONS
 
 vala_precompile(VALA_C sample
 	main.vala 
+	session.vala 
 PACKAGES
 	gio-2.0 
  	libebook-1.2
