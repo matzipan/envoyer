@@ -1145,7 +1145,7 @@ namespace Camel {
 		protected Session ();
 		public virtual Camel.Service add_service (string uid, string protocol, Camel.ProviderType type) throws GLib.Error;
 		public async bool authenticate (Camel.Service service, string mechanism, int io_priority, GLib.Cancellable? cancellable) throws GLib.Error;
-		public virtual bool authenticate_sync (Camel.Service service, string mechanism, GLib.Cancellable? cancellable = null) throws GLib.Error;
+		public virtual bool authenticate_sync (Camel.Service service, string? mechanism, GLib.Cancellable? cancellable = null) throws GLib.Error;
 		public virtual bool forget_password (Camel.Service service, string item) throws GLib.Error;
 		public async bool forward_to (Camel.Folder folder, Camel.MimeMessage message, string address, int io_priority, GLib.Cancellable? cancellable) throws GLib.Error;
 		public virtual bool forward_to_sync (Camel.Folder folder, Camel.MimeMessage message, string address, GLib.Cancellable? cancellable = null) throws GLib.Error;
