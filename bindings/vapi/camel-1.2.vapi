@@ -1099,7 +1099,7 @@ namespace Camel {
 		[CCode (has_construct_function = false)]
 		protected Service ();
 		public async Camel.AuthenticationResult authenticate (string mechanism, int io_priority, GLib.Cancellable? cancellable) throws GLib.Error;
-		public virtual Camel.AuthenticationResult authenticate_sync (string mechanism, GLib.Cancellable? cancellable = null) throws GLib.Error;
+		public virtual Camel.AuthenticationResult authenticate_sync (string? mechanism, GLib.Cancellable? cancellable = null) throws GLib.Error;
 		public async bool connect (int io_priority, GLib.Cancellable? cancellable) throws GLib.Error;
 		public virtual bool connect_sync (GLib.Cancellable? cancellable = null) throws GLib.Error;
 		public async bool disconnect (bool clean, int io_priority, GLib.Cancellable? cancellable) throws GLib.Error;
