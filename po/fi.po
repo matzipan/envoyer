@@ -1,0 +1,109 @@
+# Finnish translation for pantheon-notes
+# Copyright (c) 2016 Rosetta Contributors and Canonical Ltd 2016
+# This file is distributed under the same license as the pantheon-notes package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: pantheon-notes\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2016-02-14 18:07-0600\n"
+"PO-Revision-Date: 2016-03-15 11:30+0000\n"
+"Last-Translator: Jiri Grönroos <Unknown>\n"
+"Language-Team: Finnish <fi@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2016-03-16 06:21+0000\n"
+"X-Generator: Launchpad (build 17947)\n"
+
+#: /home/felipe/Code/enotes/po/../src/Services/Notebook.vala:37
+#: /home/felipe/Code/enotes/po/../src/Widgets/Editor.vala:17
+#: /home/felipe/Code/enotes/po/../src/Widgets/PagesList.vala:128
+msgid "New Page"
+msgstr "Uusi sivu"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Sidebar.vala:5
+msgid "Notebooks"
+msgstr "Muistivihkot"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Sidebar.vala:6
+msgid "Bookmarks"
+msgstr "Kirjanmerkit"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Headerbar.vala:18
+msgid "View"
+msgstr "Näytä"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Headerbar.vala:19
+msgid "Edit"
+msgstr "Muokkaa"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Headerbar.vala:23
+#: /home/felipe/Code/enotes/po/../src/Widgets/NewNotebookDialog.vala:20
+msgid "New Notebook"
+msgstr "Uusi muistivihko"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Headerbar.vala:24
+msgid "Preferences"
+msgstr "Asetukset"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Headerbar.vala:25
+msgid "Export Page"
+msgstr "Vie sivu"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Headerbar.vala:26
+msgid "About"
+msgstr "Tietoja"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Editor.vala:131
+msgid "Add bold to text"
+msgstr "Lisää lihavointi tekstiin"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Editor.vala:132
+msgid "Add italic to text"
+msgstr "Lisää kursivointi tekstiin"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Editor.vala:133
+msgid "Strikethrough text"
+msgstr ""
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Editor.vala:135
+msgid "Insert a quote"
+msgstr "Lisää lainaus"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Editor.vala:136
+msgid "Insert code"
+msgstr "Lisää koodi"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Editor.vala:137
+msgid "Insert a link"
+msgstr "Lisää linkki"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Editor.vala:139
+msgid "Add a bulleted list"
+msgstr ""
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Editor.vala:140
+msgid "Add a Numbered list"
+msgstr "Lisää numeroitu lista"
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/Editor.vala:143
+msgid "Insert a web image"
+msgstr ""
+
+#: /home/felipe/Code/enotes/po/../src/Widgets/BookmarkItem.vala:25
+msgid "Remove"
+msgstr "Poista"
+
+#: /home/felipe/Code/enotes/po/../src/Application.vala:15
+msgid "Notes"
+msgstr "Muistiinpanot"
+
+#: /home/felipe/Code/enotes/po/../src/Application.vala:16
+msgid "Your Markdown Notebook."
+msgstr ""
+
+#: /home/felipe/Code/enotes/po/../src/Application.vala:17
+msgid "About Notes"
+msgstr "Tietoja - Muistiinpanot"

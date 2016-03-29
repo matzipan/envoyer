@@ -1,76 +1,80 @@
+configure_file (${CMAKE_SOURCE_DIR}/src/config.vala.cmake ${CMAKE_SOURCE_DIR}/src/config.vala)
+
+set (PKG_DEPS
+	gobject-2.0
+    gio-2.0
+    camel-1.2>=3.19.92
+    evolution-data-server-1.2>=3.19.92
+    libebook-1.2>=3.19.92
+    libebook-contacts-1.2>=3.19.92
+    libsoup-2.4
+    libxml-2.0
+    granite>=0.3
+    gtksourceview-3.0>=3.10
+    gthread-2.0
+    gtk+-3.0>=3.9.10
+)
+
+set (VALA_DEPS
+	gobject-2.0
+    gio-2.0
+    camel-1.2
+    libebook-1.2
+    libebook-contacts-1.2
+    libedataserver-1.2
+    libsoup-2.4
+    libxml-2.0
+    granite
+    gtksourceview-3.0
+    gtk+-3.0
+	posix
+)
+
 find_package(PkgConfig)
-pkg_check_modules(GOBJECT REQUIRED gobject-2.0)
-pkg_check_modules(GIO REQUIRED gio-2.0)
-pkg_check_modules(CAMEL REQUIRED camel-1.2)
-pkg_check_modules(EDS REQUIRED evolution-data-server-1.2)
-pkg_check_modules(EBOOK REQUIRED libebook-1.2)
-pkg_check_modules(EBOOK_CONTACTS REQUIRED libebook-contacts-1.2)
-pkg_check_modules(SOUP REQUIRED libsoup-2.4)
-pkg_check_modules(XML REQUIRED libxml-2.0)
 
-set(CFLAGS
-	${GOBJECT_CFLAGS} ${GOBJECT_CFLAGS_OTHER}
-	${GIO_CFLAGS} ${GIO_CFLAGS_OTHER}
-	${CAMEL_CFLAGS} ${CAMEL_CFLAGS_OTHER}
-	${EDS_CFLAGS} ${EDS_CFLAGS_OTHER}
-	${EBOOK_CFLAGS} ${EBOOK_CFLAGS_OTHER}
-	${EBOOK_CONTACTS_CFLAGS} ${EBOOK_CONTACTS_CFLAGS_OTHER}
-	${SOUP_CFLAGS} ${SOUP_CFLAGS_OTHER}
-	${XML_CFLAGS} ${XML_CFLAGS_OTHER}
-)
-add_definitions(${CFLAGS})
+pkg_check_modules (DEPS REQUIRED ${PKG_DEPS})
 
-set(LIBS
-	${GOBJECT_LIBRARIES}
-	${GIO_LIBRARIES}
-	${CAMEL_LIBRARIES}
-	${EDS_LIBRARIES}
-	${EBOOK_LIBRARIES}
-	${EBOOK_CONTACTS_LIBRARIES}
-	${SOUP_LIBRARIES}
-	${XML_LIBRARIES}
-)
-link_libraries(${LIBS})
+add_definitions(${DEPS_CFLAGS})
+link_libraries(${DEPS_LIBRARIES})
+link_directories(${DEPS_LIBRARY_DIRS})
 
-set(LIB_PATHS
-	${GOBJECT_LIBRARY_DIRS}
-	${GIO_LIBRARY_DIRS}
-	${CAMEL_LIBRARY_DIRS}
-	${EDS_LIBRARY_DIRS}
-	${EBOOK_CONTACTS_LIBRARY_DIRS}
-	${SOUP_LIBRARY_DIRS}
-	${XML_LIBRARY_DIRS}
-)
-link_directories(${LIB_PATHS})
+link_directories(${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_SOURCE_DIR})
 
-set(VALAC_OPTIONS
+
+set(VALA_OPTIONS
     --vapidir=${CMAKE_SOURCE_DIR}/bindings/vapi
     --metadatadir=${CMAKE_SOURCE_DIR}/bindings/metadata
     --thread
     --enable-checking
     --debug
     --enable-deprecated
+    --target-glib=2.47.6
     ${EXTRA_VALA_OPTIONS}
 )
 
-vala_precompile(VALA_C sample
-	main.vala 
-	session.vala 
+vala_precompile(VALA_C pantheon-mail-ng	
+	Main.vala
+    Application.vala
+	Services/Session.vala 
+	Services/Backend.vala 
+    Services/Settings.vala
+    Widgets/Editor.vala
+    Widgets/Headerbar.vala
+    Widgets/PageItem.vala
+    Widgets/PagesList.vala
+    Widgets/Window.vala
+    config.vala
 PACKAGES
-	gio-2.0 
- 	libebook-1.2
- 	libebook-contacts-1.2
- 	libedataserver-1.2
- 	libsoup-2.4
- 	libxml-2.0
- 	camel-1.2
-	posix 
+	${VALA_DEPS}
 OPTIONS  
-	${VALAC_OPTIONS}
+	${VALA_OPTIONS}
 GENERATE_HEADER
-	sample
+	pantheon-mail-ng
 GENERATE_VAPI
-	sample
+	pantheon-mail-ng
 )
 
-add_executable(sample ${VALA_C})
+add_executable(pantheon-mail-ng ${VALA_C} ${generated_resources})
+

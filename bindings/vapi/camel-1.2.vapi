@@ -645,7 +645,7 @@ namespace Camel {
 		[CCode (has_construct_function = false)]
 		public MessageInfo.from_header (Camel.FolderSummary summary, void* header);
 		[CCode (cname = "camel_message_info_ptr")]
-		public void* get_ptr (int id);
+		public void* get_ptr (Camel.MessageInfoField id);
 		[CCode (cname = "camel_message_info_time")]
 		public Posix.tm? get_time (int id);
 		[CCode (cname = "camel_message_info_uint32")]
@@ -1210,7 +1210,7 @@ namespace Camel {
 		public static GLib.Quark error_quark ();
 		public async Camel.Folder get_folder (string folder_name, Camel.StoreGetFolderFlags flags, int io_priority, GLib.Cancellable? cancellable) throws GLib.Error;
 		public async Camel.FolderInfo get_folder_info (string top, Camel.StoreGetFolderInfoFlags flags, int io_priority, GLib.Cancellable? cancellable) throws GLib.Error;
-		public virtual Camel.FolderInfo get_folder_info_sync (string top, Camel.StoreGetFolderInfoFlags flags, GLib.Cancellable? cancellable = null) throws GLib.Error;
+		public virtual Camel.FolderInfo get_folder_info_sync (string? top, Camel.StoreGetFolderInfoFlags flags, GLib.Cancellable? cancellable = null) throws GLib.Error;
 		public virtual Camel.Folder get_folder_sync (string folder_name, Camel.StoreGetFolderFlags flags, GLib.Cancellable? cancellable = null) throws GLib.Error;
 		public async Camel.Folder get_inbox_folder (int io_priority, GLib.Cancellable? cancellable) throws GLib.Error;
 		public virtual Camel.Folder get_inbox_folder_sync (GLib.Cancellable? cancellable = null) throws GLib.Error;
@@ -2360,6 +2360,31 @@ namespace Camel {
 		HIDDEN_PATH,
 		FRAGMENT_IS_PATH,
 		PATH_IS_ABSOLUTE
+	}
+	[CCode (cheader_filename = "camel/camel.h", cprefix = "CAMEL_MESSAGE_INFO_", has_type_id = false)]
+	[Flags]
+	public enum MessageInfoField {
+		SUBJECT,
+		FROM,
+		TO,
+		CC,
+		MLIST,
+
+		FLAGS,
+		SIZE,
+
+		DATE_SENT,
+		DATE_RECEIVED,
+
+		MESSAGE_ID,
+		REFERENCES,
+		USER_FLAGS,
+		USER_TAGS,
+
+		HEADERS,
+		PREVIEW,
+		CONTENT,
+		LAST
 	}
 	[CCode (cheader_filename = "camel/camel.h", cprefix = "CAMEL_SEXP_RES_", has_type_id = false)]
 	public enum SExpResultType {

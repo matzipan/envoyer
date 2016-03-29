@@ -43,15 +43,40 @@ async void foo () throws GLib.Error {
                          
                         ((Camel.OfflineStore) service).initial_setup_sync(out out_save_setup); // https://developer.gnome.org/camel/3.19/CamelStore.html#camel-store-initial-setup-sync
                         
-                        ((Camel.Store) service).synchronize_sync(false); // https://developer.gnome.org/camel/3.19/CamelStore.html#camel-store-synchronize-sync
+                        ((Camel.Store) service).synchronize_sync(true);
                         
-                        var folder_info = ((Camel.OfflineStore) service).get_folder_info_sync("", /*Camel.StoreGetFolderInfoFlags.FAST | */Camel.StoreGetFolderInfoFlags.RECURSIVE);
+                        /*var root = ((Camel.OfflineStore) service).get_folder_info_sync(null, Camel.StoreGetFolderInfoFlags.SUBSCRIBED |Camel.StoreGetFolderInfoFlags.RECURSIVE | Camel.StoreGetFolderInfoFlags.NO_VIRTUAL);
                         
-                        message("%s (unread: %d, total: %d)", folder_info.display_name, folder_info.unread, folder_info.total);
+                        message("%s (unread: %d, total: %d)", root.display_name, root.unread, root.total);
                         
-                        var bla_folder = ((Camel.OfflineStore) service).get_folder_sync(folder_info.display_name, 0);
+                        var bla_folder = ((Camel.OfflineStore) service).get_folder_sync("INBOX", 0);
+                        //var bla_folder = ((Camel.OfflineStore) service).get_folder_sync(folder_info.display_name, 0);
                         
-                        var inbox_folder = ((Camel.OfflineStore) service).get_inbox_folder_sync();
+                        message("Display name: %s", bla_folder.get_display_name());
+                                                
+                        var inbox_folder = ((Camel.OfflineStore) service).get_inbox_folder_sync();*/
+                        
+                        var folders = ((Camel.OfflineStore) service).folders.list();
+                        
+                        folders.foreach((folder) => {
+                            var cf = (Camel.Folder) folder;
+                            
+                            cf.refresh_info_sync();
+                            
+                            message("Folder name: %s, (unread: %u, total: %d)", cf.get_display_name(), cf.summary.unread_count, cf.get_message_count());
+                            
+                            /*cf.get_summary().foreach((message_info) => {
+                                message("%x", (uint) message_info);
+                                    //message("- %s", (string) message_info.get_ptr(Camel.MessageInfoField.SUBJECT));
+                                    //message_info.dump();
+                                });*/
+                                
+                            cf.get_uids().foreach((uid) => {
+                                    var message_info = cf.get_message_info(uid);
+                                    message("BLALALALALALALAL - %s", (string) message_info.get_ptr(Camel.MessageInfoField.SUBJECT));
+                                    message_info.dump();
+                                });
+                        });
                         
                         
                     } catch(GLib.Error e) {

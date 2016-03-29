@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Notes
+Comment=Simple note taking
+Exec=/usr/bin/pantheon-notes
+Icon=pantheon-notes
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Office
