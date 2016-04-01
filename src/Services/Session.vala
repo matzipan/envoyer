@@ -6,6 +6,7 @@ public class Notes.Services.Session : Camel.Session {
     public override bool authenticate_sync (Camel.Service service, string? mechanism, GLib.Cancellable? cancellable = null) throws GLib.Error {
         // @todo https://git.gnome.org/browse/evolution/tree/mail/e-mail-ui-session.c#n763
         
+        //@TODO get this from camel
         message("Password: ");
         service.set_password(stdin.read_line ());
         
