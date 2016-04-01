@@ -64,7 +64,7 @@ vala_precompile(VALA_C pantheon-mail-ng
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala
     Widgets/IdentityItem.vala
-    Widgets/PagesList.vala
+    Widgets/AccountSummariesList.vala
     Widgets/Window.vala
     Models/AccountSummary.vala
     config.vala

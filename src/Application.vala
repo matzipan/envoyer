@@ -1,6 +1,6 @@
 
 namespace Notes {
-    public Notes.PagesList pages_list;
+    public Notes.AccountSummariesList account_summaries_list;
     public Notes.Editor editor;
     public Notes.Services.Settings settings;
     public Notes.Services.Backend backend;

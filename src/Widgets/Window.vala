@@ -26,9 +26,9 @@ public class Notes.Window : Gtk.ApplicationWindow {
 
         pane = new Gtk.Paned (Gtk.Orientation.HORIZONTAL);
         editor = new Notes.Editor ();
-        pages_list = new Notes.PagesList ();
+        account_summaries_list = new Notes.AccountSummariesList ();
 
-        pane.pack1 (pages_list, false, false);
+        pane.pack1 (account_summaries_list, false, false);
         pane.pack2 (editor, true, false);
 		pane.position = (50);
 
@@ -53,7 +53,7 @@ public class Notes.Window : Gtk.ApplicationWindow {
         add_action (new_action);
         app.set_accels_for_action ("win.new-action", {"<Ctrl>N"});
         
-        backend_up.connect(() => { pages_list.backend_up (); });
+        backend_up.connect(() => { account_summaries_list.backend_up (); });
     }
 
     private void request_close () {

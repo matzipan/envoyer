@@ -1,12 +1,12 @@
 
 
-public class Notes.PagesList : Gtk.Box {    
+public class Notes.AccountSummariesList : Gtk.Box { //@TODO move to Widget namespace
     public signal void backend_up ();
     
     private Gtk.ListBox listbox;
-    private Gee.List<Notes.Models.AccountSummary> summaries_list; 
+    private Gee.List<Notes.Models.AccountSummary> summaries_geelist; 
 
-    public PagesList () {
+    public AccountSummariesList () {
         build_ui ();
         connect_signals ();
     }
@@ -35,12 +35,12 @@ public class Notes.PagesList : Gtk.Box {
     }
     
     private void populate_list () {
-        summaries_list = Notes.Models.AccountSummary.get_summaries_list ();
+        summaries_geelist = Notes.Models.AccountSummary.get_summaries_list ();
     }
     
     private void render_list () {
         clear_list ();
-        foreach (var summary in summaries_list) { 
+        foreach (var summary in summaries_geelist) { 
             var identity_item = new Notes.IdentityItem (summary.identity_source);
             
             identity_item.toggled.connect (() => {
