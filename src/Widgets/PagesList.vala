@@ -1,32 +1,12 @@
-public class Notes.AccountSummary {
-    public E.Source identity_source;
-    public Gee.List<Camel.Folder> folder_list;
-    
-    private bool _expanded = true; //@TODO persist this
-    public bool expanded {
-        get { return _expanded; }
-        set { _expanded = value; }
-    }
-    
-    public AccountSummary (E.Source identity_source) {
-        this.identity_source = identity_source;
-        folder_list = new Gee.LinkedList<Camel.Folder> (null);
-    }
-}
+
 
 public class Notes.PagesList : Gtk.Box {    
     public signal void backend_up ();
-
-    private Gtk.ListBox listbox;
     
-    private Gee.List<Notes.AccountSummary> summaries_list; 
-
-    private Gtk.Separator separator;
-    private Gtk.Label notebook_name;
-    private Gtk.Label page_total;
+    private Gtk.ListBox listbox;
+    private Gee.List<Notes.Models.AccountSummary> summaries_list; 
 
     public PagesList () {
-        populate_list ();
         build_ui ();
         connect_signals ();
     }
@@ -44,21 +24,6 @@ public class Notes.PagesList : Gtk.Box {
         this.add (scroll_box);
     }
 
-    public void select_first () {
-        listbox.select_row (listbox.get_row_at_index (0));
-    }
-
-    public Gtk.ListBoxRow? get_row_from_path (string full_path) {
-        foreach (var row in listbox.get_children ()) {
-            /*if (row is Notes.PageItem
-                && ((Notes.PageItem)row).page.full_path == full_path) {
-                return (Gtk.ListBoxRow)row;
-            }*/
-        }
-
-        return null;
-    }
-
     public void clear_list () {
         listbox.unselect_all ();
         var children = listbox.get_children ();
@@ -69,20 +34,8 @@ public class Notes.PagesList : Gtk.Box {
         }
     }
     
-    private void populate_list () { //@TODO async 
-        //@TODO move to account_summary
-        summaries_list = new Gee.LinkedList<Notes.AccountSummary> (null);
-        
-        backend.get_services().foreach((service) => { //@TODO get_stores
-            var account_summary = new Notes.AccountSummary (Notes.backend.get_identity_source_for_service (service));
-        
-            var folders = ((Camel.OfflineStore) service).folders.list();
-            folders.foreach((object) => {   
-                account_summary.folder_list.add ((Camel.Folder) object);
-            });
-            
-            summaries_list.add(account_summary);
-        });        
+    private void populate_list () {
+        summaries_list = Notes.Models.AccountSummary.get_summaries_list ();
     }
     
     private void render_list () {
@@ -121,6 +74,7 @@ public class Notes.PagesList : Gtk.Box {
     private void connect_signals () {
         listbox.row_selected.connect ((row) => {
             if (row == null) return;
+            //if (row is Notes.FolderItem  ((Notes.FolderItem)row).page.full_path == full_path)
             // @TODO editor.load_file (((Notes.PageItem) row).page);
             editor.give_focus ();
         });

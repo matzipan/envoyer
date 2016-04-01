@@ -1,12 +1,13 @@
 public class Notes.FolderItem : Gtk.ListBoxRow {
+    public Camel.Folder folder { get { return _folder; } }
 
     private Gtk.Grid grid;
     private Gtk.Label title;
     private Gtk.Label unread_count;
-    private Camel.Folder folder;
+    private Camel.Folder _folder;
 
     public FolderItem (Camel.Folder folder) {
-        this.folder = folder;
+        _folder = folder;
         build_ui ();
     }
 
