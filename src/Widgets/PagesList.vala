@@ -1,20 +1,34 @@
+public class Notes.AccountSummary {
+    public E.Source identity_source;
+    public Gee.List<Camel.Folder> folder_list;
+    
+    private bool _expanded = true; //@TODO persist this
+    public bool expanded {
+        get { return _expanded; }
+        set { _expanded = value; }
+    }
+    
+    public AccountSummary (E.Source identity_source) {
+        this.identity_source = identity_source;
+        folder_list = new Gee.LinkedList<Camel.Folder> (null);
+    }
+}
+
 public class Notes.PagesList : Gtk.Box {    
     public signal void backend_up ();
 
     private Gtk.ListBox listbox;
-    private Gtk.Frame toolbar;
+    
+    private Gee.List<Notes.AccountSummary> summaries_list; 
 
     private Gtk.Separator separator;
-    private Gtk.Button minus_button;
-    private Gtk.Button plus_button;
     private Gtk.Label notebook_name;
     private Gtk.Label page_total;
 
-
     public PagesList () {
+        populate_list ();
         build_ui ();
         connect_signals ();
-
     }
 
     private void build_ui () {
@@ -25,54 +39,9 @@ public class Notes.PagesList : Gtk.Box {
         listbox.set_size_request (200,250);
         scroll_box.set_size_request (200,250);
         listbox.vexpand = true;
-        toolbar = build_toolbar ();
 
         scroll_box.add (listbox);
         this.add (scroll_box);
-        this.add (toolbar);
-    }
-
-    private Gtk.Frame build_toolbar () {
-        var frame = new Gtk.Frame (null);
-        var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
-
-        plus_button = new Gtk.Button.from_icon_name ("document-new-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
-        minus_button = new Gtk.Button.from_icon_name ("edit-delete-symbolic", Gtk.IconSize.SMALL_TOOLBAR);
-        notebook_name = new Gtk.Label ("");
-        page_total = new Gtk.Label ("");
-        separator = new Gtk.Separator (Gtk.Orientation.VERTICAL);
-
-        minus_button.get_style_context ().add_class ("flat");
-        plus_button.get_style_context ().add_class ("flat");
-
-        notebook_name.halign = Gtk.Align.START;
-        page_total.halign = Gtk.Align.END;
-        minus_button.halign = Gtk.Align.END;
-        minus_button.visible = true;
-        separator.visible = true;
-        notebook_name.hexpand = true;
-        minus_button.can_focus = false;
-        plus_button.can_focus = false;
-
-        notebook_name.ellipsize = Pango.EllipsizeMode.END;
-        notebook_name.get_style_context ().add_class ("h4");
-        notebook_name.margin_left = 6;
-        notebook_name.margin_right = 6;
-        page_total.margin_right = 6;
-
-        box.add (new Gtk.Separator (Gtk.Orientation.VERTICAL));
-        box.add (plus_button);
-        box.add (separator);
-        box.add (minus_button);
-
-        frame.set_sensitive (false);
-        frame.get_style_context ().add_class ("toolbar");
-        frame.get_style_context ().add_class ("inline-toolbar");
-
-        frame.add (box);
-        frame.show_all ();
-
-        return frame;
     }
 
     public void select_first () {
@@ -90,38 +59,75 @@ public class Notes.PagesList : Gtk.Box {
         return null;
     }
 
-    public void clear_pages () {
+    public void clear_list () {
         listbox.unselect_all ();
-        var childerns = listbox.get_children ();
+        var children = listbox.get_children ();
 
-        foreach (Gtk.Widget child in childerns) {
+        foreach (Gtk.Widget child in children) {
             if (child is Gtk.ListBoxRow)
                 listbox.remove (child);
         }
     }
     
-    private void populate_folders () {
-        backend.get_services().foreach((service) => {
+    private void populate_list () { //@TODO async 
+        //@TODO move to account_summary
+        summaries_list = new Gee.LinkedList<Notes.AccountSummary> (null);
+        
+        backend.get_services().foreach((service) => { //@TODO get_stores
+            var account_summary = new Notes.AccountSummary (Notes.backend.get_identity_source_for_service (service));
+        
             var folders = ((Camel.OfflineStore) service).folders.list();
-
-            folders.foreach((object) => {     
-                var folder = (Camel.Folder) object;       
-                /*folder.refresh_info_sync();*/
-                listbox.add(new Notes.PageItem (folder));
+            folders.foreach((object) => {   
+                account_summary.folder_list.add ((Camel.Folder) object);
             });
-
-        });
+            
+            summaries_list.add(account_summary);
+        });        
     }
+    
+    private void render_list () {
+        clear_list ();
+        foreach (var summary in summaries_list) { 
+            var identity_item = new Notes.IdentityItem (summary.identity_source);
+            
+            identity_item.toggled.connect (() => {
+                summary.expanded = !summary.expanded;
+                render_list ();
+            });
+            
+            listbox.add (identity_item);
+                        
+            if(summary.expanded) {
+                //@TODO get special folders
+                //@TODO inbox_folder
+                //@TODO junk_folder
+                //@TODO trash_folder
+                //@TODO outbox_folder
+                //@TODO all_mail_folder
+                //@TODO important_folder
+                //@TODO starred_folder
+                //@TODO drafts_folder
+                //@TODO sent_folder
+                //@TODO starred_folder
+                //@TODO archive_folder
 
+                foreach(var folder in summary.folder_list) {                    
+                    listbox.add(new Notes.FolderItem (folder));
+                }
+            }
+        }
+    }
 
     private void connect_signals () {
         listbox.row_selected.connect ((row) => {
-            minus_button.sensitive = (row != null);
             if (row == null) return;
-            //editor.load_file (((Notes.PageItem) row).page);
+            // @TODO editor.load_file (((Notes.PageItem) row).page);
             editor.give_focus ();
         });
         
-        backend_up.connect (this.populate_folders);
+        backend_up.connect (() => {
+            populate_list ();
+            render_list ();
+        });
     }
 }
