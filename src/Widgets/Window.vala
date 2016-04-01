@@ -1,7 +1,7 @@
-public class Notes.Window : Gtk.ApplicationWindow {
+public class Mail.Window : Gtk.ApplicationWindow {
     public signal void backend_up ();
 
-    private Notes.Headerbar headerbar;
+    private Mail.Headerbar headerbar;
     private Gtk.Paned pane;
 
     public Window (Gtk.Application app) {
@@ -20,13 +20,13 @@ public class Notes.Window : Gtk.ApplicationWindow {
     
 
     private void build_ui () {
-        headerbar = new Notes.Headerbar ();
+        headerbar = new Mail.Headerbar ();
         headerbar.set_title (Constants.APP_NAME);
         set_titlebar (headerbar);
 
         pane = new Gtk.Paned (Gtk.Orientation.HORIZONTAL);
-        editor = new Notes.Editor ();
-        account_summaries_list = new Notes.AccountSummariesList ();
+        editor = new Mail.Editor ();
+        account_summaries_list = new Mail.AccountSummariesList ();
 
         pane.pack1 (account_summaries_list, false, false);
         pane.pack2 (editor, true, false);

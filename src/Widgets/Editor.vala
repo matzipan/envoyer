@@ -1,4 +1,4 @@
-public class Notes.Editor : Gtk.Box {
+public class Mail.Editor : Gtk.Box {
     private Gtk.SourceView code_view;
     private Gtk.SourceBuffer code_buffer;
 

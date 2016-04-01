@@ -1,11 +1,11 @@
-public class Notes.Services.Backend {
+public class Mail.Services.Backend {
     private E.SourceRegistry registry;
-    private Notes.Services.Session session;
+    private Mail.Services.Session session;
     
     public async Backend() {
         Camel.init(E.get_user_data_dir(), false);
         
-        session = new Notes.Services.Session(Path.build_filename (E.get_user_data_dir(), "mail"), Path.build_filename (E.get_user_data_dir(), "mail"));
+        session = new Mail.Services.Session(Path.build_filename (E.get_user_data_dir(), "mail"), Path.build_filename (E.get_user_data_dir(), "mail"));
         
         registry = yield new E.SourceRegistry (null); 
         

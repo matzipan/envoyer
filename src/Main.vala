@@ -22,7 +22,7 @@ public static int main (string[] args) {
     Environment.set_application_name (Constants.APP_NAME);
     Environment.set_prgname (Constants.PROJECT_FQDN);
 
-    var application = new Notes.Application ();
+    var application = new Mail.Application ();
 
     return application.run (args);
 }

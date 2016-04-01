@@ -1,4 +1,4 @@
-public class Notes.FolderItem : Gtk.ListBoxRow {
+public class Mail.FolderItem : Gtk.ListBoxRow {
     public Camel.Folder folder { get { return _folder; } }
 
     private Gtk.Grid grid;

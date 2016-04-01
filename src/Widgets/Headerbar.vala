@@ -1,4 +1,4 @@
-public class Notes.Headerbar : Gtk.HeaderBar {
+public class Mail.Headerbar : Gtk.HeaderBar {
 
     public Headerbar () {
         build_ui ();

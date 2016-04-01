@@ -1,4 +1,4 @@
-public class Notes.Models.AccountSummary {
+public class Mail.Models.AccountSummary {
     public E.Source identity_source;
     public Gee.List<Camel.Folder> folder_list;
     
@@ -13,11 +13,11 @@ public class Notes.Models.AccountSummary {
         folder_list = new Gee.LinkedList<Camel.Folder> (null);
     }
     
-    public static Gee.LinkedList<Notes.Models.AccountSummary> get_summaries_list () {  //@TODO async 
-        var summaries_list = new Gee.LinkedList<Notes.Models.AccountSummary> (null);
+    public static Gee.LinkedList<Mail.Models.AccountSummary> get_summaries_list () {  //@TODO async 
+        var summaries_list = new Gee.LinkedList<Mail.Models.AccountSummary> (null);
         
         backend.get_services().foreach((service) => { //@TODO get_stores
-            var account_summary = new Notes.Models.AccountSummary (Notes.backend.get_identity_source_for_service (service));
+            var account_summary = new Mail.Models.AccountSummary (Mail.backend.get_identity_source_for_service (service));
         
             var folders = ((Camel.OfflineStore) service).folders.list();
             folders.foreach((object) => {   

@@ -1,4 +1,4 @@
-public class Notes.IdentityItem : Gtk.ListBoxRow {
+public class Mail.IdentityItem : Gtk.ListBoxRow {
 
     private Gtk.Grid grid;
     private Gtk.Label title;
