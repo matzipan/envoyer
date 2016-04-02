@@ -25,11 +25,11 @@ public class Mail.Window : Gtk.ApplicationWindow {
         set_titlebar (headerbar);
 
         pane = new Gtk.Paned (Gtk.Orientation.HORIZONTAL);
-        editor = new Mail.Editor ();
+        folder_threads_list = new Mail.FolderThreadsList ();
         account_summaries_list = new Mail.AccountSummariesList ();
 
         pane.pack1 (account_summaries_list, false, false);
-        pane.pack2 (editor, true, false);
+        pane.pack2 (folder_threads_list, true, false);
 		pane.position = (50);
 
 		//this.move (settings.pos_x, settings.pos_y);
@@ -38,11 +38,6 @@ public class Mail.Window : Gtk.ApplicationWindow {
     }
 
     private void connect_signals (Gtk.Application app) {
-        var save_action = new SimpleAction ("save", null);
-        save_action.activate.connect (save);
-        add_action (save_action);
-        app.set_accels_for_action ("win.save", {"<Ctrl>S"});
-
         var close_action = new SimpleAction ("close-action", null);
         close_action.activate.connect (request_close);
         add_action (close_action);
@@ -60,14 +55,10 @@ public class Mail.Window : Gtk.ApplicationWindow {
         close ();
     }
 
-    private void save () {
-        editor.save_file ();
-    }
-
     public void show_app () {
 		show ();
     	present ();
 
-    	editor.give_focus ();
+    	folder_threads_list.grab_focus ();
 	}
 }

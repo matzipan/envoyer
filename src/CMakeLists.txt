@@ -60,13 +60,15 @@ vala_precompile(VALA_C pantheon-mail-ng
 	Services/Session.vala 
 	Services/Backend.vala 
     Services/Settings.vala
-    Widgets/Editor.vala
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala
     Widgets/IdentityItem.vala
     Widgets/AccountSummariesList.vala
+	Widgets/ConversationItem.vala
+	Widgets/FolderThreadsList.vala
     Widgets/Window.vala
     Models/AccountSummary.vala
+    Models/ConversationThread.vala
     config.vala
 PACKAGES
 	${VALA_DEPS}

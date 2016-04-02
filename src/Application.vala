@@ -1,7 +1,7 @@
 
 namespace Mail {
     public Mail.AccountSummariesList account_summaries_list;
-    public Mail.Editor editor;
+    public Mail.FolderThreadsList folder_threads_list;
     public Mail.Services.Settings settings;
     public Mail.Services.Backend backend;
     public Mail.Window window;        

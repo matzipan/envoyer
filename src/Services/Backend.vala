@@ -60,7 +60,7 @@ public class Mail.Services.Backend {
     }
     
     public GLib.List<Camel.Service> get_services() {
-        return session.list_services().copy();
+        return session.list_services();
     }
     
     public GLib.List<E.Source> get_mail_transport_sources() {

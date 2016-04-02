@@ -9,6 +9,8 @@ public class Mail.AccountSummariesList : Gtk.Box { //@TODO move to Widget namesp
     public AccountSummariesList () {
         build_ui ();
         connect_signals ();
+        
+        //@TODO open the last opened one
     }
 
     private void build_ui () {
@@ -24,7 +26,7 @@ public class Mail.AccountSummariesList : Gtk.Box { //@TODO move to Widget namesp
         this.add (scroll_box);
     }
 
-    public void clear_list () {
+    private void clear_list () {
         listbox.unselect_all ();
         var children = listbox.get_children ();
 
@@ -73,10 +75,12 @@ public class Mail.AccountSummariesList : Gtk.Box { //@TODO move to Widget namesp
 
     private void connect_signals () {
         listbox.row_selected.connect ((row) => {
-            if (row == null) return;
-            //if (row is Mail.FolderItem  ((Mail.FolderItem)row).page.full_path == full_path)
-            // @TODO editor.load_file (((Mail.PageItem) row).page);
-            editor.give_focus ();
+            if (row == null || !(row is Mail.FolderItem)) {
+                return;
+            }
+            
+            folder_threads_list.load_folder (((Mail.FolderItem) row).folder);
+            folder_threads_list.grab_focus ();
         });
         
         backend_up.connect (() => {
