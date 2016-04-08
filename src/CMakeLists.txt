@@ -62,8 +62,13 @@ vala_precompile(VALA_C pantheon-mail-ng
     Services/Settings.vala
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala
-    Widgets/IdentityItem.vala
-    Widgets/AccountSummariesList.vala
+    Widgets/ExpandableItem.vala
+    Widgets/SimpleExpandableItem.vala
+    Widgets/UnifiedFolderParentItem.vala
+    Widgets/UnifiedFolderChildItem.vala
+    Widgets/AccountFoldersParentItem.vala
+    Widgets/NestedListBox.vala
+    Widgets/Sidebar.vala
 	Widgets/ConversationItem.vala
 	Widgets/FolderThreadsList.vala
     Widgets/Window.vala

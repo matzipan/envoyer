@@ -1,6 +1,6 @@
 
 namespace Mail {
-    public Mail.AccountSummariesList account_summaries_list;
+    public Mail.Sidebar sidebar;
     public Mail.FolderThreadsList folder_threads_list;
     public Mail.Services.Settings settings;
     public Mail.Services.Backend backend;

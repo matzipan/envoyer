@@ -1,21 +1,21 @@
-public class Mail.IdentityItem : Gtk.ListBoxRow {
-
+public class Mail.SimpleExpandableItem : ExpandableItem {
     private Gtk.Grid grid;
     private Gtk.Label title;
-    private Gtk.Button button;
-    private E.Source source;
+    private Gtk.ToggleButton expansion_trigger;
+    private string label;
     
-    public signal void toggled ();
-
-    public IdentityItem (E.Source source) {
-        this.source = source;
+    public SimpleExpandableItem (string label) { 
+        base ();
+               
+        this.label = label;
+        
         build_ui ();
         connect_signals ();
     }
-
+    
     private void build_ui () {
-        set_activatable (true);
-
+        //set_activatable (true);  @TODO
+        
         grid = new Gtk.Grid ();
         grid.get_style_context ().add_class ("h3");
         grid.orientation = Gtk.Orientation.HORIZONTAL;
@@ -30,24 +30,23 @@ public class Mail.IdentityItem : Gtk.ListBoxRow {
         title.ellipsize = Pango.EllipsizeMode.END;
         ((Gtk.Misc) title).xalign = 0;	    
         
-        button = new Gtk.Button ();
+        expansion_trigger = new Gtk.ToggleButton ();
+        expansion_trigger.get_style_context ().add_class ("expansion-trigger");
         
-        button.add(grid);
+        grid.add(expansion_trigger);
         grid.add(title);
-        this.add (button);
+        
+        ((Gtk.Container) this).add(grid);
 
         load_data ();
         this.show_all ();
     }
     
-    private void connect_signals () {
-        button.clicked.connect (() => {
-            toggled ();
-        });
-    }
-
     private void load_data () {
-        this.title.label = "<b>%s</b>".printf(source.get_display_name());
+        this.title.label = "<b>%s</b>".printf(this.label);
+    }
+    
+    private void connect_signals () {
+        expansion_trigger.clicked.connect (this.toggle_children);        
     }
 }
-

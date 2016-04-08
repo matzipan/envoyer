@@ -5,9 +5,12 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
     private Gtk.Label title;
     private Gtk.Label unread_count;
     private Camel.Folder _folder;
+    private string label_override;
 
-    public FolderItem (Camel.Folder folder) {
+    public FolderItem (Camel.Folder folder, string label = "") { //@TODO find a better solution for label
         _folder = folder;
+        label_override = label;
+        
         build_ui ();
     }
 
@@ -45,7 +48,7 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
 
     private void load_data () {
         this.unread_count.label = "%u".printf(folder.summary.unread_count);
-        this.title.label = "<b>%s</b>".printf(folder.get_display_name());
+        this.title.label = "<b>%s</b>".printf(label_override == "" ? folder.get_display_name() : label_override);
 
     }
 }

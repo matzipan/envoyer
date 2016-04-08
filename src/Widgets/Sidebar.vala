@@ -1,12 +1,12 @@
 
 
-public class Mail.AccountSummariesList : Gtk.Box { //@TODO move to Widget namespace
+public class Mail.Sidebar : Gtk.Box { //@TODO move to Widget namespace
     public signal void backend_up ();
     
-    private Gtk.ListBox listbox;
-    private Gee.List<Mail.Models.AccountSummary> summaries_geelist; 
+    private Mail.NestedListBox listbox;
+    private Gee.Collection<Mail.Models.AccountSummary> summaries_geelist; 
 
-    public AccountSummariesList () {
+    public Sidebar () {
         build_ui ();
         connect_signals ();
         
@@ -17,7 +17,7 @@ public class Mail.AccountSummariesList : Gtk.Box { //@TODO move to Widget namesp
         orientation = Gtk.Orientation.VERTICAL;
 
         var scroll_box = new Gtk.ScrolledWindow (null, null);
-        listbox = new Gtk.ListBox ();
+        listbox = new Mail.NestedListBox ();
         listbox.set_size_request (200,250);
         scroll_box.set_size_request (200,250);
         listbox.vexpand = true;
@@ -42,34 +42,14 @@ public class Mail.AccountSummariesList : Gtk.Box { //@TODO move to Widget namesp
     
     private void render_list () {
         clear_list ();
+        
+        var inbox_item = new Mail.UnifiedFolderParentItem ("Inbox");
+        listbox.add (inbox_item);
+        
         foreach (var summary in summaries_geelist) { 
-            var identity_item = new Mail.IdentityItem (summary.identity_source);
+            listbox.add(new Mail.AccountFoldersParentItem (summary));
             
-            identity_item.toggled.connect (() => {
-                summary.expanded = !summary.expanded;
-                render_list ();
-            });
-            
-            listbox.add (identity_item);
-                        
-            if(summary.expanded) {
-                //@TODO get special folders
-                //@TODO inbox_folder
-                //@TODO junk_folder
-                //@TODO trash_folder
-                //@TODO outbox_folder
-                //@TODO all_mail_folder
-                //@TODO important_folder
-                //@TODO starred_folder
-                //@TODO drafts_folder
-                //@TODO sent_folder
-                //@TODO starred_folder
-                //@TODO archive_folder
-
-                foreach(var folder in summary.folder_list) {                    
-                    listbox.add(new Mail.FolderItem (folder));
-                }
-            }
+            inbox_item.add(new Mail.UnifiedFolderChildItem (summary.inbox_folder, summary));
         }
     }
 

@@ -26,9 +26,9 @@ public class Mail.Window : Gtk.ApplicationWindow {
 
         pane = new Gtk.Paned (Gtk.Orientation.HORIZONTAL);
         folder_threads_list = new Mail.FolderThreadsList ();
-        account_summaries_list = new Mail.AccountSummariesList ();
+        sidebar = new Mail.Sidebar ();
 
-        pane.pack1 (account_summaries_list, false, false);
+        pane.pack1 (sidebar, false, false);
         pane.pack2 (folder_threads_list, true, false);
 		pane.position = (50);
 
@@ -48,7 +48,7 @@ public class Mail.Window : Gtk.ApplicationWindow {
         add_action (new_action);
         app.set_accels_for_action ("win.new-action", {"<Ctrl>N"});
         
-        backend_up.connect(() => { account_summaries_list.backend_up (); });
+        backend_up.connect(() => { sidebar.backend_up (); });
     }
 
     private void request_close () {
