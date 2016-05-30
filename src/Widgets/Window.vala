@@ -14,7 +14,7 @@ public class Mail.Window : Gtk.ApplicationWindow {
     
 	private void load_settings () {
         resize (settings.window_width, settings.window_height);
-		/*pane.position = settings.panel_size;*/
+		/*pane.position = settings.panel_size; #@ TODO*/
 
 	}
     
@@ -32,7 +32,7 @@ public class Mail.Window : Gtk.ApplicationWindow {
         pane.pack2 (folder_threads_list, true, false);
 		pane.position = (50);
 
-		//this.move (settings.pos_x, settings.pos_y);
+		//this.move (settings.pos_x, settings.pos_y); @TODO
         this.add (pane);
 		this.show_all ();
     }
