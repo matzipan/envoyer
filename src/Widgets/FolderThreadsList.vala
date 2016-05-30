@@ -2,8 +2,7 @@
 
 public class Mail.FolderThreadsList : Gtk.Box { //@TODO move to Widget namespace    
     private Gtk.ListBox listbox; //@TODO abstract this
-    private Gee.List<Mail.Models.ConversationThread> threads_geelist; //@TODO make this more dynamic? it currently loads all the thrads into memory
-    private Camel.Folder current_folder;
+    private Mail.Models.Folder current_folder;
 
     //@TODO persist scroller state
 
@@ -16,11 +15,9 @@ public class Mail.FolderThreadsList : Gtk.Box { //@TODO move to Widget namespace
         //@TODO
     }
     
-    public void load_folder (Camel.Folder folder) {
+    public void load_folder (Mail.Models.Folder folder) {
         current_folder = folder;
-                
-        threads_geelist = Mail.Models.ConversationThread.get_threads_list (current_folder);
-        
+                        
         render_list();
     }
 
@@ -50,7 +47,7 @@ public class Mail.FolderThreadsList : Gtk.Box { //@TODO move to Widget namespace
     private void render_list () {
         clear_list ();
 
-        foreach (var thread in threads_geelist) { 
+        foreach (var thread in current_folder.threads_list) { 
             listbox.add(new Mail.ConversationItem(thread));
         }
     }

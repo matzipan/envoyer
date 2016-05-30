@@ -72,6 +72,7 @@ vala_precompile(VALA_C pantheon-mail-ng
 	Widgets/ConversationItem.vala
 	Widgets/FolderThreadsList.vala
     Widgets/Window.vala
+    Models/Folder.vala
     Models/AccountSummary.vala
     Models/ConversationThread.vala
     config.vala

@@ -15,12 +15,13 @@ public class Mail.NestedListBox : Gtk.ListBox {
             
             foreach(var child in expandable_item_row.children) {                
                 ((Gtk.ListBox) this).add(child);
+                
+                if(!expandable_item_row.expanded) {
+                    child.hide ();
+                }
             }
             
-            expandable_item_row.child_added.connect(() => {
-                refresh ();
-            });
-            
+            expandable_item_row.child_added.connect(refresh);
         }
     }
     

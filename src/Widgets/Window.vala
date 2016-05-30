@@ -15,10 +15,8 @@ public class Mail.Window : Gtk.ApplicationWindow {
 	private void load_settings () {
         resize (settings.window_width, settings.window_height);
 		/*pane.position = settings.panel_size; #@ TODO*/
-
 	}
     
-
     private void build_ui () {
         headerbar = new Mail.Headerbar ();
         headerbar.set_title (Constants.APP_NAME);

@@ -13,9 +13,7 @@ public class Mail.SimpleExpandableItem : ExpandableItem {
         connect_signals ();
     }
     
-    private void build_ui () {
-        //set_activatable (true);  @TODO
-        
+    private void build_ui () {        
         grid = new Gtk.Grid ();
         grid.get_style_context ().add_class ("h3");
         grid.orientation = Gtk.Orientation.HORIZONTAL;
@@ -32,14 +30,32 @@ public class Mail.SimpleExpandableItem : ExpandableItem {
         
         expansion_trigger = new Gtk.ToggleButton ();
         expansion_trigger.get_style_context ().add_class ("expansion-trigger");
+        expansion_trigger.get_style_context ().remove_class ("button");
+        set_expansion_trigger_icon ();
         
-        grid.add(expansion_trigger);
-        grid.add(title);
+        grid.add (expansion_trigger);
+        grid.add (title);
         
-        ((Gtk.Container) this).add(grid);
+        ((Gtk.Container) this).add (grid);
 
         load_data ();
         this.show_all ();
+    }
+    
+    private void set_expansion_trigger_icon () {
+        expansion_trigger.set_active(expanded);
+        
+        if(expansion_trigger.get_child () != null) {
+            expansion_trigger.remove (expansion_trigger.get_child ()); 
+        }
+        
+        if(expanded) {
+            expansion_trigger.add (new Gtk.Image.from_icon_name ("pan-down-symbolic", Gtk.IconSize.BUTTON));
+        } else {
+            expansion_trigger.add (new Gtk.Image.from_icon_name ("pan-end-symbolic", Gtk.IconSize.BUTTON));
+        }
+        
+        expansion_trigger.get_child (). show ();
     }
     
     private void load_data () {
@@ -48,5 +64,6 @@ public class Mail.SimpleExpandableItem : ExpandableItem {
     
     private void connect_signals () {
         expansion_trigger.clicked.connect (this.toggle_children);        
+        toggled.connect (this.set_expansion_trigger_icon);
     }
 }

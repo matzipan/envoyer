@@ -25,8 +25,6 @@ public class Mail.ConversationItem : Gtk.ListBoxRow {
         subject.ellipsize = Pango.EllipsizeMode.END;
         ((Gtk.Misc) subject).xalign = 0;	    
 
-    
-
         this.add (grid);
         grid.add (subject);
 
@@ -35,7 +33,7 @@ public class Mail.ConversationItem : Gtk.ListBoxRow {
     }
 
     private void load_data () {
-        this.subject.label = "<b>%s</b>".printf(thread.get_subject());
+        this.subject.label = "<b>%s</b>".printf(thread.subject);
 
     }
 }

@@ -19,7 +19,9 @@ public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
     }
     private Gee.ArrayList<Gtk.ListBoxRow> _children;
     
-    private bool expanded = false; //@TODO sync with account summary
+    protected bool _expanded = false; //@TODO sync with account summary
+    
+    public bool expanded { get { return _expanded; } }
     
     public ExpandableItem () {
         _children = new Gee.ArrayList<Gtk.ListBoxRow> ();
@@ -40,7 +42,7 @@ public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
             widget.hide ();
         }
         
-        expanded = false;
+        _expanded = false;
         
         toggled ();
     }
@@ -51,7 +53,7 @@ public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
             widget.show ();
         }
         
-        expanded = true;
+        _expanded = true;
         
         toggled ();
     }

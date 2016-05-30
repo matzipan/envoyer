@@ -1,13 +1,14 @@
 public class Mail.FolderItem : Gtk.ListBoxRow {
-    public Camel.Folder folder { get { return _folder; } }
+    public Mail.Models.Folder folder { get { return _folder; } }
 
     private Gtk.Grid grid;
     private Gtk.Label title;
+    private Gtk.Image icon;
     private Gtk.Label unread_count;
-    private Camel.Folder _folder;
+    private Mail.Models.Folder _folder;
     private string label_override;
 
-    public FolderItem (Camel.Folder folder, string label = "") { //@TODO find a better solution for label
+    public FolderItem (Mail.Models.Folder folder, string label = "") { //@TODO move the label in Folder.vala
         _folder = folder;
         label_override = label;
         
@@ -23,7 +24,10 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
         grid.margin_top = 4;
         grid.margin_bottom = 4;
         grid.margin_left = 8;
-        grid.margin_right = 8;
+        grid.margin_right = 8; //@TODO this should be done in CSS
+        
+        icon = new Gtk.Image.from_icon_name (get_icon_name (), Gtk.IconSize.BUTTON);
+        icon.margin_right = 3;
 
         title = new Gtk.Label ("");
         title.use_markup = true;
@@ -39,6 +43,7 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
         unread_count.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
 
         this.add (grid);
+        grid.add (icon);
         grid.add (title);
         grid.add (unread_count);
 
@@ -47,9 +52,41 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
     }
 
     private void load_data () {
-        this.unread_count.label = "%u".printf(folder.summary.unread_count);
-        this.title.label = "<b>%s</b>".printf(label_override == "" ? folder.get_display_name() : label_override);
+        this.unread_count.label = "%u".printf(folder.unread_count);
+        this.title.label = "%s".printf(label_override == "" ? folder.display_name : label_override); //@TODO move this to Folder.vala
+    }
+    
+    public string get_icon_name () {
 
+        
+        if(folder.is_inbox) {
+            return "mail-inbox";
+        } else if(folder.is_trash) {
+            //return folder.properties.email_total == 0 ? "user-trash" : "user-trash-full"; @TODO
+            return "user-trash";
+        } else if(folder.is_outbox) {
+            return "mail-outbox";
+        } else if(folder.is_sent) {
+            return "mail-sent";
+        } else if(folder.is_junk) {
+            return "edit-flag";
+        } else if(folder.is_starred) {
+            return "starred";
+        } else {
+            return "folder-tag";
+        }
+
+    
+        /*
+            case Geary.SpecialFolderType.DRAFTS:
+                return "folder-documents";
+            case Geary.SpecialFolderType.IMPORTANT:
+                return "mail-mark-important";
+
+            case Geary.SpecialFolderType.ALL_MAIL:
+            case Geary.SpecialFolderType.ARCHIVE:
+                return "mail-archive";*/
+        
     }
 }
 
