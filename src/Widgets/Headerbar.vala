@@ -8,7 +8,7 @@ public class Mail.Headerbar : Gtk.HeaderBar {
         set_show_close_button (true);
                 
         // @TODO use this instead of set_theming when granite gets fixed 
-        //Gdk.RGBA headerbar_color = Gdk.RGBA();
+        //var headerbar_color = Gdk.RGBA();
         //headerbar_color.parse("#F7AC37");
         //Granite.Widgets.Utils.set_color_primary (this, headerbar_color);
         
