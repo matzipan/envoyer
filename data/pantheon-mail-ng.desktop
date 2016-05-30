@@ -1,10 +1,12 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Notes
-Comment=Simple note taking
-Exec=/usr/bin/pantheon-notes
-Icon=pantheon-notes
+Name=Mail-ng
+Comment=Next generation mail app
+Exec=/usr/bin/pantheon-mail-ng
+Icon=internet-mail
 Terminal=false
 Type=Application
 StartupNotify=true
-Categories=Office
+MimeType=x-scheme-handler/mailto;
+Keywords=Email;E-mail;Mail;
+Categories=GNOME;GTK;Network;Email;

@@ -44,5 +44,3 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/pantheon-mail-ng.desktop
 file(GLOB assets "${CMAKE_CURRENT_SOURCE_DIR}/data/assets/*")
 install (FILES ${assets}
 DESTINATION ${DATADIR}/pantheon-mail-ng/)
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/data/pantheon-mail-ng.svg"
-  DESTINATION ${DATADIR}/pixmaps/)
