@@ -1,7 +1,7 @@
 
 
 public class Mail.Sidebar : Gtk.Box { //@TODO move to Widget namespace
-    public signal void backend_up ();
+    public signal void session_up ();
     
     private Mail.NestedListBox listbox;
     private Gee.Collection<Mail.Models.AccountSummary> summaries_geelist; 
@@ -63,7 +63,7 @@ public class Mail.Sidebar : Gtk.Box { //@TODO move to Widget namespace
             folder_threads_list.grab_focus ();
         });
         
-        backend_up.connect (() => {
+        session_up.connect (() => {
             populate_list ();
             render_list ();
         });

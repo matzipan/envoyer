@@ -3,7 +3,7 @@ namespace Mail {
     public Mail.Sidebar sidebar;
     public Mail.FolderThreadsList folder_threads_list;
     public Mail.Services.Settings settings;
-    public Mail.Services.Backend backend;
+    public Mail.Services.Session session;
     public Mail.Window window;        
 }
 
@@ -27,18 +27,18 @@ public class Mail.Application : Granite.Application {
 
             running = true;
             
-            load_backend ();
+            load_session ();
         } 
         
         window.show_app ();
     }
     
     
-    private async void load_backend() {
-        backend = yield new Mail.Services.Backend ();
+    private async void load_session() {
+        session = yield new Mail.Services.Session (); //@maybe remove the yield
         
-        backend.set_online();
+        session.set_online(true);
         
-        window.backend_up ();        
+        window.session_up ();        
     }
 }

@@ -1,5 +1,5 @@
 public class Mail.Window : Gtk.ApplicationWindow {
-    public signal void backend_up ();
+    public signal void session_up ();
 
     private Mail.Headerbar headerbar;
     private Gtk.Paned pane;
@@ -46,7 +46,7 @@ public class Mail.Window : Gtk.ApplicationWindow {
         add_action (new_action);
         app.set_accels_for_action ("win.new-action", {"<Ctrl>N"});
         
-        backend_up.connect(() => { sidebar.backend_up (); });
+        session_up.connect(() => { sidebar.session_up (); });
     }
 
     private void request_close () {

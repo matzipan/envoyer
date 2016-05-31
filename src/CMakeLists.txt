@@ -58,7 +58,6 @@ vala_precompile(VALA_C pantheon-mail-ng
 	Main.vala
     Application.vala
 	Services/Session.vala 
-	Services/Backend.vala 
     Services/Settings.vala
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala

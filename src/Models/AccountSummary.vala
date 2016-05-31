@@ -29,8 +29,8 @@ public class Mail.Models.AccountSummary {
     public static Gee.Collection<Mail.Models.AccountSummary> get_summaries_list () {  //@TODO async 
         var summaries_list = new Gee.ArrayList<Mail.Models.AccountSummary> (null);
         
-        backend.get_services().foreach((service) => {
-            var account_summary = new Mail.Models.AccountSummary (Mail.backend.get_identity_source_for_service (service));
+        Mail.session.get_services().foreach((service) => {
+            var account_summary = new Mail.Models.AccountSummary (Mail.session.get_identity_source_for_service (service));
         
             var folders = ((Camel.OfflineStore) service).folders.list ();
             folders.foreach((object) => {   
