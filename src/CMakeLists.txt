@@ -7,6 +7,8 @@ set (PKG_DEPS
     evolution-data-server-1.2>=3.19.92
     libebook-1.2>=3.19.92
     libebook-contacts-1.2>=3.19.92
+    libedataserver-1.2>=3.19.92
+	libedataserverui-1.2>=3.19.92
     libsoup-2.4
     libxml-2.0
     granite>=0.3
@@ -22,6 +24,7 @@ set (VALA_DEPS
     libebook-1.2
     libebook-contacts-1.2
     libedataserver-1.2
+    libedataserverui-1.2
     libsoup-2.4
     libxml-2.0
     granite

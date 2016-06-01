@@ -1030,7 +1030,7 @@ namespace Camel {
 		public void set_sign_mode (Camel._smime_sign_t type);
 	}
 	[CCode (cheader_filename = "camel/camel.h", type_id = "camel_sasl_get_type ()")]
-	public abstract class Sasl : GLib.Object {
+	public class Sasl : GLib.Object {
 		[CCode (has_construct_function = false)]
 		public Sasl (string service_name, string mechanism, Camel.Service service);
 		public static GLib.List<weak Camel.ServiceAuthType> authtype_list (bool include_plain);
@@ -1049,6 +1049,7 @@ namespace Camel {
 		public string mechanism { get; construct; }
 		public Camel.Service service { get; construct; }
 		public string service_name { get; construct; }
+		public static Camel.ServiceAuthType * authtype (string mechanism);
 	}
 	[CCode (cheader_filename = "camel/camel.h", type_id = "camel_sasl_anonymous_get_type ()")]
 	public class SaslAnonymous : Camel.Sasl {
