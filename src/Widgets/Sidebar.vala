@@ -1,10 +1,8 @@
-
-
 public class Mail.Sidebar : Gtk.Box { //@TODO move to Widget namespace
-    public signal void session_up ();
-    
     private Mail.NestedListBox listbox;
     private Gee.Collection<Mail.Models.AccountSummary> summaries_geelist; 
+
+    public signal void session_up ();
 
     public Sidebar () {
         build_ui ();
@@ -43,13 +41,19 @@ public class Mail.Sidebar : Gtk.Box { //@TODO move to Widget namespace
     private void render_list () {
         clear_list ();
         
-        var inbox_item = new Mail.UnifiedFolderParentItem ("Inbox");
-        listbox.add (inbox_item);
+        //@TODO move to builder
+        var unified_inbox = new Mail.Models.UnifiedFolderParent ("Inbox"); //@TODO find a better way for this string
+        var unified_inbox_item = new Mail.UnifiedFolderParentItem (unified_inbox);
+        listbox.add (unified_inbox_item);
         
-        foreach (var summary in summaries_geelist) { 
+        foreach (var summary in summaries_geelist) {
             listbox.add(new Mail.AccountFoldersParentItem (summary));
-            
-            inbox_item.add(new Mail.UnifiedFolderChildItem (summary.inbox_folder, summary));
+
+            var unified_inbox_child = new Mail.Models.UnifiedFolderChild(summary.inbox_folder, summary.identity_source);
+            var unified_inbox_child_item = new Mail.UnifiedFolderChildItem (unified_inbox_child);
+
+            unified_inbox.add(unified_inbox_child);
+            unified_inbox_item.add(unified_inbox_child_item);
         }
     }
 

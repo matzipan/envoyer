@@ -1,4 +1,4 @@
-configure_file (${CMAKE_SOURCE_DIR}/src/config.vala.cmake ${CMAKE_SOURCE_DIR}/src/config.vala)
+configure_file (${CMAKE_SOURCE_DIR}/src/config.vala.cmake ${CMAKE_BINARY_DIR}/config.vala)
 
 set (PKG_DEPS
 	gobject-2.0
@@ -75,9 +75,12 @@ vala_precompile(VALA_C pantheon-mail-ng
 	Widgets/FolderThreadsList.vala
     Widgets/Window.vala
     Models/Folder.vala
+    Models/IFolder.vala
+    Models/UnifiedFolderChild.vala
+    Models/UnifiedFolderParent.vala
     Models/AccountSummary.vala
     Models/ConversationThread.vala
-    config.vala
+    ${CMAKE_BINARY_DIR}/config.vala
 PACKAGES
 	${VALA_DEPS}
 OPTIONS  

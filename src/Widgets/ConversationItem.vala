@@ -9,8 +9,6 @@ public class Mail.ConversationItem : Gtk.ListBoxRow {
     }
 
     private void build_ui () {
-        set_activatable (true);
-
         grid = new Gtk.Grid ();
         grid.get_style_context ().add_class ("h3");
         grid.orientation = Gtk.Orientation.HORIZONTAL;
@@ -34,7 +32,6 @@ public class Mail.ConversationItem : Gtk.ListBoxRow {
 
     private void load_data () {
         this.subject.label = "<b>%s</b>".printf(thread.subject);
-
     }
 }
 

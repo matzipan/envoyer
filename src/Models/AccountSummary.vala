@@ -1,5 +1,7 @@
 public class Mail.Models.AccountSummary {
-    public E.Source identity_source;
+    private bool _expanded = true; //@TODO persist this
+
+    public E.Source identity_source; //@TODO write accessor
     public Gee.Collection<Mail.Models.Folder> folders_list {
         owned get {
             // Create a copy of the children so that it's safe to iterate it
@@ -13,8 +15,7 @@ public class Mail.Models.AccountSummary {
     public Gee.ArrayList<Mail.Models.Folder> _folder_list; //@TODO make this private and use constructor to set _folder_list
     
     public Mail.Models.Folder inbox_folder; // make private
-    
-    private bool _expanded = true; //@TODO persist this
+
     public bool expanded {
         get { return _expanded; }
         set { _expanded = value; }

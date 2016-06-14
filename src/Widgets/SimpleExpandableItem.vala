@@ -1,4 +1,4 @@
-public class Mail.SimpleExpandableItem : ExpandableItem {
+public class Mail.SimpleExpandableItem : Mail.ExpandableItem {
     private Gtk.Grid grid;
     private Gtk.Label title;
     private Gtk.ToggleButton expansion_trigger;

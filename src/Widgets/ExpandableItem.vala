@@ -2,7 +2,7 @@
 
 public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
     public signal void child_added (); //@TODO maybe pass the child as a parameter
-    public signal void child_remove (); //@TODO maybe pass the child as a parameter
+    public signal void child_removed (); //@TODO maybe pass the child as a parameter
     
     // even if this signal is recieved, it is still necessary to check the state
     // expanded, @TODO maybe pass the state as a parameter

@@ -1,18 +1,17 @@
 public class Mail.FolderItem : Gtk.ListBoxRow {
-    public Mail.Models.Folder folder { get { return _folder; } }
-
     private Gtk.Grid grid;
-    private Gtk.Label title;
+    private Gtk.Label name_label;
     private Gtk.Image icon;
-    private Gtk.Label unread_count;
-    private Mail.Models.Folder _folder;
-    private string label_override;
+    private Gtk.Label unread_count_label;
+    private Mail.Models.IFolder _folder;
 
-    public FolderItem (Mail.Models.Folder folder, string label = "") { //@TODO move the label in Folder.vala
+    public Mail.Models.IFolder folder { get { return _folder; } }
+
+    public FolderItem (Mail.Models.IFolder folder) {
         _folder = folder;
-        label_override = label;
-        
+
         build_ui ();
+        connect_signals ();
     }
 
     private void build_ui () {
@@ -24,36 +23,49 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
         grid.margin_top = 4;
         grid.margin_bottom = 4;
         grid.margin_left = 8;
-        grid.margin_right = 8; //@TODO this should be done in CSS
+        grid.margin_right = 8;
         
         icon = new Gtk.Image.from_icon_name (get_icon_name (), Gtk.IconSize.BUTTON);
         icon.margin_right = 3;
 
-        title = new Gtk.Label ("");
-        title.use_markup = true;
-        title.halign = Gtk.Align.START;
-        title.ellipsize = Pango.EllipsizeMode.END;
-        ((Gtk.Misc) title).xalign = 0;	    
+        name_label = new Gtk.Label ("");
+        name_label.use_markup = true;
+        name_label.halign = Gtk.Align.START;
+        name_label.ellipsize = Pango.EllipsizeMode.END;
+        ((Gtk.Misc) name_label).xalign = 0;
 
-        unread_count = new Gtk.Label ("");
-        unread_count.halign = Gtk.Align.START;
-	    unread_count.ellipsize = Pango.EllipsizeMode.END;
-        unread_count.margin_left = 8;
-        ((Gtk.Misc) unread_count).xalign = 0;
-        unread_count.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
+        unread_count_label = new Gtk.Label ("");
+        unread_count_label.halign = Gtk.Align.START;
+	    unread_count_label.ellipsize = Pango.EllipsizeMode.END;
+        unread_count_label.margin_left = 8;
+        ((Gtk.Misc) unread_count_label).xalign = 0;
+        unread_count_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
 
         this.add (grid);
         grid.add (icon);
-        grid.add (title);
-        grid.add (unread_count);
+        grid.add (name_label);
+        grid.add (unread_count_label);
 
         load_data ();
         this.show_all ();
     }
 
     private void load_data () {
-        this.unread_count.label = "%u".printf(folder.unread_count);
-        this.title.label = "%s".printf(label_override == "" ? folder.display_name : label_override); //@TODO move this to Folder.vala
+        set_unread_count (folder.unread_count);
+        set_name (folder.display_name);
+    }
+
+    private void connect_signals () {
+        folder.unread_count_changed.connect (set_unread_count);
+        folder.display_name_changed.connect (set_name);
+    }
+    
+    private void set_unread_count (uint unread_count) {
+        unread_count_label.label = "%u".printf(unread_count);
+    }
+    
+    private void set_name (string name) {
+        name_label.label = "%s".printf(name);
     }
     
     public string get_icon_name () {

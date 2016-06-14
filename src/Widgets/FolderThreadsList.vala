@@ -2,7 +2,7 @@
 
 public class Mail.FolderThreadsList : Gtk.Box { //@TODO move to Widget namespace    
     private Gtk.ListBox listbox; //@TODO abstract this
-    private Mail.Models.Folder current_folder;
+    private Mail.Models.IFolder current_folder;
 
     //@TODO persist scroller state
 
@@ -15,7 +15,7 @@ public class Mail.FolderThreadsList : Gtk.Box { //@TODO move to Widget namespace
         //@TODO
     }
     
-    public void load_folder (Mail.Models.Folder folder) {
+    public void load_folder (Mail.Models.IFolder folder) {
         current_folder = folder;
                         
         render_list();
