@@ -1,7 +1,7 @@
 public class Mail.SimpleExpandableItem : Mail.ExpandableItem {
-    private Gtk.Grid grid;
-    private Gtk.Label title;
+    protected Gtk.Grid grid;
     private Gtk.ToggleButton expansion_trigger;
+    private Gtk.Label title;
     private string label;
     
     public SimpleExpandableItem (string label) { 
@@ -13,20 +13,21 @@ public class Mail.SimpleExpandableItem : Mail.ExpandableItem {
         connect_signals ();
     }
     
-    private void build_ui () {        
+    public SimpleExpandableItem.with_no_label () {
+        base ();
+
+        build_ui_with_no_label ();
+
+        connect_signals ();
+    }
+    
+    private void build_ui_with_no_label () {
         grid = new Gtk.Grid ();
-        grid.get_style_context ().add_class ("h3");
         grid.orientation = Gtk.Orientation.HORIZONTAL;
         grid.margin_top = 4;
         grid.margin_bottom = 4;
         grid.margin_left = 8;
         grid.margin_right = 8;
-
-        title = new Gtk.Label ("");
-        title.use_markup = true;
-        title.halign = Gtk.Align.START;
-        title.ellipsize = Pango.EllipsizeMode.END;
-        ((Gtk.Misc) title).xalign = 0;	    
         
         expansion_trigger = new Gtk.ToggleButton ();
         expansion_trigger.get_style_context ().add_class ("expansion-trigger");
@@ -34,12 +35,26 @@ public class Mail.SimpleExpandableItem : Mail.ExpandableItem {
         set_expansion_trigger_icon ();
         
         grid.add (expansion_trigger);
-        grid.add (title);
         
         ((Gtk.Container) this).add (grid);
+        
+        show_all ();
+    }
+    
+    private void build_ui () {        
+        build_ui_with_no_label ();
+
+        title = new Gtk.Label ("");
+        title.get_style_context ().add_class ("h3");
+        title.use_markup = true;
+        title.halign = Gtk.Align.START;
+        title.ellipsize = Pango.EllipsizeMode.END;
+        ((Gtk.Misc) title).xalign = 0;	    
+
+        grid.add (title);
 
         load_data ();
-        this.show_all ();
+        show_all ();
     }
     
     private void set_expansion_trigger_icon () {

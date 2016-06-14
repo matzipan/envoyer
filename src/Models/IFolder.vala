@@ -6,6 +6,7 @@ public interface Mail.Models.IFolder : GLib.Object {
     public abstract bool is_normal { get; }
     public abstract bool is_junk { get; }
     public abstract bool is_starred { get; }
+    public abstract bool is_unified { get; }
 
     public abstract uint unread_count { get; }
 

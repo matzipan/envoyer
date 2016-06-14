@@ -9,6 +9,7 @@ public class Mail.Models.Folder : Mail.Models.IFolder, GLib.Object {
     public bool is_normal { get { return (folder_info.flags & Camel.FolderInfoFlags.TYPE_NORMAL) != 0; } }
     public bool is_junk { get { return (folder_info.flags & Camel.FolderInfoFlags.TYPE_JUNK) != 0; } }
     public bool is_starred { get { return (folder_info.flags & Camel.FolderInfoFlags.FLAGGED) != 0; } }
+    public bool is_unified { get { return false; } }
 
     public uint unread_count { get { return folder.summary.unread_count; } }
 

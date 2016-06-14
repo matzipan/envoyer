@@ -9,6 +9,7 @@ public class Mail.Models.UnifiedFolderChild : Mail.Models.IFolder, GLib.Object {
     public bool is_normal { get { return _folder.is_normal; } }
     public bool is_junk { get { return _folder.is_junk; } }
     public bool is_starred { get { return _folder.is_starred; } }
+    public bool is_unified { get { return _folder.is_unified; } }
 
     public uint unread_count { get { return _folder.unread_count; } }
 

@@ -17,16 +17,13 @@ public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
             return children_list_copy;
         }
     }
-    private Gee.ArrayList<Gtk.ListBoxRow> _children;
+    private Gee.ArrayList<Gtk.ListBoxRow> _children = new Gee.ArrayList<Gtk.ListBoxRow> ();
     
     protected bool _expanded = false; //@TODO sync with account summary
     
     public bool expanded { get { return _expanded; } }
     
-    public ExpandableItem () {
-        _children = new Gee.ArrayList<Gtk.ListBoxRow> ();
-
-    }
+    public ExpandableItem () { }
     
     public void toggle_children () {
         if(expanded) {
@@ -63,6 +60,7 @@ public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
         child_added ();
     }
     
+    //@TODO add_all
     //public void clear () @TODO
     //public void collapse_with_parents () @TODO
     //public bool contains (Item item) @TODO

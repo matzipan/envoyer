@@ -1,6 +1,5 @@
 public class Mail.Sidebar : Gtk.Box { //@TODO move to Widget namespace
     private Mail.NestedListBox listbox;
-    private Gee.Collection<Mail.Models.AccountSummary> summaries_geelist; 
 
     public signal void session_up ();
 
@@ -34,26 +33,23 @@ public class Mail.Sidebar : Gtk.Box { //@TODO move to Widget namespace
         }
     }
     
-    private void populate_list () {
-        summaries_geelist = Mail.Models.AccountSummary.get_summaries_list ();
-    }
-    
-    private void render_list () {
+    // @TODO if new accounts get added, update/regenerate the list
+    private void build_list () {
         clear_list ();
-        
-        //@TODO move to builder
-        var unified_inbox = new Mail.Models.UnifiedFolderParent ("Inbox"); //@TODO find a better way for this string
-        var unified_inbox_item = new Mail.UnifiedFolderParentItem (unified_inbox);
-        listbox.add (unified_inbox_item);
-        
+
+        var summaries_geelist = Mail.Models.AccountSummary.get_summaries_list ();
+
+        // I tried applying several different patterns to building this list.
+        // Although I am not fond of it, I always seem to come back to this format
+        var unified_inbox = new Mail.Models.UnifiedFolderParent ("Inbox");
         foreach (var summary in summaries_geelist) {
-            listbox.add(new Mail.AccountFoldersParentItem (summary));
+            unified_inbox.add (new Mail.Models.UnifiedFolderChild (summary.inbox_folder, summary.identity_source));
+        }
 
-            var unified_inbox_child = new Mail.Models.UnifiedFolderChild(summary.inbox_folder, summary.identity_source);
-            var unified_inbox_child_item = new Mail.UnifiedFolderChildItem (unified_inbox_child);
+        listbox.add (new Mail.UnifiedFolderParentItem (unified_inbox));
 
-            unified_inbox.add(unified_inbox_child);
-            unified_inbox_item.add(unified_inbox_child_item);
+        foreach (var summary in summaries_geelist) {
+            listbox.add (new Mail.AccountFoldersParentItem (summary));
         }
     }
 
@@ -67,9 +63,6 @@ public class Mail.Sidebar : Gtk.Box { //@TODO move to Widget namespace
             folder_threads_list.grab_focus ();
         });
         
-        session_up.connect (() => {
-            populate_list ();
-            render_list ();
-        });
+        session_up.connect (build_list);
     }
 }
