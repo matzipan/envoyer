@@ -153,7 +153,7 @@ public class Mail.Services.Session : Camel.Session {
         if (result == Camel.AuthenticationResult.ACCEPTED) {
             var credentials_source = prompter.get_provider ().ref_credentials_source (source);
 
-            if (credentials_source == null) {
+            if (credentials_source != null) {
                 credentials_source.invoke_authenticate_sync (credentials);
             }
         }
