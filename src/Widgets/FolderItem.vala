@@ -37,8 +37,12 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
         if(folder.is_inbox) {
             return "mail-inbox";
         } else if(folder.is_trash) {
-            //return folder.properties.email_total == 0 ? "user-trash" : "user-trash-full"; @TODO
-            return "user-trash";
+            //@TODO listen to total_count_changed signal and change the icon accordingly
+            if(folder.total_count == 0) {
+                return "user-trash";
+            } else {
+                return "user-trash-full";
+            }
         } else if(folder.is_outbox) {
             return "mail-outbox";
         } else if(folder.is_sent) {
@@ -47,21 +51,15 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
             return "edit-flag";
         } else if(folder.is_starred) {
             return "starred";
+        } else if(folder.is_drafts) {
+            return "folder-documents";
+        } else if(folder.is_important) {
+            return "mail-mark-important";
+        } else if(folder.is_all_mail || folder.is_archive) {
+            return "mail-archive";
         } else {
             return "folder-tag";
-        }
-
-    
-        /*
-            case Geary.SpecialFolderType.DRAFTS:
-                return "folder-documents";
-            case Geary.SpecialFolderType.IMPORTANT:
-                return "mail-mark-important";
-
-            case Geary.SpecialFolderType.ALL_MAIL:
-            case Geary.SpecialFolderType.ARCHIVE:
-                return "mail-archive";*/
-        
+        }        
     }
 }
 

@@ -2200,8 +2200,9 @@ namespace Camel {
 		TYPE_EVENTS,
 		TYPE_MEMOS,
 		TYPE_TASKS,
+		TYPE_FLAGGED,
 		READONLY,
-		FLAGGED
+
 	}
 	[CCode (cheader_filename = "camel/camel.h", cprefix = "CAMEL_FOLDER_SUMMARY_", has_type_id = false)]
 	[Flags]

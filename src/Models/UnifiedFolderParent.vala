@@ -19,10 +19,14 @@ public class Mail.Models.UnifiedFolderParent : Mail.Models.IFolder, GLib.Object 
     public bool is_normal { get { return false; } }
     public bool is_junk { get { return false; } }
     public bool is_starred { get { return false; } }
+    public bool is_all_mail { get { return false; } }
+    public bool is_important { get { return false; } }
+    public bool is_drafts { get { return false; } }
+    public bool is_archive { get { return false; } }
     public bool is_unified { get { return true; } }
 
     public uint unread_count { 
-        get { 
+        get {
             uint new_unread_count = 0;
 
             foreach (var child in children) {
@@ -32,6 +36,19 @@ public class Mail.Models.UnifiedFolderParent : Mail.Models.IFolder, GLib.Object 
             return new_unread_count;
         }
     }
+    
+    public uint total_count { 
+        get {
+            uint new_total_count = 0;
+
+            foreach (var child in children) {
+                new_total_count += child.total_count;
+            }
+
+            return new_total_count;
+        }
+    }
+
 
     public Gee.LinkedList<Mail.Models.ConversationThread> threads_list { get { return null; } } //@TODO merge this from chidlren
 
@@ -46,8 +63,11 @@ public class Mail.Models.UnifiedFolderParent : Mail.Models.IFolder, GLib.Object 
 
     public void add(Mail.Models.UnifiedFolderChild child) {
         _children.add (child);
-        child.unread_count_changed.connect (() => {
-                unread_count_changed (unread_count);
+        child.unread_count_changed.connect ((new_unread_count) => {
+                unread_count_changed (new_unread_count);
+            });
+        child.total_count_changed.connect ((new_total_count) => {
+                total_count_changed (new_total_count);
             });
         child_added (child);
     }
