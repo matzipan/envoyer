@@ -1,5 +1,5 @@
 public class Mail.FolderItem : Gtk.ListBoxRow {
-    private Gtk.Grid grid;
+    private Gtk.Box box;
     private Mail.FolderLabel folder_label;
     private Mail.Models.IFolder _folder;
 
@@ -12,12 +12,15 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
     }
 
     private void build_ui () {
-        margin_top = 4;
-        margin_bottom = 4;
-        margin_left = 8;
-        margin_right = 8;
+        box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
+        box.margin_top = 4;
+        box.margin_bottom = 4;
+        box.margin_left = 8;
+        box.margin_right = 8;
 
-        add (new Mail.FolderLabel(folder));
+        box.add (new Mail.FolderLabel(folder));
+
+        add (box);
 
         show_all ();
     }
