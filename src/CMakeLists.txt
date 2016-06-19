@@ -73,6 +73,7 @@ vala_precompile(VALA_C pantheon-mail-ng
 	Widgets/FolderThreadsList.vala
 	Widgets/FolderLabel.vala
     Widgets/Window.vala
+    Util/SidebarBuilder.vala
     Models/Folder.vala
     Models/IFolder.vala
     Models/UnifiedFolderChild.vala

@@ -1,6 +1,6 @@
 
 
-public class Mail.FolderThreadsList : Gtk.Box { //@TODO move to Widget namespace    
+public class Mail.FolderThreadsList : Gtk.Grid { //@TODO move to Widget namespace
     private Gtk.ListBox listbox; //@TODO abstract this
     private Mail.Models.IFolder current_folder;
 
