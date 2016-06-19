@@ -9,10 +9,10 @@ public class Mail.Models.Folder : Mail.Models.IFolder, GLib.Object {
     public bool is_normal { get { return (folder_info.flags & Camel.FolderInfoFlags.TYPE_NORMAL) != 0; } }
     public bool is_junk { get { return (folder_info.flags & Camel.FolderInfoFlags.TYPE_JUNK) != 0; } }
     public bool is_starred { get { return (folder_info.flags & Camel.FolderInfoFlags.TYPE_FLAGGED) != 0; } }
-    public bool is_all_mail { get { return false; } }
-    public bool is_important { get { return false; } }
-    public bool is_drafts { get { return false; } }
-    public bool is_archive { get { return false; } }
+    public bool is_all_mail { get { return (folder_info.flags & Camel.FolderInfoFlags.TYPE_ALL) != 0; }  }
+    public bool is_important { get { return (folder_info.flags & Camel.FolderInfoFlags.TYPE_IMPORTANT) != 0; } }
+    public bool is_drafts { get { return (folder_info.flags & Camel.FolderInfoFlags.TYPE_DRAFTS) != 0; } }
+    public bool is_archive { get { return (folder_info.flags & Camel.FolderInfoFlags.TYPE_ARCHIVE) != 0; } }
     public bool is_unified { get { return false; } }
 
     public uint unread_count { get { return folder_info.unread; } }
