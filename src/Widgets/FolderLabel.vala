@@ -1,6 +1,7 @@
 public class Mail.FolderLabel : Gtk.Grid {
     private Gtk.Label name_label;
     private Gtk.Label unread_count_label;
+    private Gtk.Image icon;
     private Mail.Models.IFolder folder;
 
     public FolderLabel (Mail.Models.IFolder folder) {
@@ -23,7 +24,11 @@ public class Mail.FolderLabel : Gtk.Grid {
         unread_count_label.margin_left = 8;
         ((Gtk.Misc) unread_count_label).xalign = 0;
         unread_count_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
-
+        
+        icon = new Gtk.Image.from_icon_name (get_icon_name (), Gtk.IconSize.BUTTON);
+        icon.margin_right = 3;
+        
+        add (icon);
         add (name_label);
         add (unread_count_label);
 
@@ -47,5 +52,34 @@ public class Mail.FolderLabel : Gtk.Grid {
     
     private void set_name (string name) {
         name_label.label = "%s".printf(name);
+    }
+    
+    public string get_icon_name () {
+        if(folder.is_inbox) {
+            return "mail-inbox";
+        } else if(folder.is_trash) {
+            //@TODO listen to total_count_changed signal and change the icon accordingly
+            if(folder.total_count == 0) {
+                return "user-trash";
+            } else {
+                return "user-trash-full";
+            }
+        } else if(folder.is_outbox) {
+            return "mail-outbox";
+        } else if(folder.is_sent) {
+            return "mail-sent";
+        } else if(folder.is_junk) {
+            return "edit-flag";
+        } else if(folder.is_starred) {
+            return "starred";
+        } else if(folder.is_drafts) {
+            return "folder-documents";
+        } else if(folder.is_important) {
+            return "mail-mark-important";
+        } else if(folder.is_all_mail || folder.is_archive) {
+            return "mail-archive";
+        } else {
+            return "folder-tag";
+        }        
     }
 }
