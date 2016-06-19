@@ -5,9 +5,14 @@ public class Mail.UnifiedFolderChildItem : Mail.FolderItem {
         base (folder);
 
         connect_signals ();
+        build_ui ();
     }
     
     private void connect_signals () {
         folder.unread_count_changed.connect (new_count => { unread_count_changed(new_count); });
+    }
+    
+    private void build_ui () {
+        set_margin_left (30);
     }
 }

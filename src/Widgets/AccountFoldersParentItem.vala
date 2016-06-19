@@ -3,8 +3,10 @@ public class Mail.AccountFoldersParentItem : Mail.SimpleExpandableItem {
         //@TODO this logic should be moved to a model
         base (summary.identity_source.get_display_name ());
 
-        foreach(var folder in summary.folders_list) {  
-            add (new Mail.FolderItem (folder));
+        foreach (var folder in summary.folders_list) {
+            if (folder.is_normal) {
+                add (new Mail.FolderItem (folder));
+            }
         }
     }
 }

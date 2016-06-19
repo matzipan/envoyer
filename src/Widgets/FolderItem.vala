@@ -15,14 +15,19 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
         box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
         box.margin_top = 4;
         box.margin_bottom = 4;
-        box.margin_left = 8;
         box.margin_right = 8;
+
+        set_margin_left (20);
 
         box.add (new Mail.FolderLabel(folder));
 
         add (box);
 
         show_all ();
+    }
+    
+    protected void set_margin_left (int margin) {
+        box.margin_left = margin;
     }
 }
 
