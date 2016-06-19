@@ -12,24 +12,112 @@ public class Mail.Models.UnifiedFolderParent : Mail.Models.IFolder, GLib.Object 
         }
     }
 
-    public bool is_inbox { get { return false; } } //@TODO maybe decide this at runtime, and also decide name at run-time
-    public bool is_trash { get { return false; } }
-    public bool is_outbox { get { return false; } }
-    public bool is_sent { get { return false; } }
-    public bool is_normal { get { return false; } }
-    public bool is_junk { get { return false; } }
-    public bool is_starred { get { return false; } }
-    public bool is_all_mail { get { return false; } }
-    public bool is_important { get { return false; } }
-    public bool is_drafts { get { return false; } }
-    public bool is_archive { get { return false; } }
+    public bool is_inbox { 
+        get { 
+            if(_children.is_empty) {
+                return false;
+            } else {
+                return _children[0].is_inbox;
+            }
+        }
+    }
+    public bool is_trash { 
+        get { 
+            if(_children.is_empty) { 
+                return false;
+            } else {
+                return _children[0].is_trash;
+            }
+        }
+    }
+    public bool is_outbox { 
+        get { 
+            if(_children.is_empty) {
+                return false;
+            } else {
+                return _children[0].is_outbox;
+            }
+        }
+    }
+    public bool is_sent { 
+        get { 
+            if(_children.is_empty) {
+                return false;
+            } else {
+                return _children[0].is_sent;
+            }
+        }
+    }
+    public bool is_normal { 
+        get { 
+            if(_children.is_empty) {
+                return false;
+            } else {
+                return _children[0].is_normal;
+            }
+        }
+    }
+    public bool is_junk { 
+        get { 
+            if(_children.is_empty) {
+                return false;
+            } else {
+                return _children[0].is_junk;
+            }
+        }
+    }
+    public bool is_starred {
+        get { 
+            if(_children.is_empty) {
+                return false;
+            } else {
+                return _children[0].is_starred;
+            }
+        }
+    }
+    public bool is_all_mail { 
+        get { 
+            if(_children.is_empty) {
+                return false;
+            } else {
+                return _children[0].is_all_mail;
+            }
+        }
+    }
+    public bool is_important { 
+        get { 
+            if(_children.is_empty) {
+                return false;
+            } else {
+                return _children[0].is_important;
+            }
+        }
+    }
+    public bool is_drafts { 
+        get { 
+            if(_children.is_empty) {
+                return false;
+            } else {
+                return _children[0].is_drafts;
+            }
+        }
+    }
+    public bool is_archive { 
+        get { 
+            if(_children.is_empty) {
+                return false;
+            } else {
+                return _children[0].is_archive;
+            }
+        }
+    }
     public bool is_unified { get { return true; } }
 
     public uint unread_count { 
         get {
             uint new_unread_count = 0;
 
-            foreach (var child in children) {
+            foreach (var child in _children) {
                 new_unread_count += child.unread_count;
             }
 
@@ -41,7 +129,7 @@ public class Mail.Models.UnifiedFolderParent : Mail.Models.IFolder, GLib.Object 
         get {
             uint new_total_count = 0;
 
-            foreach (var child in children) {
+            foreach (var child in _children) {
                 new_total_count += child.total_count;
             }
 
