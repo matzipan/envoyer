@@ -12,7 +12,6 @@ set (PKG_DEPS
     libsoup-2.4
     libxml-2.0
     granite>=0.3
-    gtksourceview-3.0>=3.10
     gthread-2.0
     gtk+-3.0>=3.9.10
 )
@@ -28,7 +27,6 @@ set (VALA_DEPS
     libsoup-2.4
     libxml-2.0
     granite
-    gtksourceview-3.0
     gtk+-3.0
 	posix
 )
