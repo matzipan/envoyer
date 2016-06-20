@@ -1,12 +1,8 @@
-
-
 public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
     public signal void child_added (); //@TODO maybe pass the child as a parameter
     public signal void child_removed (); //@TODO maybe pass the child as a parameter
     
-    // even if this signal is recieved, it is still necessary to check the state
-    // expanded, @TODO maybe pass the state as a parameter
-    public signal void toggled ();
+    public signal void toggled (bool expanded);
     
     public Gee.Collection<Gtk.ListBoxRow> children { 
         owned get {
@@ -18,10 +14,8 @@ public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
         }
     }
     private Gee.ArrayList<Gtk.ListBoxRow> _children = new Gee.ArrayList<Gtk.ListBoxRow> ();
-    
-    protected bool _expanded = false; //@TODO sync with account summary
-    
-    public bool expanded { get { return _expanded; } }
+
+    public bool expanded { get; private set; } //@TODO sync with account summary
     
     public ExpandableItem () { }
     
@@ -38,10 +32,10 @@ public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
         foreach(Gtk.Widget widget in _children) {
             widget.hide ();
         }
+
+        expanded = false;
         
-        _expanded = false;
-        
-        toggled ();
+        toggled (expanded);
     }
     
     public void expand_all (bool inclusive = true, bool recursive = true) {
@@ -50,9 +44,9 @@ public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
             widget.show ();
         }
         
-        _expanded = true;
-        
-        toggled ();
+        expanded = true;
+
+        toggled (expanded);
     }
     
     public void add(Gtk.ListBoxRow child) {

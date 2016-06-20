@@ -1,6 +1,6 @@
 public class Mail.Util.SidebarBuilder : GLib.Object {
     public static void build_list (Mail.NestedListBox listbox) {
-        var summaries_geelist = Mail.Models.AccountSummary.get_summaries_list ();
+        var summaries_geelist = build_summaries_list ();
 
         var unified_inbox = new Mail.Models.UnifiedFolderParent ("Inbox");
         var unified_starred = new Mail.Models.UnifiedFolderParent ("Starred");
@@ -13,9 +13,11 @@ public class Mail.Util.SidebarBuilder : GLib.Object {
         var unified_trash = new Mail.Models.UnifiedFolderParent ("Trash");
         
         foreach (var summary in summaries_geelist) {
-            unified_inbox.add (new Mail.Models.UnifiedFolderChild (summary.inbox_folder, summary.identity_source));
-            
+
             foreach(var folder in summary.folders_list) {
+                if(folder.is_inbox) {
+                    unified_inbox.add (new Mail.Models.UnifiedFolderChild (folder, summary.identity_source));
+                }
                 if(folder.is_starred) {
                     unified_starred.add (new Mail.Models.UnifiedFolderChild (folder, summary.identity_source));
                 }
@@ -64,5 +66,15 @@ public class Mail.Util.SidebarBuilder : GLib.Object {
             
             listbox.add (account_folders_parent);
         }
+    }
+    
+    public static Gee.Collection<Mail.Models.AccountSummary> build_summaries_list () {  //@TODO async
+        var summaries_list = new Gee.ArrayList<Mail.Models.AccountSummary> (null);
+
+        Mail.session.get_services().foreach((service) => {
+            summaries_list.add(new Mail.Models.AccountSummary (service));
+        });   
+        
+        return summaries_list;     
     }
 }

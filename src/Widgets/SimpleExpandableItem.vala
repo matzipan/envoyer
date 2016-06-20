@@ -1,5 +1,5 @@
 public class Mail.SimpleExpandableItem : Mail.ExpandableItem {
-    protected Gtk.Grid grid;
+    protected Gtk.Grid grid { get; private set; }
     private Gtk.ToggleButton expansion_trigger;
     private Gtk.Label title;
     private string label;

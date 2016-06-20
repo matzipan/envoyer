@@ -1,12 +1,10 @@
 public class Mail.FolderItem : Gtk.ListBoxRow {
     private Gtk.Grid grid;
     private Mail.FolderLabel folder_label;
-    private Mail.Models.IFolder _folder;
-
-    public Mail.Models.IFolder folder { get { return _folder; } }
+    public Mail.Models.IFolder folder { get; private set; }
 
     public FolderItem (Mail.Models.IFolder folder) {
-        _folder = folder;
+        this.folder = folder;
 
         build_ui ();
     }
