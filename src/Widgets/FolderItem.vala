@@ -15,7 +15,7 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
         grid.margin_bottom = 4;
         grid.margin_right = 8;
 
-        set_margin_left (20);
+        set_left_spacing (20);
 
         grid.add (new Mail.FolderLabel(folder));
 
@@ -23,8 +23,8 @@ public class Mail.FolderItem : Gtk.ListBoxRow {
 
         show_all ();
     }
-    
-    protected void set_margin_left (int margin) {
+
+    protected void set_left_spacing (int margin) {
         grid.margin_left = margin;
     }
 }

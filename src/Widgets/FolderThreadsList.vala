@@ -11,7 +11,7 @@ public class Mail.FolderThreadsList : Gtk.Grid { //@TODO move to Widget namespac
         connect_signals ();
     }
     
-    public void grab_focus () {
+    public new void grab_focus () {
         //@TODO
     }
     

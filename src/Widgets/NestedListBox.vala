@@ -5,7 +5,7 @@ public class Mail.NestedListBox : Gtk.ListBox {
         root_items_list = new Gee.ArrayList<Mail.ExpandableItem>();
     }
     
-    public void add (Gtk.ListBoxRow row) {
+    public new void add (Gtk.ListBoxRow row) {
         ((Gtk.ListBox) this).add(row);
 
         if(row is Mail.ExpandableItem) {

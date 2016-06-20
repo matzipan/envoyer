@@ -49,7 +49,7 @@ public abstract class Mail.ExpandableItem : Gtk.ListBoxRow {
         toggled (expanded);
     }
     
-    public void add(Gtk.ListBoxRow child) {
+    public new void add(Gtk.ListBoxRow child) {
         _children.add(child);
         child_added ();
     }

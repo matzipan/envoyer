@@ -13,6 +13,6 @@ public class Mail.UnifiedFolderChildItem : Mail.FolderItem {
     }
     
     private void build_ui () {
-        set_margin_left (30);
+        set_left_spacing (30);
     }
 }

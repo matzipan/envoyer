@@ -26,7 +26,7 @@ public class Mail.UnifiedFolderParentItem : Mail.SimpleExpandableItem {
         //@TODO parent_folder.child_removed.connect (add);
     }
     
-    private void add(Mail.Models.UnifiedFolderChild child) {
+    private new void add(Mail.Models.UnifiedFolderChild child) {
         ((Mail.SimpleExpandableItem) this).add(new Mail.UnifiedFolderChildItem (child));
     }
 

@@ -26,8 +26,8 @@ public class Mail.Application : Granite.Application {
             this.add_window (window);
 
             running = true;
-            
-            load_session ();
+
+            load_session.begin ();
         } 
         
         window.show_app ();
