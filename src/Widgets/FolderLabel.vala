@@ -1,10 +1,17 @@
-public class Mail.FolderLabel : Gtk.Grid {
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
+public class Envoyer.FolderLabel : Gtk.Grid {
     private Gtk.Label name_label;
     private Gtk.Label unread_count_label;
     private Gtk.Image icon;
-    private Mail.Models.IFolder folder;
+    private Envoyer.Models.IFolder folder;
 
-    public FolderLabel (Mail.Models.IFolder folder) {
+    public FolderLabel (Envoyer.Models.IFolder folder) {
         this.folder = folder;
 
         build_ui ();

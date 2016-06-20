@@ -1,15 +1,22 @@
-public class Mail.NestedListBox : Gtk.ListBox {
-    private Gee.ArrayList<Mail.ExpandableItem> root_items_list;
+/*
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
+public class Envoyer.NestedListBox : Gtk.ListBox {
+    private Gee.ArrayList<Envoyer.ExpandableItem> root_items_list;
     
     public NestedListBox () {
-        root_items_list = new Gee.ArrayList<Mail.ExpandableItem>();
+        root_items_list = new Gee.ArrayList<Envoyer.ExpandableItem>();
     }
     
     public new void add (Gtk.ListBoxRow row) {
         ((Gtk.ListBox) this).add(row);
 
-        if(row is Mail.ExpandableItem) {
-            var expandable_item_row = (Mail.ExpandableItem) row;
+        if(row is Envoyer.ExpandableItem) {
+            var expandable_item_row = (Envoyer.ExpandableItem) row;
             
             root_items_list.add(expandable_item_row);
             

@@ -1,13 +1,19 @@
-
-namespace Mail {
-    public Mail.Sidebar sidebar;
-    public Mail.FolderThreadsList folder_threads_list;
-    public Mail.Services.Settings settings;
-    public Mail.Services.Session session;
-    public Mail.Window window;        
+/*
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
+namespace Envoyer {
+    public Envoyer.Sidebar sidebar;
+    public Envoyer.FolderThreadsList folder_threads_list;
+    public Envoyer.Services.Settings settings;
+    public Envoyer.Services.Session session;
+    public Envoyer.Window window;        
 }
 
-public class Mail.Application : Granite.Application {
+public class Envoyer.Application : Granite.Application {
     public const string PROGRAM_NAME = N_(Constants.APP_NAME);
     public const string COMMENT = N_(Constants.PROJECT_DESCRIPTION);
     public const string ABOUT_STOCK = N_("About "+ Constants.APP_NAME);
@@ -15,14 +21,14 @@ public class Mail.Application : Granite.Application {
     public bool running = false;
 
     public Application () {
-        Object (application_id: "org.pantheon.mail-ng");
+        Object (application_id: "org.pantheon.envoyer");
     }
 
     public override void activate () {
         if (!running) {
-            settings = new Mail.Services.Settings ();
+            settings = new Envoyer.Services.Settings ();
             
-            window = new Mail.Window (this);
+            window = new Envoyer.Window (this);
             this.add_window (window);
 
             running = true;
@@ -35,7 +41,7 @@ public class Mail.Application : Granite.Application {
     
     
     private async void load_session() {
-        session = yield new Mail.Services.Session (); //@maybe remove the yield
+        session = yield new Envoyer.Services.Session (); //@maybe remove the yield
         
         session.set_online(true);
         

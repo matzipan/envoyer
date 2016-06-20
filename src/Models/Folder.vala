@@ -1,4 +1,11 @@
-public class Mail.Models.Folder : Mail.Models.IFolder, GLib.Object {
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
+public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     private Camel.FolderInfo folder_info;
     private Camel.Folder folder;
 
@@ -18,18 +25,18 @@ public class Mail.Models.Folder : Mail.Models.IFolder, GLib.Object {
     public uint unread_count { get { return folder_info.unread; } }
     public uint total_count { get { return folder_info.total; } }
 
-    private Gee.LinkedList<Mail.Models.ConversationThread> _threads_list; 
+    private Gee.LinkedList<Envoyer.Models.ConversationThread> _threads_list; 
     
     //@TODO trigger unread_count_changed
     //@TODO trigger total_count_changed
 
-    public Gee.LinkedList<Mail.Models.ConversationThread> threads_list { 
+    public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { 
         get {  //@TODO async
             if(_threads_list == null) {
-                _threads_list = new Gee.LinkedList<Mail.Models.ConversationThread> (null);
+                _threads_list = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
                 
                 folder.get_uids().foreach((uid) => {
-                    _threads_list.add(new Mail.Models.ConversationThread(uid, this));
+                    _threads_list.add(new Envoyer.Models.ConversationThread(uid, this));
                 });
             }
                         

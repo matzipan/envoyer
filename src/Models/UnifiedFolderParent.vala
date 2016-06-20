@@ -1,12 +1,19 @@
-public class Mail.Models.UnifiedFolderParent : Mail.Models.IFolder, GLib.Object  {
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+
+public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.Object  {
     private string name;
-    private Gee.ArrayList<Mail.Models.UnifiedFolderChild> _children = new Gee.ArrayList<Mail.Models.UnifiedFolderChild> ();
+    private Gee.ArrayList<Envoyer.Models.UnifiedFolderChild> _children = new Gee.ArrayList<Envoyer.Models.UnifiedFolderChild> ();
     
-    public Gee.Collection<Mail.Models.UnifiedFolderChild> children {
+    public Gee.Collection<Envoyer.Models.UnifiedFolderChild> children {
         owned get {
             // Create a copy of the children so that it's safe to iterate it
             // (e.g. by using foreach) while removing items.
-            var children_list_copy = new Gee.ArrayList<Mail.Models.UnifiedFolderChild> ();
+            var children_list_copy = new Gee.ArrayList<Envoyer.Models.UnifiedFolderChild> ();
             children_list_copy.add_all (_children);
             return children_list_copy;
         }
@@ -138,18 +145,18 @@ public class Mail.Models.UnifiedFolderParent : Mail.Models.IFolder, GLib.Object 
     }
 
 
-    public Gee.LinkedList<Mail.Models.ConversationThread> threads_list { get { return null; } } //@TODO merge this from chidlren
+    public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { get { return null; } } //@TODO merge this from chidlren
 
     public string display_name { get { return name; } }
     
-    public signal void child_added (Mail.Models.UnifiedFolderChild new_child);
-    public signal void child_removed (Mail.Models.UnifiedFolderChild new_child); //@TODO
+    public signal void child_added (Envoyer.Models.UnifiedFolderChild new_child);
+    public signal void child_removed (Envoyer.Models.UnifiedFolderChild new_child); //@TODO
 
     public UnifiedFolderParent (string name) {
         this.name = name;
     }
 
-    public void add(Mail.Models.UnifiedFolderChild child) {
+    public void add(Envoyer.Models.UnifiedFolderChild child) {
         _children.add (child);
         child.unread_count_changed.connect ((new_unread_count) => {
                 unread_count_changed (new_unread_count);

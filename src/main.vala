@@ -1,3 +1,6 @@
+// I used this file to play around with the EDS api before starting the GUI
+// It's still being kept for reference purposes.
+
 async void foo () throws GLib.Error {
     
     var registry = yield new E.SourceRegistry (null); 

@@ -1,5 +1,12 @@
-public class Mail.Sidebar : Gtk.Grid { //@TODO move to Widget namespace
-    private Mail.NestedListBox listbox;
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
+public class Envoyer.Sidebar : Gtk.Grid { //@TODO move to Widget namespace
+    private Envoyer.NestedListBox listbox;
 
     public signal void session_up ();
 
@@ -14,7 +21,7 @@ public class Mail.Sidebar : Gtk.Grid { //@TODO move to Widget namespace
         orientation = Gtk.Orientation.VERTICAL;
 
         var scroll_box = new Gtk.ScrolledWindow (null, null);
-        listbox = new Mail.NestedListBox ();
+        listbox = new Envoyer.NestedListBox ();
         listbox.set_size_request (200,250);
         scroll_box.set_size_request (200,250);
         listbox.vexpand = true;
@@ -37,16 +44,16 @@ public class Mail.Sidebar : Gtk.Grid { //@TODO move to Widget namespace
     private void build_list () {
         clear_list ();
         
-        Mail.Util.SidebarBuilder.build_list (listbox);
+        Envoyer.Util.SidebarBuilder.build_list (listbox);
     }
 
     private void connect_signals () {
         listbox.row_selected.connect ((row) => {
-            if (row == null || !(row is Mail.FolderItem)) {
+            if (row == null || !(row is Envoyer.FolderItem)) {
                 return;
             }
             
-            folder_threads_list.load_folder (((Mail.FolderItem) row).folder);
+            folder_threads_list.load_folder (((Envoyer.FolderItem) row).folder);
             folder_threads_list.grab_focus ();
         });
         

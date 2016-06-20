@@ -6,17 +6,17 @@ include (ValaPrecompile)
 include (ValaVersion)
 
 set (DATADIR "${CMAKE_INSTALL_PREFIX}/share")
-set (PKGDATADIR "${DATADIR}/pantheon-mail-ng")
-set (GETTEXT_PACKAGE "pantheon-mail-ng")
+set (PKGDATADIR "${DATADIR}/envoyer")
+set (GETTEXT_PACKAGE "envoyer")
 set (RELEASE_NAME "TARS")
 set (VERSION "0.1")
 set (VERSION_INFO "Development")
 set (CMAKE_C_FLAGS "-ggdb")
 set (PREFIX ${CMAKE_INSTALL_PREFIX})
 set (DOLLAR "$")
-set (APP_NAME "Mail-ng")
-set (PROJECT_FQDN "org.pantheon.mail-ng")
-set (PROJECT_DESCRIPTION "Next gen components for the mail app")
+set (APP_NAME "Envoyer")
+set (PROJECT_FQDN "org.pantheon.envoyer")
+set (PROJECT_DESCRIPTION "Mail for the Linux desktop")
 
 # disable C compiler warnings
 add_definitions (-w)
@@ -30,17 +30,13 @@ add_subdirectory (po)
 add_subdirectory (schemas)
 add_subdirectory (src)
 
-
-
-
-
 install(TARGETS ${pantheon-mail-ng} RUNTIME
   DESTINATION bin)
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/pantheon-mail-ng.desktop
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/envoyer.desktop
   DESTINATION ${DATADIR}/applications/)
 
 #install assets
 file(GLOB assets "${CMAKE_CURRENT_SOURCE_DIR}/data/assets/*")
 install (FILES ${assets}
-DESTINATION ${DATADIR}/pantheon-mail-ng/)
+DESTINATION ${DATADIR}/envoyer/)

@@ -55,7 +55,7 @@ set(VALA_OPTIONS
     ${EXTRA_VALA_OPTIONS}
 )
 
-vala_precompile(VALA_C pantheon-mail-ng	
+vala_precompile(VALA_C envoyer
 	Main.vala
     Application.vala
 	Services/Session.vala 
@@ -86,10 +86,10 @@ PACKAGES
 OPTIONS  
 	${VALA_OPTIONS}
 GENERATE_HEADER
-	pantheon-mail-ng
+	envoyer
 GENERATE_VAPI
-	pantheon-mail-ng
+	envoyer
 )
 
-add_executable(pantheon-mail-ng ${VALA_C} ${generated_resources})
+add_executable(envoyer ${VALA_C} ${generated_resources})
 

@@ -1,6 +1,13 @@
-public class Mail.Models.UnifiedFolderChild : Mail.Models.IFolder, GLib.Object {
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
+public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Object {
     private E.Source identity_source; //@TODO write a wrapper model for E.Source
-    private Mail.Models.Folder _folder;
+    private Envoyer.Models.Folder _folder;
 
     public bool is_inbox { get { return _folder.is_inbox; } }
     public bool is_trash { get { return _folder.is_trash; } }
@@ -18,11 +25,11 @@ public class Mail.Models.UnifiedFolderChild : Mail.Models.IFolder, GLib.Object {
     public uint unread_count { get { return _folder.unread_count; } }
     public uint total_count { get { return _folder.total_count; } }
 
-    public Gee.LinkedList<Mail.Models.ConversationThread> threads_list { get { return _folder.threads_list; } }
+    public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { get { return _folder.threads_list; } }
 
     public string display_name { get { return identity_source.get_display_name (); } }
 
-    public UnifiedFolderChild (Mail.Models.Folder folder, E.Source identity_source) {
+    public UnifiedFolderChild (Envoyer.Models.Folder folder, E.Source identity_source) {
         this.identity_source = identity_source;
         _folder = folder;
 

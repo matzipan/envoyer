@@ -1,8 +1,8 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Mail-ng
-Comment=Next generation mail app
-Exec=/usr/bin/pantheon-mail-ng
+Name=Envoyer
+Comment=Mail for the Linux desktop
+Exec=/usr/bin/envoyer
 Icon=internet-mail
 Terminal=false
 Type=Application

@@ -1,4 +1,11 @@
-public interface Mail.Models.IFolder : GLib.Object {
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
+public interface Envoyer.Models.IFolder : GLib.Object {
     public abstract bool is_inbox { get; }
     public abstract bool is_trash { get; }
     public abstract bool is_outbox { get; }
@@ -19,7 +26,7 @@ public interface Mail.Models.IFolder : GLib.Object {
     public abstract signal void total_count_changed (string new_name);
     public abstract signal void display_name_changed (string new_name);
 
-    public abstract Gee.LinkedList<Mail.Models.ConversationThread> threads_list { get; }
+    public abstract Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { get; }
 
     public abstract string display_name { get; }
     

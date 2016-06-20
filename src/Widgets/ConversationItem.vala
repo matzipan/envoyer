@@ -1,9 +1,16 @@
-public class Mail.ConversationItem : Gtk.ListBoxRow {
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
+public class Envoyer.ConversationItem : Gtk.ListBoxRow {
     private Gtk.Grid grid;
     private Gtk.Label subject;
-    private Mail.Models.ConversationThread thread;
+    private Envoyer.Models.ConversationThread thread;
 
-    public ConversationItem (Mail.Models.ConversationThread thread) {
+    public ConversationItem (Envoyer.Models.ConversationThread thread) {
         this.thread = thread;
         build_ui ();
     }

@@ -1,8 +1,15 @@
-public class Mail.UnifiedFolderParentItem : Mail.SimpleExpandableItem {
-    private Mail.Models.UnifiedFolderParent parent_folder;
-    private Mail.FolderLabel folder_label;
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
 
-    public UnifiedFolderParentItem (Mail.Models.UnifiedFolderParent parent_folder) {
+public class Envoyer.UnifiedFolderParentItem : Envoyer.SimpleExpandableItem {
+    private Envoyer.Models.UnifiedFolderParent parent_folder;
+    private Envoyer.FolderLabel folder_label;
+
+    public UnifiedFolderParentItem (Envoyer.Models.UnifiedFolderParent parent_folder) {
         base.with_no_label ();
 
         this.parent_folder = parent_folder;
@@ -12,7 +19,7 @@ public class Mail.UnifiedFolderParentItem : Mail.SimpleExpandableItem {
     }
     
     private void build_ui () {
-        folder_label = new Mail.FolderLabel(parent_folder);
+        folder_label = new Envoyer.FolderLabel(parent_folder);
 
         grid.add (folder_label);
         
@@ -26,8 +33,8 @@ public class Mail.UnifiedFolderParentItem : Mail.SimpleExpandableItem {
         //@TODO parent_folder.child_removed.connect (add);
     }
     
-    private new void add(Mail.Models.UnifiedFolderChild child) {
-        ((Mail.SimpleExpandableItem) this).add(new Mail.UnifiedFolderChildItem (child));
+    private new void add(Envoyer.Models.UnifiedFolderChild child) {
+        ((Envoyer.SimpleExpandableItem) this).add(new Envoyer.UnifiedFolderChildItem (child));
     }
 
 }

@@ -1,4 +1,11 @@
-public class Mail.SimpleExpandableItem : Mail.ExpandableItem {
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
+public class Envoyer.SimpleExpandableItem : Envoyer.ExpandableItem {
     protected Gtk.Grid grid { get; private set; }
     private Gtk.ToggleButton expansion_trigger;
     private Gtk.Label title;

@@ -1,8 +1,13 @@
-
-
-public class Mail.FolderThreadsList : Gtk.Grid { //@TODO move to Widget namespace
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
+public class Envoyer.FolderThreadsList : Gtk.Grid { //@TODO move to Widget namespace
     private Gtk.ListBox listbox; //@TODO abstract this
-    private Mail.Models.IFolder current_folder;
+    private Envoyer.Models.IFolder current_folder;
 
     //@TODO persist scroller state
 
@@ -15,7 +20,7 @@ public class Mail.FolderThreadsList : Gtk.Grid { //@TODO move to Widget namespac
         //@TODO
     }
     
-    public void load_folder (Mail.Models.IFolder folder) {
+    public void load_folder (Envoyer.Models.IFolder folder) {
         current_folder = folder;
                         
         render_list();
@@ -48,15 +53,15 @@ public class Mail.FolderThreadsList : Gtk.Grid { //@TODO move to Widget namespac
         clear_list ();
 
         foreach (var thread in current_folder.threads_list) { 
-            listbox.add(new Mail.ConversationItem(thread));
+            listbox.add(new Envoyer.ConversationItem(thread));
         }
     }
 
     private void connect_signals () {
         listbox.row_selected.connect ((row) => {
             if (row == null) return;
-            //if (row is Mail.FolderItem  ((Mail.FolderItem)row).page.full_path == full_path)
-            // @TODO editor.load_file (((Mail.PageItem) row).page);
+            //if (row is Envoyer.FolderItem  ((Envoyer.FolderItem)row).page.full_path == full_path)
+            // @TODO editor.load_file (((Envoyer.PageItem) row).page);
             //editor.give_focus ();
         });
     }

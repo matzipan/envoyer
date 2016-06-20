@@ -1,2 +1,2 @@
 include (GSettings)
-#add_schema ("org.pantheon.notes.gschema.xml")
+#add_schema ("org.pantheon.envoyer.gschema.xml")

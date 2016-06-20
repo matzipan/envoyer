@@ -1,7 +1,14 @@
-public class Mail.Window : Gtk.ApplicationWindow {
+/* 
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+
+public class Envoyer.Window : Gtk.ApplicationWindow {
     public signal void session_up ();
 
-    private Mail.Headerbar headerbar;
+    private Envoyer.Headerbar headerbar;
     private Gtk.Paned pane;
 
     public Window (Gtk.Application app) {
@@ -18,13 +25,13 @@ public class Mail.Window : Gtk.ApplicationWindow {
 	}
     
     private void build_ui () {
-        headerbar = new Mail.Headerbar ();
+        headerbar = new Envoyer.Headerbar ();
         headerbar.set_title (Constants.APP_NAME);
         set_titlebar (headerbar);
 
         pane = new Gtk.Paned (Gtk.Orientation.HORIZONTAL);
-        folder_threads_list = new Mail.FolderThreadsList ();
-        sidebar = new Mail.Sidebar ();
+        folder_threads_list = new Envoyer.FolderThreadsList ();
+        sidebar = new Envoyer.Sidebar ();
 
         pane.pack1 (sidebar, false, false);
         pane.pack2 (folder_threads_list, true, false);

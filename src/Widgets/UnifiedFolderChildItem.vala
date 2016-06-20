@@ -1,7 +1,14 @@
-public class Mail.UnifiedFolderChildItem : Mail.FolderItem {
+/*
+ * Copyright 2011-2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+
+public class Envoyer.UnifiedFolderChildItem : Envoyer.FolderItem {
     public signal void unread_count_changed (uint new_count);
 
-    public UnifiedFolderChildItem (Mail.Models.UnifiedFolderChild folder) {
+    public UnifiedFolderChildItem (Envoyer.Models.UnifiedFolderChild folder) {
         base (folder);
 
         connect_signals ();
