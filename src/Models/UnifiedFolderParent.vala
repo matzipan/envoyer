@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
@@ -114,8 +114,29 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
             return folder_type.to_string ();
         }
     }
-    
-    public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { get { return null; } } //@TODO merge this from chidlren
+
+    public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list {
+        owned get {
+            // Create a copy of the children so that it's safe to iterate it
+            // (e.g. by using foreach) while removing items.
+            var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> ();
+
+            foreach (var child in _children) {
+                threads_list_copy.add_all (child.threads_list);
+            }
+            
+            //@TODO async and yield
+            threads_list_copy.sort ((first, second) => { // sort descendingly
+                if(first.time_received > second.time_received) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+
+            return threads_list_copy;
+        }
+    }
 
     public signal void child_added (Envoyer.Models.UnifiedFolderChild new_child);
     public signal void child_removed (Envoyer.Models.UnifiedFolderChild new_child); //@TODO
@@ -135,6 +156,16 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
         child_added (child);
     }
 
-    public Camel.MessageInfo get_message_info (string uid) { return null; } //@TODO search through the children
+    public Camel.MessageInfo get_message_info (string uid) {
+        foreach (var child in _children) {
+            var message_info = child.get_message_info (uid);
+            
+            if(message_info != null) {
+                return message_info;
+            }
+        }
+        
+        assert_not_reached ();
+    }
 
 }

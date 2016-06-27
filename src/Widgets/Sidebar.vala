@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
@@ -49,12 +49,19 @@ public class Envoyer.Sidebar : Gtk.Grid { //@TODO move to Widget namespace
 
     private void connect_signals () {
         listbox.row_selected.connect ((row) => {
-            if (row == null || !(row is Envoyer.FolderItem)) {
+            if (row == null) {
                 return;
             }
+
+            if(row is Envoyer.FolderItem) {
+                folder_threads_list.load_folder (((Envoyer.FolderItem) row).folder);
+                folder_threads_list.grab_focus ();
+            }
             
-            folder_threads_list.load_folder (((Envoyer.FolderItem) row).folder);
-            folder_threads_list.grab_focus ();
+            if(row is Envoyer.UnifiedFolderParentItem) {
+                folder_threads_list.load_folder (((Envoyer.UnifiedFolderParentItem) row).folder);
+                folder_threads_list.grab_focus ();
+            }
         });
         
         session_up.connect (build_list);

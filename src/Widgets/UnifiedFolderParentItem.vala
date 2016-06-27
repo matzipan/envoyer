@@ -5,8 +5,10 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-public class Envoyer.UnifiedFolderParentItem : Envoyer.SimpleExpandableItem {
+public class Envoyer.UnifiedFolderParentItem : Envoyer.IFolderItem, Envoyer.SimpleExpandableItem {
     private Envoyer.Models.UnifiedFolderParent parent_folder;
+    public Envoyer.Models.IFolder folder { get { return parent_folder; } }
+
     private Envoyer.FolderLabel folder_label;
     
     public UnifiedFolderParentItem (Envoyer.Models.UnifiedFolderParent parent_folder) {

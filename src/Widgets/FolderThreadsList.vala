@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
@@ -51,8 +51,8 @@ public class Envoyer.FolderThreadsList : Gtk.Grid { //@TODO move to Widget names
     
     private void render_list () {
         clear_list ();
-
-        foreach (var thread in current_folder.threads_list) { 
+        
+        foreach (var thread in current_folder.threads_list) {
             listbox.add(new Envoyer.ConversationItem(thread));
         }
     }

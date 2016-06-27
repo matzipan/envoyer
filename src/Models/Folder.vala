@@ -75,23 +75,28 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
 
     public uint unread_count { get { return folder_info.unread; } }
     public uint total_count { get { return folder_info.total; } }
-
-    private Gee.LinkedList<Envoyer.Models.ConversationThread> _threads_list; 
     
     //@TODO trigger unread_count_changed
     //@TODO trigger total_count_changed
 
     public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { 
-        get {  //@TODO async
-            if(_threads_list == null) {
-                _threads_list = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
-                
-                folder.get_uids().foreach((uid) => {
-                    _threads_list.add(new Envoyer.Models.ConversationThread(uid, this));
-                });
-            }
-                        
-            return _threads_list;     
+        owned get {  //@TODO async
+            var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
+
+            folder.get_uids().foreach((uid) => {
+                threads_list_copy.add(new Envoyer.Models.ConversationThread(uid, this));
+            });
+            
+            //@TODO async and yield
+            threads_list_copy.sort ((first, second) => { // sort descendingly
+                if(first.time_received > second.time_received) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+
+            return threads_list_copy;
         }
     }
     

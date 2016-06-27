@@ -1,17 +1,19 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-public class Envoyer.FolderItem : Gtk.ListBoxRow {
+public class Envoyer.FolderItem : Envoyer.IFolderItem, Gtk.ListBoxRow {
     private Gtk.Grid grid;
     private Envoyer.FolderLabel folder_label;
-    public Envoyer.Models.IFolder folder { get; private set; }
+    
+    private Envoyer.Models.IFolder _folder;
+    public Envoyer.Models.IFolder folder { get { return _folder; } }
 
     public FolderItem (Envoyer.Models.IFolder folder) {
-        this.folder = folder;
+        _folder = folder;
 
         build_ui ();
     }

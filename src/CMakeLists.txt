@@ -62,6 +62,7 @@ vala_precompile(VALA_C envoyer
     Services/Settings.vala
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala
+    Widgets/IFolderItem.vala
     Widgets/ExpandableItem.vala
     Widgets/SimpleExpandableItem.vala
     Widgets/UnifiedFolderParentItem.vala

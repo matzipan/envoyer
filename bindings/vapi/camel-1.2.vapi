@@ -647,7 +647,7 @@ namespace Camel {
 		[CCode (cname = "camel_message_info_ptr")]
 		public void* get_ptr (Camel.MessageInfoField id);
 		[CCode (cname = "camel_message_info_time")]
-		public Posix.tm? get_time (int id);
+		public time_t get_time (int id);
 		[CCode (cname = "camel_message_info_uint32")]
 		public uint32 get_uint32 (int id);
 		public Camel.MessageInfo @ref ();
