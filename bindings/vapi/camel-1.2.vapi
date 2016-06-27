@@ -2190,6 +2190,7 @@ namespace Camel {
 		VTRASH,
 		SHARED_TO_ME,
 		SHARED_BY_ME,
+		READONLY,
 		TYPE_NORMAL,
 		TYPE_INBOX,
 		TYPE_OUTBOX,
@@ -2204,9 +2205,7 @@ namespace Camel {
 		TYPE_ALL,
 		TYPE_ARCHIVE,
 		TYPE_DRAFTS,
-		TYPE_IMPORTANT,
-		READONLY,
-
+		TYPE_IMPORTANT
 	}
 	[CCode (cheader_filename = "camel/camel.h", cprefix = "CAMEL_FOLDER_SUMMARY_", has_type_id = false)]
 	[Flags]
@@ -2492,7 +2491,21 @@ namespace Camel {
 		SHARED_TO_ME,
 		SHARED_BY_ME,
 		READONLY,
-		FLAGGED
+		TYPE_NORMAL,
+		TYPE_INBOX,
+		TYPE_OUTBOX,
+		TYPE_TRASH,
+		TYPE_JUNK,
+		TYPE_SENT,
+		TYPE_CONTACTS,
+		TYPE_EVENTS,
+		TYPE_MEMOS,
+		TYPE_TASKS,
+		TYPE_FLAGGED,
+		TYPE_ALL,
+		TYPE_ARCHIVE,
+		TYPE_DRAFTS,
+		TYPE_IMPORTANT
 	}
 	[CCode (cheader_filename = "camel/camel.h", cprefix = "CAMEL_STORE_", type_id = "camel_store_permission_flags_get_type ()")]
 	[Flags]
@@ -2670,6 +2683,8 @@ namespace Camel {
 	public const int FOLDER_TYPE_BIT;
 	[CCode (cheader_filename = "camel/camel.h", cname = "CAMEL_FOLDER_TYPE_MASK")]
 	public const int FOLDER_TYPE_MASK;
+	[CCode (cheader_filename = "camel/camel.h", cname = "CAMEL_STORE_INFO_FOLDER_TYPE_MASK")]
+	public const int STORE_INFO_FOLDER_TYPE_MASK;
 	[CCode (cheader_filename = "camel/camel.h", cname = "CAMEL_FOLD_MAX_SIZE")]
 	public const int FOLD_MAX_SIZE;
 	[CCode (cheader_filename = "camel/camel.h", cname = "CAMEL_FOLD_SIZE")]

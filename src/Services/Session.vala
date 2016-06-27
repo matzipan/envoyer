@@ -32,18 +32,22 @@ public class Envoyer.Services.Session : Camel.Session {
                 E.SourceCamel.configure_service(source_item, service); //@TODO
                 
                 message("%s", online ? "Online" : "Not online");
-                
-                message("%s", ((E.SourceMailAccount) extension).get_needs_initial_setup() ? "Needs setup" : "Does not need setup");
-                
+
+                /*message("%s", ((E.SourceMailAccount) extension).get_needs_initial_setup() ? "Needs setup" : "Does not need setup");*/
+
                 /*((Camel.OfflineStore) service).set_online_sync(true);
 
                 ((Camel.OfflineStore) service).connect_sync();*/
 
-                GLib.HashTable<weak string,weak string> out_save_setup;
-                 
-                ((Camel.OfflineStore) service).initial_setup_sync(out out_save_setup); // https://developer.gnome.org/camel/3.19/CamelStore.html#camel-store-initial-setup-sync
+                //GLib.HashTable<weak string,weak string> out_save_setup;
+
+                //((Camel.OfflineStore) service).initial_setup_sync(out out_save_setup); // https://developer.gnome.org/camel/3.19/CamelStore.html#camel-store-initial-setup-sync
                 // https://developer.gnome.org/eds/3.20/eds-ESourceCamel.html
-                
+
+                //out_save_setup.for_each((key, val) => {
+            	//	message ("%s => %s\n", key, val);
+            	//});
+
                 ((Camel.Store) service).synchronize_sync(true);
                 
             });
