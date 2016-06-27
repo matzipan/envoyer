@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
@@ -8,7 +8,7 @@
 public class Envoyer.UnifiedFolderParentItem : Envoyer.SimpleExpandableItem {
     private Envoyer.Models.UnifiedFolderParent parent_folder;
     private Envoyer.FolderLabel folder_label;
-
+    
     public UnifiedFolderParentItem (Envoyer.Models.UnifiedFolderParent parent_folder) {
         base.with_no_label ();
 

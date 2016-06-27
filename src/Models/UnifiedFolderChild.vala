@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
@@ -14,13 +14,15 @@ public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Ob
     public bool is_outbox { get { return _folder.is_outbox; } }
     public bool is_sent { get { return _folder.is_sent; } }
     public bool is_normal { get { return _folder.is_normal; } }
-    public bool is_junk { get { return _folder.is_junk; } }
+    public bool is_spam { get { return _folder.is_spam; } }
     public bool is_starred { get { return _folder.is_starred; } }
     public bool is_all_mail { get { return _folder.is_all_mail; } }
     public bool is_important { get { return _folder.is_important; } }
     public bool is_drafts { get { return _folder.is_drafts; } }
     public bool is_archive { get { return _folder.is_archive; } }
     public bool is_unified { get { return _folder.is_unified; } }
+    
+    public Envoyer.Models.IFolder.Type folder_type { get { return _folder.folder_type; } }
 
     public uint unread_count { get { return _folder.unread_count; } }
     public uint total_count { get { return _folder.total_count; } }

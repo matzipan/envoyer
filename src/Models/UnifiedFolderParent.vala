@@ -6,9 +6,8 @@
  */
 
 public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.Object  {
-    private string name;
     private Gee.ArrayList<Envoyer.Models.UnifiedFolderChild> _children = new Gee.ArrayList<Envoyer.Models.UnifiedFolderChild> ();
-    
+
     public Gee.Collection<Envoyer.Models.UnifiedFolderChild> children {
         owned get {
             // Create a copy of the children so that it's safe to iterate it
@@ -21,101 +20,57 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
 
     public bool is_inbox { 
         get { 
-            if(_children.is_empty) {
-                return false;
-            } else {
-                return _children[0].is_inbox;
-            }
+            return folder_type == Envoyer.Models.IFolder.Type.INBOX;
         }
     }
     public bool is_trash { 
-        get { 
-            if(_children.is_empty) { 
-                return false;
-            } else {
-                return _children[0].is_trash;
-            }
+        get {
+            return folder_type == Envoyer.Models.IFolder.Type.TRASH;
         }
     }
     public bool is_outbox { 
         get { 
-            if(_children.is_empty) {
-                return false;
-            } else {
-                return _children[0].is_outbox;
-            }
+            return folder_type == Envoyer.Models.IFolder.Type.OUTBOX;
         }
     }
     public bool is_sent { 
         get { 
-            if(_children.is_empty) {
-                return false;
-            } else {
-                return _children[0].is_sent;
-            }
+            return folder_type == Envoyer.Models.IFolder.Type.SENT;
         }
     }
     public bool is_normal { 
         get { 
-            if(_children.is_empty) {
-                return false;
-            } else {
-                return _children[0].is_normal;
-            }
+            return folder_type == Envoyer.Models.IFolder.Type.NORMAL;
         }
     }
-    public bool is_junk { 
+    public bool is_spam {
         get { 
-            if(_children.is_empty) {
-                return false;
-            } else {
-                return _children[0].is_junk;
-            }
+            return folder_type == Envoyer.Models.IFolder.Type.SPAM;
         }
     }
     public bool is_starred {
         get { 
-            if(_children.is_empty) {
-                return false;
-            } else {
-                return _children[0].is_starred;
-            }
+            return folder_type == Envoyer.Models.IFolder.Type.STARRED;
         }
     }
     public bool is_all_mail { 
         get { 
-            if(_children.is_empty) {
-                return false;
-            } else {
-                return _children[0].is_all_mail;
-            }
+            return folder_type == Envoyer.Models.IFolder.Type.ALL;
         }
     }
     public bool is_important { 
         get { 
-            if(_children.is_empty) {
-                return false;
-            } else {
-                return _children[0].is_important;
-            }
+            return folder_type == Envoyer.Models.IFolder.Type.IMPORTANT;
         }
     }
     public bool is_drafts { 
         get { 
-            if(_children.is_empty) {
-                return false;
-            } else {
-                return _children[0].is_drafts;
-            }
+            return folder_type == Envoyer.Models.IFolder.Type.DRAFTS;
         }
     }
     public bool is_archive { 
-        get { 
-            if(_children.is_empty) {
-                return false;
-            } else {
-                return _children[0].is_archive;
-            }
+        get {
+            return folder_type == Envoyer.Models.IFolder.Type.ARCHIVE;
         }
     }
     public bool is_unified { get { return true; } }
@@ -132,6 +87,12 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
         }
     }
     
+    public bool is_empty {
+        get {
+            return _children.is_empty;
+        }
+    }
+
     public uint total_count { 
         get {
             uint new_total_count = 0;
@@ -143,17 +104,24 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
             return new_total_count;
         }
     }
+    
+    private Envoyer.Models.IFolder.Type _folder_type = Envoyer.Models.IFolder.Type.NORMAL;
 
+    public Envoyer.Models.IFolder.Type folder_type { get { return _folder_type; } }
 
+    public string display_name {
+        get { 
+            return folder_type.to_string ();
+        }
+    }
+    
     public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { get { return null; } } //@TODO merge this from chidlren
 
-    public string display_name { get { return name; } }
-    
     public signal void child_added (Envoyer.Models.UnifiedFolderChild new_child);
     public signal void child_removed (Envoyer.Models.UnifiedFolderChild new_child); //@TODO
-
-    public UnifiedFolderParent (string name) {
-        this.name = name;
+    
+    public UnifiedFolderParent (Envoyer.Models.IFolder.Type folder_type) {
+        _folder_type = folder_type;
     }
 
     public void add(Envoyer.Models.UnifiedFolderChild child) {

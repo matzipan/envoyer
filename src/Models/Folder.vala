@@ -14,13 +14,64 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     public bool is_outbox { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_OUTBOX; } }
     public bool is_sent { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_SENT; } }
     public bool is_normal { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_NORMAL; } }
-    public bool is_junk { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_JUNK; } }
+    public bool is_spam { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_JUNK; } }
     public bool is_starred { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_FLAGGED; } }
     public bool is_all_mail { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_ALL; }  }
     public bool is_important { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_IMPORTANT; } }
     public bool is_drafts { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_DRAFTS; } }
     public bool is_archive { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_ARCHIVE; } }
     public bool is_unified { get { return false; } }
+    
+    public Envoyer.Models.IFolder.Type folder_type {
+        get {
+            if (is_inbox) {
+                return Envoyer.Models.IFolder.Type.INBOX;
+            }
+
+            if (is_trash) {
+                return Envoyer.Models.IFolder.Type.TRASH;
+            }
+            
+            if (is_outbox) {
+                return Envoyer.Models.IFolder.Type.OUTBOX;
+            }
+
+            if (is_sent) {
+                return Envoyer.Models.IFolder.Type.SENT;
+            }
+            
+            if (is_normal) {
+                return Envoyer.Models.IFolder.Type.NORMAL;
+            }
+            
+            if (is_spam) {
+                return Envoyer.Models.IFolder.Type.SPAM;
+            }
+            
+            if (is_starred) {
+                return Envoyer.Models.IFolder.Type.STARRED;
+            }
+            
+            if (is_all_mail) {
+                return Envoyer.Models.IFolder.Type.ALL;
+            }
+            
+            if (is_important) {
+                return Envoyer.Models.IFolder.Type.IMPORTANT;
+            }
+            
+            if (is_drafts) {
+                return Envoyer.Models.IFolder.Type.DRAFTS;
+            }
+
+            if (is_archive) {
+                return Envoyer.Models.IFolder.Type.ARCHIVE;
+            }
+
+            assert_not_reached ();
+        }
+    
+    }
 
     public uint unread_count { get { return folder_info.unread; } }
     public uint total_count { get { return folder_info.total; } }

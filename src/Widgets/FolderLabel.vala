@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
@@ -75,7 +75,7 @@ public class Envoyer.FolderLabel : Gtk.Grid {
             return "mail-outbox";
         } else if(folder.is_sent) {
             return "mail-sent";
-        } else if(folder.is_junk) {
+        } else if(folder.is_spam) {
             return "edit-flag";
         } else if(folder.is_starred) {
             return "starred";
