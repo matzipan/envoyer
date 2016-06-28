@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
@@ -6,7 +6,7 @@
  */
  
 public class Envoyer.Util.SidebarBuilder : GLib.Object {
-    public static void build_list (Envoyer.NestedListBox listbox) {
+    public static void build_list (Envoyer.FutureGranite.NestedListBox listbox) {
         var summaries_geelist = build_summaries_list ();
 
         foreach (Envoyer.Models.IFolder.Type type in Envoyer.Models.IFolder.Type.all()) {
@@ -25,17 +25,17 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
             }
             
             if (!unified_folder.is_empty) {
-                listbox.add (new Envoyer.UnifiedFolderParentItem (unified_folder));
+                listbox.add (new Envoyer.Widgets.UnifiedFolderParentItem (unified_folder));
             }
         }
 
 
         foreach (var summary in summaries_geelist) {
-            var account_folders_parent = new Envoyer.AccountFoldersParentItem (summary.identity_source);
+            var account_folders_parent = new Envoyer.Widgets.AccountFoldersParentItem (summary.identity_source);
 
             foreach (var folder in summary.folders_list) {
                 if (folder.is_normal) {
-                    account_folders_parent.add (new Envoyer.FolderItem (folder));
+                    account_folders_parent.add (new Envoyer.Widgets.FolderItem (folder));
                 }
             }
             

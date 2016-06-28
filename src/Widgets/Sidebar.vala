@@ -5,8 +5,8 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Sidebar : Gtk.Grid { //@TODO move to Widget namespace
-    private Envoyer.NestedListBox listbox;
+public class Envoyer.Widgets.Sidebar : Gtk.Grid { //@TODO move to Widget namespace
+    private Envoyer.FutureGranite.NestedListBox listbox;
 
     public signal void session_up ();
 
@@ -21,7 +21,7 @@ public class Envoyer.Sidebar : Gtk.Grid { //@TODO move to Widget namespace
         orientation = Gtk.Orientation.VERTICAL;
 
         var scroll_box = new Gtk.ScrolledWindow (null, null);
-        listbox = new Envoyer.NestedListBox ();
+        listbox = new Envoyer.FutureGranite.NestedListBox ();
         listbox.set_size_request (200,250);
         scroll_box.set_size_request (200,250);
         listbox.vexpand = true;
@@ -53,13 +53,13 @@ public class Envoyer.Sidebar : Gtk.Grid { //@TODO move to Widget namespace
                 return;
             }
 
-            if(row is Envoyer.FolderItem) {
-                folder_threads_list.load_folder (((Envoyer.FolderItem) row).folder);
+            if(row is Envoyer.Widgets.FolderItem) {
+                folder_threads_list.load_folder (((Envoyer.Widgets.FolderItem) row).folder);
                 folder_threads_list.grab_focus ();
             }
             
-            if(row is Envoyer.UnifiedFolderParentItem) {
-                folder_threads_list.load_folder (((Envoyer.UnifiedFolderParentItem) row).folder);
+            if(row is Envoyer.Widgets.UnifiedFolderParentItem) {
+                folder_threads_list.load_folder (((Envoyer.Widgets.UnifiedFolderParentItem) row).folder);
                 folder_threads_list.grab_focus ();
             }
         });

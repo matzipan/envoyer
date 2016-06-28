@@ -6,11 +6,11 @@
  */
  
 namespace Envoyer {
-    public Envoyer.Sidebar sidebar;
-    public Envoyer.FolderThreadsList folder_threads_list;
+    public Envoyer.Widgets.Sidebar sidebar;
+    public Envoyer.Widgets.FolderThreadsList folder_threads_list;
     public Envoyer.Services.Settings settings;
     public Envoyer.Services.Session session;
-    public Envoyer.Window window;        
+    public Envoyer.Widgets.Window window;
 }
 
 public class Envoyer.Application : Granite.Application {
@@ -28,7 +28,7 @@ public class Envoyer.Application : Granite.Application {
         if (!running) {
             settings = new Envoyer.Services.Settings ();
             
-            window = new Envoyer.Window (this);
+            window = new Envoyer.Widgets.Window (this);
             this.add_window (window);
 
             running = true;

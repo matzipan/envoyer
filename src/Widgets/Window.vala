@@ -1,14 +1,14 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-public class Envoyer.Window : Gtk.ApplicationWindow {
+public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
     public signal void session_up ();
 
-    private Envoyer.Headerbar headerbar;
+    private Envoyer.Widgets.Headerbar headerbar;
     private Gtk.Paned pane;
 
     public Window (Gtk.Application app) {
@@ -25,13 +25,13 @@ public class Envoyer.Window : Gtk.ApplicationWindow {
 	}
     
     private void build_ui () {
-        headerbar = new Envoyer.Headerbar ();
+        headerbar = new Envoyer.Widgets.Headerbar ();
         headerbar.set_title (Constants.APP_NAME);
         set_titlebar (headerbar);
 
         pane = new Gtk.Paned (Gtk.Orientation.HORIZONTAL);
-        folder_threads_list = new Envoyer.FolderThreadsList ();
-        sidebar = new Envoyer.Sidebar ();
+        folder_threads_list = new Envoyer.Widgets.FolderThreadsList ();
+        sidebar = new Envoyer.Widgets.Sidebar ();
 
         pane.pack1 (sidebar, false, false);
         pane.pack2 (folder_threads_list, true, false);

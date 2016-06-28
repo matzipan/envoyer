@@ -5,18 +5,18 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.NestedListBox : Gtk.ListBox {
-    private Gee.ArrayList<Envoyer.ExpandableItem> root_items_list;
+public class Envoyer.FutureGranite.NestedListBox : Gtk.ListBox {
+    private Gee.ArrayList<Envoyer.FutureGranite.ExpandableItem> root_items_list;
     
     public NestedListBox () {
-        root_items_list = new Gee.ArrayList<Envoyer.ExpandableItem>();
+        root_items_list = new Gee.ArrayList<Envoyer.FutureGranite.ExpandableItem>();
     }
     
     public new void add (Gtk.ListBoxRow row) {
         ((Gtk.ListBox) this).add(row);
 
-        if(row is Envoyer.ExpandableItem) {
-            var expandable_item_row = (Envoyer.ExpandableItem) row;
+        if(row is Envoyer.FutureGranite.ExpandableItem) {
+            var expandable_item_row = (Envoyer.FutureGranite.ExpandableItem) row;
             
             root_items_list.add(expandable_item_row);
             

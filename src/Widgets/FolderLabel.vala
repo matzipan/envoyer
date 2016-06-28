@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.FolderLabel : Gtk.Grid {
+public class Envoyer.Widgets.FolderLabel : Gtk.Grid {
     private Gtk.Label name_label;
     private Gtk.Label unread_count_label;
     private Gtk.Image icon;

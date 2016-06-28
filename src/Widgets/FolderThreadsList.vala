@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.FolderThreadsList : Gtk.Grid { //@TODO move to Widget namespace
+public class Envoyer.Widgets.FolderThreadsList : Gtk.Grid { //@TODO move to Widget namespace
     private Gtk.ListBox listbox; //@TODO abstract this
     private Envoyer.Models.IFolder current_folder;
 
@@ -53,7 +53,7 @@ public class Envoyer.FolderThreadsList : Gtk.Grid { //@TODO move to Widget names
         clear_list ();
         
         foreach (var thread in current_folder.threads_list) {
-            listbox.add(new Envoyer.ConversationItem(thread));
+            listbox.add(new Envoyer.Widgets.ConversationItem(thread));
         }
     }
 

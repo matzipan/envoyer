@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-public class Envoyer.UnifiedFolderChildItem : Envoyer.FolderItem {
+public class Envoyer.Widgets.UnifiedFolderChildItem : Envoyer.Widgets.FolderItem {
     public signal void unread_count_changed (uint new_count);
 
     public UnifiedFolderChildItem (Envoyer.Models.UnifiedFolderChild folder) {

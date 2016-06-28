@@ -5,9 +5,9 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-public class Envoyer.FolderItem : Envoyer.IFolderItem, Gtk.ListBoxRow {
+public class Envoyer.Widgets.FolderItem : Envoyer.Widgets.IFolderItem, Gtk.ListBoxRow {
     private Gtk.Grid grid;
-    private Envoyer.FolderLabel folder_label;
+    private Envoyer.Widgets.FolderLabel folder_label;
     
     private Envoyer.Models.IFolder _folder;
     public Envoyer.Models.IFolder folder { get { return _folder; } }
@@ -26,7 +26,7 @@ public class Envoyer.FolderItem : Envoyer.IFolderItem, Gtk.ListBoxRow {
 
         set_left_spacing (20);
 
-        grid.add (new Envoyer.FolderLabel(folder));
+        grid.add (new Envoyer.Widgets.FolderLabel(folder));
 
         add (grid);
 

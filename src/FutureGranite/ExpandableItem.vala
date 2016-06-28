@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public abstract class Envoyer.ExpandableItem : Gtk.ListBoxRow {
+public abstract class Envoyer.FutureGranite.ExpandableItem : Gtk.ListBoxRow {
     public signal void child_added (); //@TODO maybe pass the child as a parameter
     public signal void child_removed (); //@TODO maybe pass the child as a parameter
     

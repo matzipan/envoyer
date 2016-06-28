@@ -63,12 +63,12 @@ vala_precompile(VALA_C envoyer
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala
     Widgets/IFolderItem.vala
-    Widgets/ExpandableItem.vala
-    Widgets/SimpleExpandableItem.vala
+    FutureGranite/ExpandableItem.vala
+    FutureGranite/SimpleExpandableItem.vala
     Widgets/UnifiedFolderParentItem.vala
     Widgets/UnifiedFolderChildItem.vala
     Widgets/AccountFoldersParentItem.vala
-    Widgets/NestedListBox.vala
+    FutureGranite/NestedListBox.vala
     Widgets/Sidebar.vala
 	Widgets/ConversationItem.vala
 	Widgets/FolderThreadsList.vala
