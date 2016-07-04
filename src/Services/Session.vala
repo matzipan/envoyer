@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2011-2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
@@ -25,7 +25,6 @@ public class Envoyer.Services.Session : Camel.Session {
 
         get_mail_account_sources().foreach((source_item) => {
                 var extension = source_item.get_extension(E.SOURCE_EXTENSION_MAIL_ACCOUNT);           
-                // setup autorefresh?  https://git.gnome.org/browse/evolution/tree/libemail-engine/e-mail-session.c#n495
 
                 var service = add_service(source_item.get_uid(), ((E.SourceBackend) extension).get_backend_name(), Camel.ProviderType.STORE);
 
@@ -33,23 +32,14 @@ public class Envoyer.Services.Session : Camel.Session {
                 
                 message("%s", online ? "Online" : "Not online");
 
-                /*message("%s", ((E.SourceMailAccount) extension).get_needs_initial_setup() ? "Needs setup" : "Does not need setup");*/
+                ((Camel.OfflineStore) service).set_online_sync(true);
+                ((Camel.OfflineStore) service).connect_sync();
+                ((Camel.OfflineStore) service).prepare_for_offline_sync();
 
-                /*((Camel.OfflineStore) service).set_online_sync(true);
-
-                ((Camel.OfflineStore) service).connect_sync();*/
-
-                //GLib.HashTable<weak string,weak string> out_save_setup;
-
-                //((Camel.OfflineStore) service).initial_setup_sync(out out_save_setup); // https://developer.gnome.org/camel/3.19/CamelStore.html#camel-store-initial-setup-sync
-                // https://developer.gnome.org/eds/3.20/eds-ESourceCamel.html
-
-                //out_save_setup.for_each((key, val) => {
-            	//	message ("%s => %s\n", key, val);
-            	//});
+                // https://developer.gnome.org/eds/3.20/eds-ESourceCamel.html @TODO
 
                 ((Camel.Store) service).synchronize_sync(true);
-                
+
             });
     }
 
