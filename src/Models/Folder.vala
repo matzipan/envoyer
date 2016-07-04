@@ -8,6 +8,7 @@
 public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     private Camel.FolderInfo folder_info;
     private Camel.Folder folder;
+    private Camel.FolderThread thread;
 
     public bool is_inbox { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_INBOX; } }
     public bool is_trash { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_TRASH; } }
@@ -17,7 +18,6 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     public bool is_spam { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_JUNK; } }
     public bool is_starred { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_FLAGGED; } }
     public bool is_all_mail { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_ALL; }  }
-    public bool is_important { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_IMPORTANT; } }
     public bool is_drafts { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_DRAFTS; } }
     public bool is_archive { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_ARCHIVE; } }
     public bool is_unified { get { return false; } }
@@ -56,10 +56,6 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
                 return Envoyer.Models.IFolder.Type.ALL;
             }
             
-            if (is_important) {
-                return Envoyer.Models.IFolder.Type.IMPORTANT;
-            }
-            
             if (is_drafts) {
                 return Envoyer.Models.IFolder.Type.DRAFTS;
             }
@@ -82,10 +78,14 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { 
         owned get {  //@TODO async
             var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
+            
+            var tree = thread.tree;
 
-            folder.get_uids().foreach((uid) => {
-                threads_list_copy.add(new Envoyer.Models.ConversationThread(uid, this));
-            });
+            while (tree != null) {
+                threads_list_copy.add(new Envoyer.Models.ConversationThread(tree->message, this)); //@TODO
+
+                tree = tree.next;
+            }
             
             //@TODO async and yield
             threads_list_copy.sort ((first, second) => { // sort descendingly
@@ -99,15 +99,24 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
             return threads_list_copy;
         }
     }
-    
+
     public string display_name { get { return folder.get_display_name (); } }
     
+
     public Folder(Camel.Folder folder, Camel.OfflineStore service) {
         this.folder = folder;
-        folder_info = service.get_folder_info_sync(folder.dup_full_name(), Camel.StoreGetFolderInfoFlags.RECURSIVE);
+        folder_info = service.get_folder_info_sync (folder.dup_full_name(), Camel.StoreGetFolderInfoFlags.RECURSIVE);
+        thread = new Camel.FolderThread (folder, folder.get_uids(), true);
+
+        //Camel.FolderThread.dump (*thread.tree);
+        /*var tree = (Camel.FolderThreadNode*) thread.tree;*/
+        /*var message_info = tree.message;*/
+
+
+        /*debug((string)message_info.get_ptr (Camel.MessageInfoField.SUBJECT));*/
     }
 
     public Camel.MessageInfo get_message_info (string uid) {
-        return folder.get_message_info(uid);
+        return folder.get_message_info (uid);
     }
 }

@@ -80,9 +80,7 @@ public class Envoyer.Widgets.FolderLabel : Gtk.Grid {
         } else if(folder.is_starred) {
             return "starred";
         } else if(folder.is_drafts) {
-            return "folder-documents";
-        } else if(folder.is_important) {
-            return "mail-mark-important";
+            return "folder-documents";    
         } else if(folder.is_all_mail || folder.is_archive) {
             return "mail-archive";
         } else {

@@ -1704,18 +1704,24 @@ namespace Camel {
 		public void recent_uid (string uid);
 		public void remove_uid (string uid);
 	}
+
 	[CCode (cheader_filename = "camel/camel.h", has_type_id = false)]
-	public struct FolderThread {
+	public class FolderThread {
+		public FolderThread (Camel.Folder folder, GLib.GenericArray uids, bool thread_subject);
+		[CCode (cname = "camel_folder_thread_new_summary")]
+		public FolderThread.with_summary (GLib.GenericArray summary);
 		public uint32 refcount;
 		public uint32 subject;
-		public void* tree;
+		public Camel.FolderThreadNode* tree;
 		public weak Camel.MemChunk node_chunks;
 		public weak Camel.Folder folder;
 		public weak GLib.GenericArray<void*> summary;
-		public void messages_apply (GLib.GenericArray<string> uids);
-		public void messages_ref ();
-		public void messages_unref ();
+		public void apply (GLib.GenericArray<string> uids);
+		public void ref ();
+		public void unref ();
+		public static int dump (Camel.FolderThreadNode node);
 	}
+
 	[CCode (cheader_filename = "camel/camel.h", has_type_id = false)]
 	public struct FolderThreadNode {
 		public void* next;
@@ -2204,8 +2210,7 @@ namespace Camel {
 		TYPE_FLAGGED,
 		TYPE_ALL,
 		TYPE_ARCHIVE,
-		TYPE_DRAFTS,
-		TYPE_IMPORTANT
+		TYPE_DRAFTS
 	}
 	[CCode (cheader_filename = "camel/camel.h", cprefix = "CAMEL_FOLDER_SUMMARY_", has_type_id = false)]
 	[Flags]
@@ -2504,8 +2509,7 @@ namespace Camel {
 		TYPE_FLAGGED,
 		TYPE_ALL,
 		TYPE_ARCHIVE,
-		TYPE_DRAFTS,
-		TYPE_IMPORTANT
+		TYPE_DRAFTS
 	}
 	[CCode (cheader_filename = "camel/camel.h", cprefix = "CAMEL_STORE_", type_id = "camel_store_permission_flags_get_type ()")]
 	[Flags]

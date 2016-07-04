@@ -14,7 +14,6 @@ public interface Envoyer.Models.IFolder : GLib.Object {
     public abstract bool is_spam { get; }
     public abstract bool is_starred { get; }
     public abstract bool is_all_mail { get; }
-    public abstract bool is_important { get; }
     public abstract bool is_drafts { get; }
     public abstract bool is_archive { get; }
     public abstract bool is_unified { get; }
@@ -45,7 +44,6 @@ public interface Envoyer.Models.IFolder : GLib.Object {
         SPAM,
         STARRED,
         ALL,
-        IMPORTANT,
         DRAFTS,
         ARCHIVE;
         
@@ -74,10 +72,7 @@ public interface Envoyer.Models.IFolder : GLib.Object {
 
                 case ALL:
                     return "All Mail";
-                    
-                case IMPORTANT:
-                    return "Important";
-                    
+
                 case DRAFTS:
                     return "Drafts";
                     
@@ -91,7 +86,7 @@ public interface Envoyer.Models.IFolder : GLib.Object {
 
         public static Type[] all() {
             // the order in here dictates the order in the sidebar
-            return { INBOX, STARRED, OUTBOX, IMPORTANT, DRAFTS, SENT, ARCHIVE, ALL, SPAM, TRASH, NORMAL };
+            return { INBOX, STARRED, OUTBOX, DRAFTS, SENT, ARCHIVE, ALL, SPAM, TRASH, NORMAL };
          }
     }
 }

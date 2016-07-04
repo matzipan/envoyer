@@ -58,12 +58,7 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
             return folder_type == Envoyer.Models.IFolder.Type.ALL;
         }
     }
-    public bool is_important { 
-        get { 
-            return folder_type == Envoyer.Models.IFolder.Type.IMPORTANT;
-        }
-    }
-    public bool is_drafts { 
+    public bool is_drafts {
         get { 
             return folder_type == Envoyer.Models.IFolder.Type.DRAFTS;
         }

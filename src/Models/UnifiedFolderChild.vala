@@ -17,7 +17,6 @@ public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Ob
     public bool is_spam { get { return _folder.is_spam; } }
     public bool is_starred { get { return _folder.is_starred; } }
     public bool is_all_mail { get { return _folder.is_all_mail; } }
-    public bool is_important { get { return _folder.is_important; } }
     public bool is_drafts { get { return _folder.is_drafts; } }
     public bool is_archive { get { return _folder.is_archive; } }
     public bool is_unified { get { return _folder.is_unified; } }
