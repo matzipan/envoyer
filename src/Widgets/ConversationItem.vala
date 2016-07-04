@@ -8,7 +8,7 @@
 public class Envoyer.Widgets.ConversationItem : Gtk.ListBoxRow {
     private Gtk.Grid grid;
     private Gtk.Label subject;
-    private Envoyer.Models.ConversationThread thread;
+    public Envoyer.Models.ConversationThread thread { get; private set; }
 
     public ConversationItem (Envoyer.Models.ConversationThread thread) {
         this.thread = thread;

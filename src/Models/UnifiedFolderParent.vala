@@ -162,5 +162,16 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
         
         assert_not_reached ();
     }
-
+    
+    public Camel.MimeMessage get_mime_message (string uid) {
+        foreach (var child in _children) {
+            var message_info = child.get_mime_message (uid);
+            
+            if(message_info != null) {
+                return message_info;
+            }
+        }
+        
+        assert_not_reached ();
+    }
 }

@@ -82,7 +82,7 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
             var tree = thread.tree;
 
             while (tree != null) {
-                threads_list_copy.add(new Envoyer.Models.ConversationThread(tree->message, this)); //@TODO
+                threads_list_copy.add(new Envoyer.Models.ConversationThread(*tree, this));
 
                 tree = tree.next;
             }
@@ -106,17 +106,16 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     public Folder(Camel.Folder folder, Camel.OfflineStore service) {
         this.folder = folder;
         folder_info = service.get_folder_info_sync (folder.dup_full_name(), Camel.StoreGetFolderInfoFlags.RECURSIVE);
-        thread = new Camel.FolderThread (folder, folder.get_uids(), true);
-
-        //Camel.FolderThread.dump (*thread.tree);
-        /*var tree = (Camel.FolderThreadNode*) thread.tree;*/
-        /*var message_info = tree.message;*/
-
-
-        /*debug((string)message_info.get_ptr (Camel.MessageInfoField.SUBJECT));*/
+        thread = new Camel.FolderThread (folder, folder.get_uids(), true); //@TODO I guess free thread?
     }
 
     public Camel.MessageInfo get_message_info (string uid) {
         return folder.get_message_info (uid);
+    }
+    
+    public Camel.MimeMessage get_mime_message (string uid) {
+        folder.synchronize_message_sync (uid); //@TODO async? also, this should probably happen in a more batch manner
+        
+        return folder.get_message_sync (uid); //@TODO async?
     }
 }

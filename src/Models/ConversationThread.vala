@@ -7,7 +7,25 @@
  
 public class Envoyer.Models.ConversationThread : GLib.Object {
     private Envoyer.Models.Folder folder;
-    private Camel.MessageInfo message_info { get; private set; }
+    private Camel.MessageInfo message_info { get { return thread_node.message; } }
+    private Camel.FolderThreadNode thread_node;
+
+    // @TODO if this is to slow, it might be worth doing memoization
+    public Gee.LinkedList<Envoyer.Models.Message> messages {
+        owned get {  //@TODO async
+            var messages_list_copy = new Gee.LinkedList<Envoyer.Models.Message> (null);
+
+            var node = &thread_node;
+
+            while (node != null) {                
+                messages_list_copy.add(new Envoyer.Models.Message(*node, folder));
+
+                node = node.child;
+            }
+
+            return messages_list_copy;
+        }
+    }
 
     public int64 time_received {
         get {
@@ -26,9 +44,9 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
     }
 
     public string subject { get { return (string) message_info.get_ptr (Camel.MessageInfoField.SUBJECT); } }
-    
-    public ConversationThread (Camel.MessageInfo message_info, Envoyer.Models.Folder folder) {
-        this.message_info = message_info;
+
+    public ConversationThread (Camel.FolderThreadNode thread_node, Envoyer.Models.Folder folder) {
+        this.thread_node = thread_node;
         this.folder = folder;
     }
     

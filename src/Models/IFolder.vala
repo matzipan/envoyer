@@ -89,4 +89,6 @@ public interface Envoyer.Models.IFolder : GLib.Object {
             return { INBOX, STARRED, OUTBOX, DRAFTS, SENT, ARCHIVE, ALL, SPAM, TRASH, NORMAL };
          }
     }
+    
+    public abstract Camel.MimeMessage get_mime_message (string uid);
 }

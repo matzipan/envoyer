@@ -14,6 +14,7 @@ set (PKG_DEPS
     granite>=0.3
     gthread-2.0
     gtk+-3.0>=3.9.10
+	webkit2gtk-4.0>=2.10.9
 )
 
 set (VALA_DEPS
@@ -29,6 +30,7 @@ set (VALA_DEPS
     granite
     gtk+-3.0
 	posix
+	webkit2gtk-4.0>=2.10.9
 )
 
 find_package(PkgConfig)
@@ -68,6 +70,8 @@ vala_precompile(VALA_C envoyer
     Widgets/UnifiedFolderParentItem.vala
     Widgets/UnifiedFolderChildItem.vala
     Widgets/AccountFoldersParentItem.vala
+    Widgets/ConversationViewer.vala
+    Widgets/MessageViewer.vala
     FutureGranite/NestedListBox.vala
     Widgets/Sidebar.vala
 	Widgets/ConversationItem.vala
@@ -77,6 +81,7 @@ vala_precompile(VALA_C envoyer
     Util/SidebarBuilder.vala
     Models/Folder.vala
     Models/IFolder.vala
+    Models/Message.vala
     Models/UnifiedFolderChild.vala
     Models/UnifiedFolderParent.vala
     Models/AccountSummary.vala

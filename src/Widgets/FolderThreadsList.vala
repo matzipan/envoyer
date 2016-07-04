@@ -26,12 +26,12 @@ public class Envoyer.Widgets.FolderThreadsList : Gtk.Grid { //@TODO move to Widg
         render_list();
     }
 
-    private void build_ui () { //@TODO abstract this ?
+    private void build_ui () {
         orientation = Gtk.Orientation.VERTICAL;
 
         var scroll_box = new Gtk.ScrolledWindow (null, null);
         listbox = new Gtk.ListBox ();
-        listbox.set_size_request (200,250);
+        listbox.set_size_request (200,250); //@TODO is this the best method?
         scroll_box.set_size_request (200,250);
         listbox.vexpand = true;
 
@@ -60,9 +60,11 @@ public class Envoyer.Widgets.FolderThreadsList : Gtk.Grid { //@TODO move to Widg
     private void connect_signals () {
         listbox.row_selected.connect ((row) => {
             if (row == null) return;
-            //if (row is Envoyer.FolderItem  ((Envoyer.FolderItem)row).page.full_path == full_path)
-            // @TODO editor.load_file (((Envoyer.PageItem) row).page);
-            //editor.give_focus ();
+            assert(row is Envoyer.Widgets.ConversationItem);
+
+            conversation_viewer.load_conversation_thread (((Envoyer.Widgets.ConversationItem) row).thread);
+            
+            //conversation_viewer.give_focus ();
         });
     }
 }
