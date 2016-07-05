@@ -153,7 +153,7 @@ namespace Camel {
 		public static Camel.ContentType decode (string @in);
 		public void dump ();
 		public string format ();
-		public int @is (string type, string subtype);
+		public bool @is (string type, string subtype);
 		public unowned string param (string name);
 		public Camel.ContentType @ref ();
 		public void set_param (string name, string value);

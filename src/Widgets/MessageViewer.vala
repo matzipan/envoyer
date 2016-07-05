@@ -22,6 +22,6 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     }
     
     private void load_data () {
-        webview.load_plain_text (message_item.content);
+        webview.load_html (message_item.content, null);
     }
 }

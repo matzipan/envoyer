@@ -62,23 +62,27 @@ vala_precompile(VALA_C envoyer
     Application.vala
 	Services/Session.vala 
     Services/Settings.vala
+	FutureGranite/ExpandableItem.vala
+    FutureGranite/SimpleExpandableItem.vala
+	FutureGranite/NestedListBox.vala
+	Util/SidebarBuilder.vala
+	Parsers/ParserRegistry.vala
+	Parsers/IParser.vala
+	Parsers/MultipartAlternativeParser.vala
+	Parsers/TextHtmlParser.vala
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala
     Widgets/IFolderItem.vala
-    FutureGranite/ExpandableItem.vala
-    FutureGranite/SimpleExpandableItem.vala
     Widgets/UnifiedFolderParentItem.vala
     Widgets/UnifiedFolderChildItem.vala
     Widgets/AccountFoldersParentItem.vala
     Widgets/ConversationViewer.vala
     Widgets/MessageViewer.vala
-    FutureGranite/NestedListBox.vala
     Widgets/Sidebar.vala
 	Widgets/ConversationItem.vala
 	Widgets/FolderThreadsList.vala
 	Widgets/FolderLabel.vala
     Widgets/Window.vala
-    Util/SidebarBuilder.vala
     Models/Folder.vala
     Models/IFolder.vala
     Models/Message.vala
