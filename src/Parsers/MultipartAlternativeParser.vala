@@ -72,7 +72,7 @@ public class Envoyer.Parsers.MultipartAlternativeParser : Envoyer.Parsers.IParse
         
         var mime_type = data_wrapper.mime_type;
 
-    	message ("Checking is_attachment %s/%s\n", data_wrapper.mime_type.type, data_wrapper.mime_type.subtype);
+    	message ("Checking is_attachment %s/%s", data_wrapper.mime_type.type, data_wrapper.mime_type.subtype);
         
         return !(
                     mime_type.is ("multipart", "*") ||
