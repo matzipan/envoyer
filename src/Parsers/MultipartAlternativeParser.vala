@@ -12,7 +12,6 @@ public class Envoyer.Parsers.MultipartAlternativeParser : Envoyer.Parsers.IParse
 
     public string get_content () {
         Camel.MimePart best = null;
-        Camel.ContentType best_content_type = null;
         var multipart = (Camel.Multipart) mime_message.get_content ();
 
         for(var i = 0; i < multipart.get_number (); i++) {
@@ -44,12 +43,18 @@ public class Envoyer.Parsers.MultipartAlternativeParser : Envoyer.Parsers.IParse
                     )
                 )*/) {
     			best = part;
-                best_content_type = content_type;
     		}
         }
         
         if (best != null) {
-            return Envoyer.Parsers.ParserRegistry.parse_mime_part_as (best, best_content_type.simple ());
+            var content_type = best.get_content_type ();
+            var mime_type = "appliction/x-envoyer-fallback";
+            
+            if (content_type != null) {
+                mime_type = content_type.simple ();
+            }
+
+            return Envoyer.Parsers.ParserRegistry.parse_mime_part_as (best, mime_type);
         } else {
             return Envoyer.Parsers.ParserRegistry.parse_mime_part_as (best, "multipart/mixed");
         }

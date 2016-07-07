@@ -192,7 +192,7 @@ namespace Camel {
 		public virtual ssize_t decode_to_stream_sync (Camel.Stream stream, GLib.Cancellable? cancellable = null) throws GLib.Error;
 		public unowned GLib.ByteArray get_byte_array ();
 		public virtual string get_mime_type ();
-		public virtual Camel.ContentType get_mime_type_field ();
+		public virtual unowned Camel.ContentType get_mime_type_field ();
 		public virtual bool is_offline ();
 		public virtual void set_mime_type (string mime_type);
 		public virtual void set_mime_type_field (Camel.ContentType mime_type);
@@ -855,7 +855,7 @@ namespace Camel {
 		public unowned GLib.List<string> get_content_languages ();
 		public unowned string get_content_location ();
 		public unowned string get_content_md5 ();
-		public Camel.ContentType get_content_type ();
+		public unowned Camel.ContentType get_content_type ();
 		public unowned string get_description ();
 		public unowned string get_disposition ();
 		public Camel.TransferEncoding get_encoding ();
