@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Widgets.Sidebar : Gtk.Grid { //@TODO move to Widget namespace
+public class Envoyer.Widgets.Sidebar : Gtk.Grid {
     private Envoyer.FutureGranite.NestedListBox listbox;
 
     public signal void session_up ();

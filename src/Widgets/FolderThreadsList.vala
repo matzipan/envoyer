@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Widgets.FolderThreadsList : Gtk.Grid { //@TODO move to Widget namespace
+public class Envoyer.Widgets.FolderThreadsList : Gtk.Grid {
     private Gtk.ListBox listbox; //@TODO abstract this
     private Envoyer.Models.IFolder current_folder;
 
