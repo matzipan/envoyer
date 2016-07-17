@@ -45,11 +45,17 @@ cmake ..
 make 
 ```
 
-You can then run: `./src/envoyer`.
+You will have to first run `cd src` and then `./envoyer`, otherwise the WebKitGTK+ Web Extension will not get loaded (there is no dynamic mechanism yet).
 
 The current vapi bindings are a bit different than what EDS' build will generate,
 as there were some missing GIR annotations which were quickfixed in the vapi files 
 directly.
+
+### Folder structure
+
+* `src/FutureGranite` - modules that are intended to be merged into `libgranite` when finished
+* `src/WebExtensions` - implementation of `webkit2gtk-web-extension-4.0` as exemplified [here](https://github.com/rschroll/webkitdom/tree/extension)
+* `src/Widgets` - view folder, almost always backed by some models. Never accesses backend libraries, such as `libcamel`, directly.
 
 ### License
 

@@ -18,16 +18,19 @@ public class Envoyer.Widgets.Sidebar : Gtk.Grid { //@TODO move to Widget namespa
     }
 
     private void build_ui () {
+        get_style_context ().add_class ("sidebar");
         orientation = Gtk.Orientation.VERTICAL;
+        hexpand = false;
+        set_size_request (200, -1);
 
-        var scroll_box = new Gtk.ScrolledWindow (null, null);
         listbox = new Envoyer.FutureGranite.NestedListBox ();
-        listbox.set_size_request (200,250);
-        scroll_box.set_size_request (200,250);
-        listbox.vexpand = true;
-
+        
+        var scroll_box = new Gtk.ScrolledWindow (null, null);
+        scroll_box.expand = true;
         scroll_box.add (listbox);
-        this.add (scroll_box);
+
+        add (scroll_box);
+        show_all ();
     }
 
     private void clear_list () {

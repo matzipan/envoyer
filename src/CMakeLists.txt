@@ -1,6 +1,10 @@
+#
+# Main application
+#
+
 configure_file (${CMAKE_SOURCE_DIR}/src/config.vala.cmake ${CMAKE_BINARY_DIR}/config.vala)
 
-set (PKG_DEPS
+set (APP_PKG_DEPS
 	gobject-2.0
     gio-2.0
     camel-1.2>=3.19.92
@@ -17,7 +21,7 @@ set (PKG_DEPS
 	webkit2gtk-4.0>=2.10.9
 )
 
-set (VALA_DEPS
+set (APP_VALA_DEPS
 	gobject-2.0
     gio-2.0
     camel-1.2
@@ -35,18 +39,17 @@ set (VALA_DEPS
 
 find_package(PkgConfig)
 
-pkg_check_modules (DEPS REQUIRED ${PKG_DEPS})
+pkg_check_modules (APP_DEPS REQUIRED ${APP_PKG_DEPS})
 
-add_definitions(${DEPS_CFLAGS})
-link_libraries(${DEPS_LIBRARIES})
-link_directories(${DEPS_LIBRARY_DIRS})
+add_definitions(${APP_DEPS_CFLAGS})
+link_libraries(${APP_DEPS_LIBRARIES})
+link_directories(${APP_DEPS_LIBRARY_DIRS})
 
 link_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
-
-set(VALA_OPTIONS
+set(APP_VALA_OPTIONS
     --vapidir=${CMAKE_SOURCE_DIR}/bindings/vapi
     --metadatadir=${CMAKE_SOURCE_DIR}/bindings/metadata
     --thread
@@ -57,14 +60,16 @@ set(VALA_OPTIONS
     ${EXTRA_VALA_OPTIONS}
 )
 
-vala_precompile(VALA_C envoyer
+vala_precompile(APP_VALA_C envoyer
 	Main.vala
     Application.vala
 	Services/Session.vala 
     Services/Settings.vala
+	Services/IMessageViewerExtension.vala
 	FutureGranite/ExpandableItem.vala
     FutureGranite/SimpleExpandableItem.vala
 	FutureGranite/NestedListBox.vala
+	FutureGranite/ThreePane.vala
 	Util/SidebarBuilder.vala
 	Parsers/ParserRegistry.vala
 	Parsers/IParser.vala
@@ -78,6 +83,7 @@ vala_precompile(VALA_C envoyer
     Widgets/AccountFoldersParentItem.vala
     Widgets/ConversationViewer.vala
     Widgets/MessageViewer.vala
+    Widgets/MessageWebView.vala
     Widgets/Sidebar.vala
 	Widgets/ConversationItem.vala
 	Widgets/FolderThreadsList.vala
@@ -92,14 +98,67 @@ vala_precompile(VALA_C envoyer
     Models/ConversationThread.vala
     ${CMAKE_BINARY_DIR}/config.vala
 PACKAGES
-	${VALA_DEPS}
+	${APP_VALA_DEPS}
 OPTIONS  
-	${VALA_OPTIONS}
+	${APP_VALA_OPTIONS}
 GENERATE_HEADER
 	envoyer
 GENERATE_VAPI
 	envoyer
 )
 
-add_executable(envoyer ${VALA_C} ${generated_resources})
+add_executable(envoyer ${APP_VALA_C} ${generated_resources})
 
+#
+# WebKitWebExtension
+#
+
+set (WEBEXTENSION_PKG_DEPS
+	gobject-2.0
+	webkit2gtk-web-extension-4.0>=2.10.9
+)
+
+set (WEBEXTENSION_VALA_DEPS
+	gobject-2.0
+	webkit2gtk-web-extension-4.0>=2.10.9
+)
+
+find_package(PkgConfig)
+
+pkg_check_modules (WEBEXTENSION_DEPS REQUIRED ${WEBEXTENSION_PKG_DEPS})
+
+add_definitions(${WEBEXTENSION_DEPS_CFLAGS})
+link_libraries(${WEBEXTENSION_DEPS_LIBRARIES})
+link_directories(${WEBEXTENSION_DEPS_LIBRARY_DIRS})
+
+link_directories(${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_SOURCE_DIR})
+
+set(WEBEXTENSION_VALA_OPTIONS
+    --vapidir=${CMAKE_SOURCE_DIR}/bindings/vapi
+    --metadatadir=${CMAKE_SOURCE_DIR}/bindings/metadata
+    --thread
+    --enable-checking
+    --debug
+    --enable-deprecated
+    --target-glib=2.47.6
+    ${EXTRA_VALA_OPTIONS}
+)
+
+vala_precompile(WEBEXTENSION_VALA_C envoyer-webextension
+    Services/IMessageViewerExtension.vala
+    Services/MessageViewerExtensionServer.vala
+	WebExtensions/MessageViewerExtension.vala
+    ${CMAKE_BINARY_DIR}/config.vala
+PACKAGES
+	${WEBEXTENSION_VALA_DEPS}
+OPTIONS  
+	${WEBEXTENSION_VALA_OPTIONS}
+GENERATE_HEADER
+	envoyer-webextension
+GENERATE_VAPI
+	envoyer-webextension
+)
+
+add_library(envoyer-webextension SHARED ${WEBEXTENSION_VALA_C} ${generated_resources})

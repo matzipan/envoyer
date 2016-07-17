@@ -9,7 +9,7 @@ public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
     public signal void session_up ();
 
     private Envoyer.Widgets.Headerbar headerbar;
-    private Gtk.Grid grid;
+    private Envoyer.FutureGranite.ThreePane three_pane;
 
     public Window (Gtk.Application app) {
 		Object (application: app);
@@ -29,17 +29,14 @@ public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
         headerbar.set_title (Constants.APP_NAME);
         set_titlebar (headerbar);
 
-        grid = new Gtk.Grid (); //@TODO maybe a custom pane widget would be better
         sidebar = new Envoyer.Widgets.Sidebar ();
         folder_threads_list = new Envoyer.Widgets.FolderThreadsList ();
         conversation_viewer = new Envoyer.Widgets.ConversationViewer ();
         
-        grid.add (sidebar);
-        grid.add (folder_threads_list);
-        grid.add (conversation_viewer);
+        three_pane = new Envoyer.FutureGranite.ThreePane.with_children (sidebar, folder_threads_list, conversation_viewer);
 
 		//this.move (settings.pos_x, settings.pos_y); @TODO
-        add (grid);
+        add (three_pane);
         show_all ();
     }
 

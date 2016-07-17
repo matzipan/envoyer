@@ -28,17 +28,19 @@ public class Envoyer.Widgets.FolderThreadsList : Gtk.Grid { //@TODO move to Widg
 
     private void build_ui () {
         orientation = Gtk.Orientation.VERTICAL;
+        hexpand = false;
+        set_size_request (200, -1);
+
+        listbox = new Gtk.ListBox ();
 
         var scroll_box = new Gtk.ScrolledWindow (null, null);
-        listbox = new Gtk.ListBox ();
-        listbox.set_size_request (200,250); //@TODO is this the best method?
-        scroll_box.set_size_request (200,250);
-        listbox.vexpand = true;
-
+        scroll_box.expand = true;
         scroll_box.add (listbox);
-        this.add (scroll_box);
+        
+        add (scroll_box);
+        show_all ();
     }
-
+    
     private void clear_list () { //@TODO abstract this? 
         listbox.unselect_all ();
         var children = listbox.get_children ();
