@@ -569,7 +569,7 @@ namespace Camel {
 		public int find_address (string address, string namep);
 		public int find_name (string name, string addressp);
 		public static string format_address (string name, string addr);
-		public bool @get (int index, string namep, string addressp);
+		public bool @get (int index, out string namep, out string addressp);
 	}
 	[CCode (cheader_filename = "camel/camel.h", type_id = "camel_key_file_get_type ()")]
 	public class KeyFile : GLib.Object {
@@ -774,7 +774,7 @@ namespace Camel {
 		public int date_received_offset;
 		public weak Camel.InternetAddress from;
 		public weak string message_id;
-		public weak GLib.HashTable<void*,void*> recipients;
+		public weak GLib.HashTable<string, Camel.InternetAddress> recipients;
 		public weak Camel.InternetAddress reply_to;
 		public weak string subject;
 		[CCode (has_construct_function = false)]
@@ -2053,6 +2053,7 @@ namespace Camel {
 	[SimpleType]
 	public struct _key_t : uint32 {
 	}
+	
 	[CCode (cheader_filename = "camel/camel.h", cprefix = "CAMEL_AUTHENTICATION_", type_id = "camel_authentication_result_get_type ()")]
 	public enum AuthenticationResult {
 		ERROR,

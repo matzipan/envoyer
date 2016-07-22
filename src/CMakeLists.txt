@@ -70,11 +70,13 @@ vala_precompile(APP_VALA_C envoyer
     FutureGranite/SimpleExpandableItem.vala
 	FutureGranite/NestedListBox.vala
 	FutureGranite/ThreePane.vala
+	FutureGranite/HumanDateTime.vala
 	Util/SidebarBuilder.vala
 	Parsers/ParserRegistry.vala
 	Parsers/IParser.vala
 	Parsers/MultipartAlternativeParser.vala
 	Parsers/TextHtmlParser.vala
+    Parsers/ParserHelper.vala
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala
     Widgets/IFolderItem.vala
@@ -95,6 +97,7 @@ vala_precompile(APP_VALA_C envoyer
     Models/UnifiedFolderChild.vala
     Models/UnifiedFolderParent.vala
     Models/AccountSummary.vala
+    Models/Address.vala
     Models/ConversationThread.vala
     ${CMAKE_BINARY_DIR}/config.vala
 PACKAGES

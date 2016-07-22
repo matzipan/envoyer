@@ -43,6 +43,7 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
             
             //@TODO this needs to be recalculated each time the width of the webview changes
             set_size_request (-1, (int) bus.get_height ()); //@TODO make this nicer and avoid flicker: currently this happens after the widget is first drawn so maybe hide it?
+            debug ("Setting webview height to %u", bus.get_height ());
         } catch (IOError error) {
             warning("There was a problem connecting to web extension: %s", error.message);
             throw error;

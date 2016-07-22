@@ -8,5 +8,11 @@
 public class Envoyer.Widgets.AccountFoldersParentItem : Envoyer.FutureGranite.SimpleExpandableItem {
     public AccountFoldersParentItem (E.Source identity_source) {
         base (identity_source.get_display_name ());
+        
+        build_ui ();
+    }
+    
+    public void build_ui () {
+        selectable = false;
     }
 }

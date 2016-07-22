@@ -30,7 +30,7 @@ public class Envoyer.Services.Session : Camel.Session {
 
                 E.SourceCamel.configure_service(source_item, service); //@TODO
                 
-                message("%s", online ? "Online" : "Not online");
+                //debug ("%s", online ? "Online" : "Not online");
 
                 //((Camel.OfflineStore) service).set_online_sync(true); //@TODO only work when internet availalble
                 //((Camel.OfflineStore) service).connect_sync();

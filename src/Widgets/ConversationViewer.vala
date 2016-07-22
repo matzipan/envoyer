@@ -13,8 +13,7 @@ public class Envoyer.Widgets.ConversationViewer : Gtk.Grid {
         hexpand = true;
         
         listbox = new Gtk.ListBox ();
-        listbox.get_style_context ().add_class ("deck");
-
+        
         var scroll_box = new Gtk.ScrolledWindow (null, null);
         scroll_box.expand = true;
         scroll_box.add (listbox);
