@@ -1,2 +1,2 @@
 include (GSettings)
-#add_schema ("org.pantheon.envoyer.gschema.xml")
+add_schema ("ro.webmonsters.envoyer.gschema.xml")

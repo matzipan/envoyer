@@ -22,7 +22,7 @@ public class Envoyer.Application : Granite.Application {
     public bool running = false;
 
     public Application () {
-        Object (application_id: "org.pantheon.envoyer");
+        Object (application_id: "ro.webmonsters.envoyer");
     }
 
     public override void activate () {

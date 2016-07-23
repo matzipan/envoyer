@@ -29,9 +29,13 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         avatar.valign = Gtk.Align.START;
 
         from_address_label = build_address_label ();
+        from_address_label.get_style_context ().add_class ("from");
         to_address_label = build_address_label ();
+        to_address_label.get_style_context ().add_class ("to");
         cc_address_label = build_address_label ();
+        cc_address_label.get_style_context ().add_class ("cc");
         bcc_address_label = build_address_label ();
+        bcc_address_labelw.get_style_context ().add_class ("bcc");
         
         header_summary_fields = new Gtk.Grid ();
         header_summary_fields.row_spacing = 1;
@@ -109,7 +113,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     private void load_data () {
         message_webview.load_html (message_item.content, null);
         from_address_label.set_label (message_item.from.to_escaped_string ());
-        to_address_label.set_label (build_addresses_string (message_item.to));
+        to_address_label.set_label ("to %s".printf(build_addresses_string (message_item.to)));
         
         var addresses = build_addresses_string (message_item.cc);
         if (addresses == "") {

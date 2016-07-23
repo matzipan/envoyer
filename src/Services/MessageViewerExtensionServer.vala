@@ -1,4 +1,4 @@
-[DBus (name = "io.elementary.envoyer.MessageViewerExtension")]
+[DBus (name = "ro.webmonsters.envoyer.MessageViewerExtension")]
 public class Envoyer.Services.MessageViewerExtensionServer : GLib.Object, Envoyer.Services.IMessageViewerExtension {
     private WebKit.WebPage page;
     private uint web_view_id;
@@ -9,7 +9,7 @@ public class Envoyer.Services.MessageViewerExtensionServer : GLib.Object, Envoye
         
         GLib.Bus.own_name(
             GLib.BusType.SESSION,
-            "io.elementary.envoyer.MessageViewerExtension.id%u".printf(web_view_id),
+            "ro.webmonsters.envoyer.MessageViewerExtension.id%u".printf(web_view_id),
             GLib.BusNameOwnerFlags.NONE,
             on_bus_aquired,
             null,
@@ -20,7 +20,7 @@ public class Envoyer.Services.MessageViewerExtensionServer : GLib.Object, Envoye
     [DBus (visible = false)]
     public void on_bus_aquired(DBusConnection connection) {
         try {
-            connection.register_object("/io/elementary/envoyer/MesssageViewerExtension", this);
+            connection.register_object("/ro/webmonsters/envoyer/MesssageViewerExtension", this);
         } catch (IOError error) {
             warning("Could not register service: %s", error.message);
         }
