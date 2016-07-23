@@ -45,8 +45,8 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
 
         datetime_label = new Gtk.Label (null);
         datetime_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
-        datetime_label.margin_top = 8;
-        datetime_label.margin_right = 8;
+        datetime_label.margin_top = 6;
+        datetime_label.margin_right = 10;
         datetime_label.halign = Gtk.Align.END;
         datetime_label.valign = Gtk.Align.START;
 
