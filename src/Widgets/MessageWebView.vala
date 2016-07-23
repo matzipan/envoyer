@@ -20,6 +20,7 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
         
         setup_dbus ();
         build_ui ();
+        connect_signals ();
     }
 
     private void setup_dbus () {
@@ -41,17 +42,30 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
                 null
             );
             
-            //@TODO this needs to be recalculated each time the width of the webview changes
-            set_size_request (-1, (int) bus.get_height ()); //@TODO make this nicer and avoid flicker: currently this happens after the widget is first drawn so maybe hide it?
-            debug ("Setting webview height to %u", bus.get_height ());
+            size_update_async ();
         } catch (IOError error) {
             warning("There was a problem connecting to web extension: %s", error.message);
             throw error;
         }
     }
+    
+    public async void size_update_async () {
+        if (bus == null) {
+            return;
+        }
+        
+        var height = bus.get_height ();
+        
+        debug ("Setting webview height to %u", height);
+        set_size_request (-1, (int) height);
+    }
 
     public void build_ui () {
         expand = true;
+    }
+    
+    public void connect_signals () {
+        size_allocate.connect(size_update_async);
     }
 
     public override void get_preferred_width (out int minimum_width, out int natural_width) {
