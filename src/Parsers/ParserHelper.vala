@@ -1,3 +1,10 @@
+/*
+ * Copyright 2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
 public class Envoyer.Parsers.ParserHelper : GLib.Object {
     public static bool is_attachment (Camel.MimePart part) {
         var data_wrapper = part.get_content ();

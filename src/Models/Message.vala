@@ -1,3 +1,10 @@
+/*
+ * Copyright 2016 Andrei-Costin Zisu
+ *
+ * This software is licensed under the GNU Lesser General Public License
+ * (version 2.1 or later).  See the COPYING file in this distribution.
+ */
+ 
 public class Envoyer.Models.Message : GLib.Object {
     private Camel.FolderThreadNode message_node;
     private Camel.MimeMessage mime_message;
