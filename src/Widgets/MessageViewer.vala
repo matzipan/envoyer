@@ -1,5 +1,5 @@
 public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
-    private Envoyer.Widgets.MessageWebView message_webvew;
+    private Envoyer.Widgets.MessageWebView message_webview;
     private Gtk.Grid grid;
     private Gtk.Grid message_header;
     private Gtk.Grid header_summary_fields;
@@ -17,6 +17,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         this.message_item = message_item;
 
         build_ui ();
+        connect_signals ();
         load_data ();
     }
 
@@ -68,15 +69,30 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         message_header.add (attachment_image);
         message_header.add (datetime_label);
 
-        message_webvew = new Envoyer.Widgets.MessageWebView ();
+        message_webview = new Envoyer.Widgets.MessageWebView ();
         
         grid = new Gtk.Grid ();
         grid.orientation = Gtk.Orientation.VERTICAL;
         grid.add (message_header);
-        grid.add (message_webvew);
+        grid.add (message_webview);
 
         add (grid);
         show_all ();
+    }
+    
+    private void connect_signals () {
+        message_webview.scroll_event.connect (propagate_scroll_event);
+    }
+    
+    private bool propagate_scroll_event (Gdk.EventScroll event) {
+        /*
+         * This propagates the event from the WebView upwards toward ConversationViewer. I admit 
+         * that this solution feels hacky, but I could not find any other working solution for 
+         * propagating the scroll event upwards. 
+         */
+        scroll_event (event);
+        
+        return Gdk.EVENT_STOP;
     }
     
     private Gtk.Label build_address_label () {
@@ -92,7 +108,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     }
 
     private void load_data () {
-        message_webvew.load_html (message_item.content, null);
+        message_webview.load_html (message_item.content, null);
         from_address_label.set_label (message_item.from.to_escaped_string ());
         to_address_label.set_label (build_addresses_string (message_item.to));
         

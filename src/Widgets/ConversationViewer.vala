@@ -2,6 +2,7 @@
 
 public class Envoyer.Widgets.ConversationViewer : Gtk.Grid {
     private Gtk.ListBox listbox; //@TODO abstract this
+    private Gtk.ScrolledWindow scrollbox; //@TODO abstract this
     private Envoyer.Models.ConversationThread conversation_thread;
 
     public ConversationViewer () {
@@ -14,12 +15,12 @@ public class Envoyer.Widgets.ConversationViewer : Gtk.Grid {
         
         listbox = new Gtk.ListBox ();
         
-        var scroll_box = new Gtk.ScrolledWindow (null, null);
-        scroll_box.expand = true;
-        scroll_box.add (listbox);
-        scroll_box.hscrollbar_policy = Gtk.PolicyType.NEVER;
-
-        add (scroll_box);
+        scrollbox = new Gtk.ScrolledWindow (null, null);
+        scrollbox.expand = true;
+        scrollbox.add (listbox);
+        scrollbox.hscrollbar_policy = Gtk.PolicyType.NEVER;
+        
+        add (scrollbox);
         show_all ();
     }
     
@@ -27,10 +28,22 @@ public class Envoyer.Widgets.ConversationViewer : Gtk.Grid {
         clear ();
 
         foreach (var item in conversation_thread.messages) {
-            listbox.add(new Envoyer.Widgets.MessageViewer(item));
+            var viewer = new Envoyer.Widgets.MessageViewer(item);
+            viewer.scroll_event.connect(handle_scroll_event);
+            listbox.add(viewer);
         }
 
         listbox.show_all ();
+    }
+    
+    private bool handle_scroll_event (Gdk.EventScroll event) {
+        /*
+         * I admit that this solution feels hacky, but I could not find any other working solution
+         * for propagating the scroll event upwards. 
+         */
+        scrollbox.scroll_event (event);
+        
+        return Gdk.EVENT_PROPAGATE;
     }
     
     public void load_conversation_thread (Envoyer.Models.ConversationThread conversation_thread) {
