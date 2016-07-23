@@ -9,7 +9,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     private Gtk.Label to_address_label;
     private Gtk.Label cc_address_label;
     private Gtk.Label bcc_address_label;
-    private Granite.Widgets.Avatar avatar;
+    private Envoyer.Widgets.Gravatar avatar;
     
     private Envoyer.Models.Message message_item;
 
@@ -25,8 +25,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         expand = true;
         selectable = false;
 
-        avatar = new Granite.Widgets.Avatar.with_default_icon (48);
-
+        avatar = new Envoyer.Widgets.Gravatar.with_default_icon (48);
         avatar.valign = Gtk.Align.START;
 
         from_address_label = build_address_label ();
@@ -130,34 +129,8 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
             attachment_image.destroy ();
         }
         
-        /*
-         @TODO
-        // Add the avatar.
-                try {
-                    Geary.RFC822.MailboxAddress? primary = email.get_message ().sender;
-                    if (primary != null) {
-                        var uri = Gravatar.get_image_uri (primary, Gravatar.Default.NOT_FOUND, 48 * scale_factor);
-                        var icon = new FileIcon (File.new_for_uri (uri));
-                        var icon_info = Gtk.IconTheme.get_default ().lookup_by_gicon_for_scale (icon, 48, scale_factor, 0);
-                        if (icon_info != null) {
-                             icon_info.load_icon_async.begin (null, (obj, res) => {
-                                try {
-                                    var pixbuf = icon_info.load_icon_async.end (res);
-                                    Idle.add (() => {
-                                        avatar.pixbuf = pixbuf;
-                                        return GLib.Source.REMOVE;
-                                    });
-                                } catch (Error error) {
-                                    debug("Failed get URL: %s", error.message);
-                                }
-                             });
-                        }
-                    }
-                } catch (Error error) {
-                    debug("Failed get URL: %s", error.message);
-                }
-                
-                */
+        avatar.set_address (message_item.from);
+        avatar.fetch_async ();
         
         setup_timestamp ();
     }

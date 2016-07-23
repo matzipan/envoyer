@@ -91,6 +91,7 @@ vala_precompile(APP_VALA_C envoyer
 	Widgets/FolderThreadsList.vala
 	Widgets/FolderLabel.vala
     Widgets/Window.vala
+    Widgets/Gravatar.vala
     Models/Folder.vala
     Models/IFolder.vala
     Models/Message.vala
