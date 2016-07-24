@@ -22,19 +22,19 @@ public class Envoyer.Application : Granite.Application {
     public bool running = false;
 
     public Application () {
-        Object (application_id: "ro.webmonsters.envoyer");
+        Object (application_id: Constants.PROJECT_FQDN);
     }
 
     public override void activate () {
         if (!running) {
+            running = true;
+            
             settings = new Envoyer.Services.Settings ();
             
             window = new Envoyer.Widgets.Window (this);
             this.add_window (window);
 
-            running = true;
-
-            load_session.begin ();
+            load_session ();
         } 
         
         window.show_app ();
@@ -42,10 +42,10 @@ public class Envoyer.Application : Granite.Application {
     
     
     private async void load_session() {
-        session = yield new Envoyer.Services.Session (); //@maybe remove the yield
+        session = yield new Envoyer.Services.Session ();
         
         session.set_online(true);
         
-        window.session_up ();        
+        window.session_up ();
     }
 }

@@ -12,6 +12,6 @@ public class Envoyer.Services.Settings : Granite.Services.Settings {
     public int position_y { get; set; }
     
     public Settings () {
-        base ("ro.webmonsters.envoyer");
+        base (Constants.PROJECT_FQDN);
     }
 }

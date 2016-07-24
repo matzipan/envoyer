@@ -15,7 +15,8 @@ set (CMAKE_C_FLAGS "-ggdb")
 set (PREFIX ${CMAKE_INSTALL_PREFIX})
 set (DOLLAR "$")
 set (APP_NAME "Envoyer")
-set (PROJECT_FQDN "org.pantheon.envoyer")
+set (PROJECT_FQDN "ro.webmonsters.envoyer")
+set (DBUS_OBJECTS "/ro/webmonsters/envoyer")
 set (PROJECT_DESCRIPTION "Mail for the Linux desktop")
 
 # disable C compiler warnings

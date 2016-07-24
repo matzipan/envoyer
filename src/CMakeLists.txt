@@ -3,6 +3,8 @@
 #
 
 configure_file (${CMAKE_SOURCE_DIR}/src/config.vala.cmake ${CMAKE_BINARY_DIR}/config.vala)
+configure_file (${CMAKE_SOURCE_DIR}/src/Services/IMessageViewerExtension.vala ${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala)
+configure_file (${CMAKE_SOURCE_DIR}/src/Services/MessageViewerExtensionServer.vala ${CMAKE_BINARY_DIR}/src/Services/MessageViewerExtensionServer.vala)
 
 set (APP_PKG_DEPS
 	gobject-2.0
@@ -65,7 +67,6 @@ vala_precompile(APP_VALA_C envoyer
     Application.vala
 	Services/Session.vala 
     Services/Settings.vala
-	Services/IMessageViewerExtension.vala
 	FutureGranite/ExpandableItem.vala
     FutureGranite/SimpleExpandableItem.vala
 	FutureGranite/NestedListBox.vala
@@ -76,6 +77,7 @@ vala_precompile(APP_VALA_C envoyer
 	Parsers/IParser.vala
 	Parsers/MultipartAlternativeParser.vala
 	Parsers/TextHtmlParser.vala
+    Parsers/TextPlainParser.vala
     Parsers/ParserHelper.vala
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala
@@ -100,6 +102,7 @@ vala_precompile(APP_VALA_C envoyer
     Models/AccountSummary.vala
     Models/Address.vala
     Models/ConversationThread.vala
+    ${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala
     ${CMAKE_BINARY_DIR}/config.vala
 PACKAGES
 	${APP_VALA_DEPS}
@@ -151,9 +154,9 @@ set(WEBEXTENSION_VALA_OPTIONS
 )
 
 vala_precompile(WEBEXTENSION_VALA_C envoyer-webextension
-    Services/IMessageViewerExtension.vala
-    Services/MessageViewerExtensionServer.vala
 	WebExtensions/MessageViewerExtension.vala
+	${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala
+    ${CMAKE_BINARY_DIR}/src/Services/MessageViewerExtensionServer.vala
     ${CMAKE_BINARY_DIR}/config.vala
 PACKAGES
 	${WEBEXTENSION_VALA_DEPS}

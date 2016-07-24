@@ -33,7 +33,7 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
     private void setup_dbus () {
         GLib.Bus.watch_name(
             BusType.SESSION,
-            "ro.webmonsters.envoyer.MessageViewerExtension.id%u".printf(instance_web_view_id),
+            "%s.MessageViewerExtension.id%u".printf(Constants.PROJECT_FQDN, instance_web_view_id),
             BusNameWatcherFlags.NONE,
             on_extension_appeared,
             null
@@ -43,8 +43,8 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
     private void on_extension_appeared(GLib.DBusConnection connection, string name, string owner) {
         try {
             bus = connection.get_proxy_sync(
-                "ro.webmonsters.envoyer.MessageViewerExtension.id%u".printf(instance_web_view_id),
-                "/ro/webmonsters/envoyer/MesssageViewerExtension",
+                "%s.MessageViewerExtension.id%u".printf(Constants.PROJECT_FQDN, instance_web_view_id),
+                "%s/MesssageViewerExtension".printf(Constants.DBUS_OBJECTS),
                 GLib.DBusProxyFlags.NONE,
                 null
             );

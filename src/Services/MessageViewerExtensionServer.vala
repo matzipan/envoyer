@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-[DBus (name = "ro.webmonsters.envoyer.MessageViewerExtension")]
+[DBus (name = "@PROJECT_FQDN@.MessageViewerExtension")]
 public class Envoyer.Services.MessageViewerExtensionServer : GLib.Object, Envoyer.Services.IMessageViewerExtension {
     private WebKit.WebPage page;
     private uint web_view_id;
@@ -16,7 +16,7 @@ public class Envoyer.Services.MessageViewerExtensionServer : GLib.Object, Envoye
         
         GLib.Bus.own_name(
             GLib.BusType.SESSION,
-            "ro.webmonsters.envoyer.MessageViewerExtension.id%u".printf(web_view_id),
+            "%s.MessageViewerExtension.id%u".printf(Constants.PROJECT_FQDN, web_view_id),
             GLib.BusNameOwnerFlags.NONE,
             on_bus_aquired,
             null,
@@ -27,7 +27,7 @@ public class Envoyer.Services.MessageViewerExtensionServer : GLib.Object, Envoye
     [DBus (visible = false)]
     public void on_bus_aquired(DBusConnection connection) {
         try {
-            connection.register_object("/ro/webmonsters/envoyer/MesssageViewerExtension", this);
+            connection.register_object("%s/MesssageViewerExtension".printf(Constants.DBUS_OBJECTS), this);
         } catch (IOError error) {
             warning("Could not register service: %s", error.message);
         }

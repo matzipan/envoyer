@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-[DBus (name = "ro.webmonsters.envoyer.MessageViewerExtension")]
+[DBus (name = "@PROJECT_FQDN@.MessageViewerExtension")]
 public interface Envoyer.Services.IMessageViewerExtension : GLib.Object {
     public abstract uint get_height () throws GLib.IOError;
 }
