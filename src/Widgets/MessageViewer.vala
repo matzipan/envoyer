@@ -78,7 +78,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         message_header.add (header_summary_fields);
         message_header.add (attachment_image);
         message_header.add (datetime_label);
-
+        
         message_webview = new Envoyer.Widgets.MessageWebView ();
         
         grid = new Gtk.Grid ();
@@ -102,7 +102,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
          */
         scroll_event (event);
         
-        return Gdk.EVENT_STOP;
+        return Gdk.EVENT_PROPAGATE;
     }
     
     private Gtk.Label build_address_label () {
@@ -119,6 +119,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
 
     private void load_data () {
         message_webview.load_html (message_item.content, null);
+        
         from_address_label.set_label (message_item.from.to_escaped_string ());
         to_address_label.set_label ("to %s".printf(build_addresses_string (message_item.to)));
         
