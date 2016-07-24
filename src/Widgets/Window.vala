@@ -16,7 +16,7 @@ public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
             font-weight: bold;
         }
         
-        EnvoyerWidgetsConversationViewer GtkListBox {
+        EnvoyerWidgetsConversationViewer GtkListBox, EnvoyerWidgetsSidebar GtkListBox {
             background: #eee;
         }
         
