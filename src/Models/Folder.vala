@@ -16,7 +16,7 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     public bool is_sent { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_SENT; } }
     public bool is_normal { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_NORMAL; } }
     public bool is_spam { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_JUNK; } }
-    public bool is_starred { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_FLAGGED; } }
+    public bool is_starred { get { return (folder_info.flags & Camel.FolderInfoFlags.FLAGGED) != 0; } }
     public bool is_all_mail { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_ALL; }  }
     public bool is_drafts { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_DRAFTS; } }
     public bool is_archive { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_ARCHIVE; } }
@@ -106,7 +106,7 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     public Folder(Camel.Folder folder, Camel.OfflineStore service) {
         this.folder = folder;
         
-        folder.refresh_info_sync(); //@TODO
+        //folder.refresh_info_sync(); //@TODO
         
         folder_info = service.get_folder_info_sync (folder.dup_full_name(), Camel.StoreGetFolderInfoFlags.RECURSIVE);
         thread = new Camel.FolderThread (folder, folder.get_uids(), true); //@TODO I guess free thread?
@@ -119,7 +119,7 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     }
     
     public Camel.MimeMessage get_mime_message (string uid) {
-        folder.synchronize_message_sync (uid); //@TODO async? also, this should probably happen in a more batch manner*/
+        //folder.synchronize_message_sync (uid); //@TODO async? also, this should probably happen in a more batch manner*/
         
         return folder.get_message_sync (uid); //@TODO async?
     }

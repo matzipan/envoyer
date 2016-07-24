@@ -30,9 +30,9 @@ public class Envoyer.Services.Session : Camel.Session {
 
                 E.SourceCamel.configure_service(source_item, service); //@TODO
 
-                ((Camel.OfflineStore) service).set_online_sync(true); //@TODO only work when internet availalble
-                ((Camel.OfflineStore) service).connect_sync();
-                ((Camel.OfflineStore) service).prepare_for_offline_sync();
+                //((Camel.OfflineStore) service).set_online_sync(true); //@TODO only work when internet availalble
+                //((Camel.OfflineStore) service).connect_sync();
+                //((Camel.OfflineStore) service).prepare_for_offline_sync();
 
                 // https://developer.gnome.org/eds/3.20/eds-ESourceCamel.html @TODO
 
