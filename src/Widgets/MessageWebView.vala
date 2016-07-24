@@ -125,4 +125,22 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
         minimum_width = 400;
         natural_width = int.max (natural_width, minimum_width);
     }
+    
+    public void load_html (string content, string? base_uri) {
+        var format = "<html>
+                        <style>
+                            body {
+                                overflow-y:hidden; /* prevent vertical scrollbar */
+                            }
+                            body > div {
+                                overflow-wrap: break-word;
+                                margin-right: 5px; /* prevent overlap with scrollbar */
+                            }
+                        </style>
+                        <body>
+                            <div>%s</div>
+                        </body>
+                      </html>";
+        base.load_html(format.printf(content), base_uri);
+    }
 }
