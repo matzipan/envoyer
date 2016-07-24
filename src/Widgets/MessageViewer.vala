@@ -42,7 +42,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         cc_address_label = build_address_label ();
         cc_address_label.get_style_context ().add_class ("cc");
         bcc_address_label = build_address_label ();
-        bcc_address_labelw.get_style_context ().add_class ("bcc");
+        bcc_address_label.get_style_context ().add_class ("bcc");
         
         header_summary_fields = new Gtk.Grid ();
         header_summary_fields.row_spacing = 1;
