@@ -9,6 +9,7 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
     private static uint web_view_id = 0;
 
     class construct {
+        WebKit.WebContext.get_default ().set_process_model (WebKit.ProcessModel.MULTIPLE_SECONDARY_PROCESSES);
         WebKit.WebContext.get_default ().initialize_web_extensions.connect (on_initialize_web_extensions);
     }
     
