@@ -72,7 +72,51 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
     }
     
     public void connect_signals () {
-        size_allocate.connect(size_update_async);
+        size_allocate.connect (size_update_async);
+        context_menu.connect (setup_context_menu);
+    }
+    
+    public bool setup_context_menu (WebKit.ContextMenu context_menu, Gdk.Event event, WebKit.HitTestResult hit_test_result) {
+        context_menu.remove_all ();
+        
+        if ((hit_test_result.context & WebKit.HitTestResultContext.LINK) != 0) {
+            if (hit_test_result.link_uri.has_prefix ("mailto:")) {
+                var action = new Gtk.Action ("copy email", "Copy _Email Address", null, null);
+                
+                action.activate.connect (() => {
+                    var clipboard = Gtk.Clipboard.get (Gdk.SELECTION_CLIPBOARD);
+                    clipboard.set_text (hit_test_result.link_uri.substring ("mailto:".length, -1), -1);
+                    clipboard.store ();
+                });
+                
+                context_menu.append (new WebKit.ContextMenuItem (action));
+            } else {
+                context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.COPY_LINK_TO_CLIPBOARD));
+            }
+        }
+        
+        if ((hit_test_result.context & WebKit.HitTestResultContext.DOCUMENT) != 0) {
+            context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.SELECT_ALL));
+        }
+        
+        if ((hit_test_result.context & WebKit.HitTestResultContext.IMAGE) != 0) {
+            context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.DOWNLOAD_IMAGE_TO_DISK));
+            context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.COPY_IMAGE_TO_CLIPBOARD));
+        }
+        
+        if ((hit_test_result.context & WebKit.HitTestResultContext.SELECTION) != 0) {
+            context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.COPY));
+            
+            if ((hit_test_result.context & WebKit.HitTestResultContext.EDITABLE) != 0) {
+                context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.CUT));
+            }
+        }
+        
+        if ((hit_test_result.context & WebKit.HitTestResultContext.EDITABLE) != 0) {
+            context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.PASTE));
+        }
+       
+        return false;        
     }
 
     public override void get_preferred_width (out int minimum_width, out int natural_width) {
