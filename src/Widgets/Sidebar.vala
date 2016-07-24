@@ -18,10 +18,9 @@ public class Envoyer.Widgets.Sidebar : Gtk.Grid {
     }
 
     private void build_ui () {
-        get_style_context ().add_class ("sidebar");
         orientation = Gtk.Orientation.VERTICAL;
         hexpand = false;
-        set_size_request (200, -1);
+        set_size_request (150, -1);
 
         listbox = new Envoyer.FutureGranite.NestedListBox ();
         
