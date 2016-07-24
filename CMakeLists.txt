@@ -1,4 +1,4 @@
-project (pantheon-mail-ng C)
+project (envoyer C)
 cmake_minimum_required (VERSION 2.6)
 
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
@@ -31,7 +31,7 @@ add_subdirectory (po)
 add_subdirectory (schemas)
 add_subdirectory (src)
 
-install(TARGETS ${pantheon-mail-ng} RUNTIME
+install(TARGETS ${APP_VALA_C} RUNTIME
   DESTINATION bin)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/envoyer.desktop
@@ -40,4 +40,4 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/envoyer.desktop
 #install assets
 file(GLOB assets "${CMAKE_CURRENT_SOURCE_DIR}/data/assets/*")
 install (FILES ${assets}
-DESTINATION ${DATADIR}/envoyer/)
+	DESTINATION ${DATADIR}/envoyer/)
