@@ -47,10 +47,10 @@ public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
         set_titlebar (headerbar);
 
         sidebar = new Envoyer.Widgets.Sidebar ();
-        folder_threads_list = new Envoyer.Widgets.FolderThreadsList ();
+        folder_conversations_list = new Envoyer.Widgets.FolderConversationsList ();
         conversation_viewer = new Envoyer.Widgets.ConversationViewer ();
         
-        three_pane = new Envoyer.FutureGranite.ThreePane.with_children (sidebar, folder_threads_list, conversation_viewer);
+        three_pane = new Envoyer.FutureGranite.ThreePane.with_children (sidebar, folder_conversations_list, conversation_viewer);
 
 		move (settings.position_x, settings.position_y);
         add (three_pane);
@@ -97,6 +97,6 @@ public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
 		show ();
     	present ();
 
-    	folder_threads_list.grab_focus ();
+    	folder_conversations_list.grab_focus ();
 	}
 }

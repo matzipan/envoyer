@@ -7,7 +7,7 @@
  
 namespace Envoyer {
     public Envoyer.Widgets.Sidebar sidebar;
-    public Envoyer.Widgets.FolderThreadsList folder_threads_list;
+    public Envoyer.Widgets.FolderConversationsList folder_conversations_list;
     public Envoyer.Widgets.ConversationViewer conversation_viewer;
     public Envoyer.Services.Settings settings;
     public Envoyer.Services.Session session;

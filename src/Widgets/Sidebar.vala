@@ -56,13 +56,13 @@ public class Envoyer.Widgets.Sidebar : Gtk.Grid {
             }
 
             if(row is Envoyer.Widgets.FolderItem) {
-                folder_threads_list.load_folder (((Envoyer.Widgets.FolderItem) row).folder);
-                folder_threads_list.grab_focus ();
+                folder_conversations_list.load_folder (((Envoyer.Widgets.FolderItem) row).folder);
+                folder_conversations_list.grab_focus ();
             }
             
             if(row is Envoyer.Widgets.UnifiedFolderParentItem) {
-                folder_threads_list.load_folder (((Envoyer.Widgets.UnifiedFolderParentItem) row).folder);
-                folder_threads_list.grab_focus ();
+                folder_conversations_list.load_folder (((Envoyer.Widgets.UnifiedFolderParentItem) row).folder);
+                folder_conversations_list.grab_focus ();
             }
         });
         

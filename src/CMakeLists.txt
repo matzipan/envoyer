@@ -89,8 +89,8 @@ vala_precompile(APP_VALA_C envoyer
     Widgets/MessageViewer.vala
     Widgets/MessageWebView.vala
     Widgets/Sidebar.vala
-	Widgets/ConversationItem.vala
-	Widgets/FolderThreadsList.vala
+	Widgets/FolderConversationItem.vala
+	Widgets/FolderConversationsList.vala
 	Widgets/FolderLabel.vala
     Widgets/Window.vala
     Widgets/Gravatar.vala

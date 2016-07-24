@@ -5,13 +5,13 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Widgets.FolderThreadsList : Gtk.Grid {
+public class Envoyer.Widgets.FolderConversationsList : Gtk.Grid {
     private Gtk.ListBox listbox; //@TODO abstract this
     private Envoyer.Models.IFolder current_folder;
 
     //@TODO persist scroller state
 
-    public FolderThreadsList () {
+    public FolderConversationsList () {
         build_ui ();
         connect_signals ();
     }
@@ -55,16 +55,16 @@ public class Envoyer.Widgets.FolderThreadsList : Gtk.Grid {
         clear_list ();
         
         foreach (var thread in current_folder.threads_list) {
-            listbox.add(new Envoyer.Widgets.ConversationItem(thread));
+            listbox.add(new Envoyer.Widgets.FolderConversationItem(thread));
         }
     }
 
     private void connect_signals () {
         listbox.row_selected.connect ((row) => {
             if (row == null) return;
-            assert(row is Envoyer.Widgets.ConversationItem);
+            assert(row is Envoyer.Widgets.FolderConversationItem);
 
-            conversation_viewer.load_conversation_thread (((Envoyer.Widgets.ConversationItem) row).thread);
+            conversation_viewer.load_conversation_thread (((Envoyer.Widgets.FolderConversationItem) row).thread);
             
             //conversation_viewer.give_focus ();
         });

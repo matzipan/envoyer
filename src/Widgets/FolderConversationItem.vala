@@ -5,17 +5,26 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Widgets.ConversationItem : Gtk.ListBoxRow {
+public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
     private Gtk.Grid grid;
     private Gtk.Label subject;
+    private double current_size = 0;
     public Envoyer.Models.ConversationThread thread { get; private set; }
 
-    public ConversationItem (Envoyer.Models.ConversationThread thread) {
+    public FolderConversationItem (Envoyer.Models.ConversationThread thread) {
         this.thread = thread;
         build_ui ();
+        connect_signals ();
+        setup_events ();
     }
 
-    private void build_ui () {
+    private void build_ui () { 
+        subject = new Gtk.Label ("");
+        subject.use_markup = true;
+        subject.halign = Gtk.Align.START;
+        subject.ellipsize = Pango.EllipsizeMode.END;
+        ((Gtk.Misc) subject).xalign = 0;
+        
         grid = new Gtk.Grid ();
         grid.get_style_context ().add_class ("h3");
         grid.orientation = Gtk.Orientation.HORIZONTAL;
@@ -23,18 +32,11 @@ public class Envoyer.Widgets.ConversationItem : Gtk.ListBoxRow {
         grid.margin_bottom = 4;
         grid.margin_left = 8;
         grid.margin_right = 8;
-
-        subject = new Gtk.Label ("");
-        subject.use_markup = true;
-        subject.halign = Gtk.Align.START;
-        subject.ellipsize = Pango.EllipsizeMode.END;
-        ((Gtk.Misc) subject).xalign = 0;	    
-
-        this.add (grid);
         grid.add (subject);
-
+        
+        add (grid);
         load_data ();
-        this.show_all ();
+        show_all ();
     }
 
     private void load_data () {
