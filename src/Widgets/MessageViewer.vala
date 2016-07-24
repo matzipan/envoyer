@@ -126,14 +126,14 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         if (addresses == "") {
             cc_address_label.destroy ();
         } else {
-            cc_address_label.set_label ("CC: %s".printf(addresses));
+            cc_address_label.set_label ("cc %s".printf(addresses));
         }
         
         addresses = build_addresses_string (message_item.bcc);
         if (addresses == "") {
             bcc_address_label.destroy ();
         } else {
-            bcc_address_label.set_label ("BCC: %s".printf(addresses));
+            bcc_address_label.set_label ("bcc %s".printf(addresses));
         }
         
         if(!message_item.has_attachment) {
