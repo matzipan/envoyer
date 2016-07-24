@@ -15,6 +15,14 @@ public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
         .from {
             font-weight: bold;
         }
+        
+        EnvoyerWidgetsConversationViewer GtkListBox {
+            background: #eee;
+        }
+        
+        EnvoyerWidgetsConversationViewer GtkListBoxRow {
+            background: #fff;
+        }
     """;
 
     public Window (Gtk.Application app) {
