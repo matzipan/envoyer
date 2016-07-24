@@ -29,12 +29,10 @@ public class Envoyer.Services.Session : Camel.Session {
                 var service = add_service(source_item.get_uid(), ((E.SourceBackend) extension).get_backend_name(), Camel.ProviderType.STORE);
 
                 E.SourceCamel.configure_service(source_item, service); //@TODO
-                
-                //debug ("%s", online ? "Online" : "Not online");
 
-                //((Camel.OfflineStore) service).set_online_sync(true); //@TODO only work when internet availalble
-                //((Camel.OfflineStore) service).connect_sync();
-                //((Camel.OfflineStore) service).prepare_for_offline_sync();
+                ((Camel.OfflineStore) service).set_online_sync(true); //@TODO only work when internet availalble
+                ((Camel.OfflineStore) service).connect_sync();
+                ((Camel.OfflineStore) service).prepare_for_offline_sync();
 
                 // https://developer.gnome.org/eds/3.20/eds-ESourceCamel.html @TODO
 
@@ -166,8 +164,6 @@ public class Envoyer.Services.Session : Camel.Session {
         var sources = registry.list_sources(E.SOURCE_EXTENSION_MAIL_ACCOUNT);
 
         sources.foreach((source_item) => {
-                //@TODO folder.refresh_info_sync();
-
                 if(source_item.get_uid() == "local" || 
                     source_item.get_uid() == "vfolder") {
                         sources.remove_all(source_item);
