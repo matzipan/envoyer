@@ -60,6 +60,8 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         header_summary_fields.row_spacing = 1;
         header_summary_fields.margin_top = 6;
         header_summary_fields.margin_bottom = 6;
+        header_summary_fields.hexpand = true;
+        header_summary_fields.valign = Gtk.Align.START;
         header_summary_fields.orientation = Gtk.Orientation.VERTICAL;
         header_summary_fields.add (subject_label);
         header_summary_fields.add (from_address_label);
@@ -69,16 +71,14 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
 
         datetime_label = new Gtk.Label (null);
         datetime_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
+        datetime_label.valign = Gtk.Align.START;
         datetime_label.margin_top = 6;
         datetime_label.margin_right = 10;
-        datetime_label.halign = Gtk.Align.END;
-        datetime_label.valign = Gtk.Align.START;
 
         attachment_image = new Gtk.Button.from_icon_name ("mail-attachment-symbolic", Gtk.IconSize.MENU);
-        attachment_image.get_style_context ().add_class (Gtk.STYLE_CLASS_FLAT);
+        attachment_image.get_style_context ().remove_class ("button");
         attachment_image.margin_top = 6;
         attachment_image.valign = Gtk.Align.START;
-        attachment_image.halign = Gtk.Align.END;
         attachment_image.sensitive = false;
         attachment_image.tooltip_text = _("This message contains one or more attachments");
 
@@ -96,6 +96,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         
         grid = new Gtk.Grid ();
         grid.orientation = Gtk.Orientation.VERTICAL;
+        grid.column_spacing = 3;
         grid.add (message_header);
         grid.add (message_webview);
 
@@ -113,7 +114,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         /*
          * This propagates the event from the WebView upwards toward ConversationViewer. I admit 
          * that this solution feels hacky, but I could not find any other working solution for 
-         * propagating the scroll event upwards. 
+         * propagating the scroll event upwards.
          */
         scroll_event (event);
         
@@ -123,11 +124,8 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     private Gtk.Label build_label () {
         var address_label = new Gtk.Label (null);
         address_label.ellipsize = Pango.EllipsizeMode.END;
-        ((Gtk.Misc) address_label).xalign = 0;
-        address_label.hexpand = true;
-        address_label.use_markup = true;
-        address_label.valign = Gtk.Align.BASELINE;
-        
+        address_label.halign = Gtk.Align.START;
+
         return address_label;
     }
 
@@ -137,9 +135,9 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         if (message_item.subject == "") {
             subject_label.destroy ();
         } else {
-            subject_label.set_label (GLib.Markup.escape_text(message_item.subject));
+            subject_label.set_label (message_item.subject);
         }
-        from_address_label.set_label (message_item.from.to_escaped_string ());
+        from_address_label.set_label (message_item.from.to_string ());
         to_address_label.set_label ("to %s".printf(build_addresses_string (message_item.to)));
         
         var addresses = build_addresses_string (message_item.cc);
@@ -166,8 +164,8 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         setup_timestamp ();
     }
     
-    private void setup_timestamp () {  
-        update_timestamp ();
+    private void setup_timestamp () {
+        update_timestamp (); //@TODO mabe write an autoupdating timestamp class
         
         var timeout_reference = GLib.Timeout.add_seconds(10, () => { 
             update_timestamp();
@@ -193,16 +191,16 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     }
     
     private string build_addresses_string (Gee.Collection<Envoyer.Models.Address> addresses) {
-            // @TODO replace indentity email address with "me" 
+            // @TODO replace indentity email address with "me"
             var addresses_string_builder = new GLib.StringBuilder ();
             var first = true;
 
             foreach (var address in addresses) {
                 if (first) {
                     first = false;
-                    addresses_string_builder.append (address.to_escaped_string ());
+                    addresses_string_builder.append (address.to_string ());
                 } else {
-                    addresses_string_builder.append (", %s".printf(address.to_escaped_string ()));
+                    addresses_string_builder.append (", %s".printf(address.to_string ()));
                 }
             }
             

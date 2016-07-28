@@ -21,8 +21,4 @@ public class Envoyer.Models.Address : GLib.Object {
             return "%s <%s>".printf(name, email);
         }
     }
-    
-    public string to_escaped_string () {
-        return GLib.Markup.escape_text(to_string ());
-    }
 }
