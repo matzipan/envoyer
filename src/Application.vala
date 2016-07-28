@@ -10,6 +10,7 @@ namespace Envoyer {
     public Envoyer.Widgets.FolderConversationsList folder_conversations_list;
     public Envoyer.Widgets.ConversationViewer conversation_viewer;
     public Envoyer.Services.Settings settings;
+    public GLib.Settings gnome_settings;
     public Envoyer.Services.Session session;
     public Envoyer.Widgets.Window window;
 }
@@ -30,7 +31,8 @@ public class Envoyer.Application : Granite.Application {
             running = true;
             
             settings = new Envoyer.Services.Settings ();
-            
+            gnome_settings = new GLib.Settings ("org.gnome.desktop.interface");
+
             window = new Envoyer.Widgets.Window (this);
             this.add_window (window);
 

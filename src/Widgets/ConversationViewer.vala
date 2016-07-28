@@ -17,6 +17,8 @@ public class Envoyer.Widgets.ConversationViewer : Gtk.Grid {
     }
 
     private void build_ui () {
+        //@TODO add find dialog
+        
         listbox = new Gtk.ListBox ();
         
         scrollbox = new Gtk.ScrolledWindow (null, null);

@@ -23,7 +23,36 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
 
     public signal void link_mouse_in (string uri);
     public signal void link_mouse_out ();
-
+    
+    private string _document_font;
+    public string document_font {
+        get {
+            return _document_font;
+        }
+        set {
+            _document_font = value;
+            Pango.FontDescription font = Pango.FontDescription.from_string(value);
+            var temp_settings = get_settings ();
+            temp_settings.default_font_family = font.get_family();
+            temp_settings.default_font_size = font.get_size() / Pango.SCALE;
+            set_settings (temp_settings);
+        }
+    }
+    
+    private string _monospace_font;
+    public string monospace_font {
+        get {
+            return _monospace_font;
+        }
+        set {
+            _monospace_font = value;
+            Pango.FontDescription font = Pango.FontDescription.from_string(value);
+            var temp_settings = get_settings ();
+            temp_settings.monospace_font_family = font.get_family();
+            temp_settings.default_monospace_font_size = font.get_size() / Pango.SCALE;
+            set_settings (temp_settings);
+        }
+    }
 
     public MessageWebView () {
         // storing the corresponding web view id for this instance and generating a new one
@@ -82,8 +111,10 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
         size_allocate.connect (size_update_async);
         context_menu.connect (setup_context_menu);
         decide_policy.connect (on_decide_policy);
+        gnome_settings.bind("document-font-name", this, "document-font", SettingsBindFlags.DEFAULT);
+        gnome_settings.bind("monospace-font-name", this, "monospace-font", SettingsBindFlags.DEFAULT);
     }
-    
+
     public bool setup_context_menu (WebKit.ContextMenu context_menu, Gdk.Event event, WebKit.HitTestResult hit_test_result) {
         context_menu.remove_all ();
         
@@ -135,6 +166,7 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
     
     public void load_html (string content, string? base_uri) {
         //@TODO improve the formatting, check pantheon-mail
+        //@TODO add inline images
 
         var format = "<html>
                         <style>

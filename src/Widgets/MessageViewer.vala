@@ -33,6 +33,8 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     }
 
     private void build_ui () {
+        //@TODO print button for message/thread
+
         expand = true;
         selectable = false;
 
