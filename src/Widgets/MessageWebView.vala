@@ -20,7 +20,7 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
 
     private uint instance_web_view_id;
     private Envoyer.Services.IMessageViewerExtension bus = null;
-    
+
     public MessageWebView () {
         // storing the corresponding web view id for this instance and generating a new one
         instance_web_view_id = web_view_id;
@@ -69,12 +69,14 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
     }
 
     public void build_ui () {
-        expand = true;
+        hexpand = true;
+        can_focus = false;
     }
     
     public void connect_signals () {
         size_allocate.connect (size_update_async);
         context_menu.connect (setup_context_menu);
+        decide_policy.connect (on_decide_policy);
     }
     
     public bool setup_context_menu (WebKit.ContextMenu context_menu, Gdk.Event event, WebKit.HitTestResult hit_test_result) {
@@ -127,6 +129,8 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
     }
     
     public void load_html (string content, string? base_uri) {
+        //@TODO improve the formatting, check pantheon-mail
+
         var format = "<html>
                         <style>
                             body {
@@ -142,5 +146,35 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
                         </body>
                       </html>";
         base.load_html(format.printf(content), base_uri);
+    }
+
+    private bool on_decide_policy (WebKit.PolicyDecision decision, WebKit.PolicyDecisionType type) {
+        if (type == WebKit.PolicyDecisionType.NAVIGATION_ACTION || type == WebKit.PolicyDecisionType.NEW_WINDOW_ACTION)  {
+            var navigation_decision = (WebKit.NavigationPolicyDecision) decision;
+
+            if (navigation_decision.navigation_action.get_navigation_type () == WebKit.NavigationType.LINK_CLICKED) {
+                decision.ignore ();
+
+                var link = navigation_decision.request.uri;
+
+                if (link.down().has_prefix("mailto:")) {
+                    // @TODO compose woth navigation_decision.request.uri, strip the prefix
+                } else {
+                    if (!link.has_prefix("http://") && !link.has_prefix("https://")) {
+                        link = "http://" + link;
+                    }
+
+                    try {
+                        Gtk.show_uri(Envoyer.window.get_screen(), link, Gdk.CURRENT_TIME);
+                    } catch (Error err) {
+                        debug("Unable to open URL %s, reason: %s", link, err.message);
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        return true;
     }
 }
