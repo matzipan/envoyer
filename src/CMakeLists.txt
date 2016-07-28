@@ -1,4 +1,4 @@
-#
+	#
 # Main application
 #
 
@@ -57,7 +57,6 @@ set(APP_VALA_OPTIONS
     --thread
     --enable-checking
     --debug
-    --enable-deprecated
     --target-glib=2.47.6
     ${EXTRA_VALA_OPTIONS}
 )
@@ -148,7 +147,6 @@ set(WEBEXTENSION_VALA_OPTIONS
     --thread
     --enable-checking
     --debug
-    --enable-deprecated
     --target-glib=2.47.6
     ${EXTRA_VALA_OPTIONS}
 )
