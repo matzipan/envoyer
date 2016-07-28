@@ -14,8 +14,6 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
     public FolderConversationItem (Envoyer.Models.ConversationThread thread) {
         this.thread = thread;
         build_ui ();
-        connect_signals ();
-        setup_events ();
     }
 
     private void build_ui () { 

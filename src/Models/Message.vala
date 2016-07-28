@@ -16,6 +16,8 @@ public class Envoyer.Models.Message : GLib.Object {
         } 
     }
     
+    public string subject { get { return (string) message_info.get_ptr (Camel.MessageInfoField.SUBJECT); } }
+
     public Envoyer.Models.Address from { owned get { return get_address_from_camel(mime_message.from, 0); } }
     public Gee.Collection<Envoyer.Models.Address> to { owned get { return get_addresses_collection_from_camel(mime_message.recipients.get(Camel.RECIPIENT_TYPE_TO)); } }
     public Gee.Collection<Envoyer.Models.Address> cc { owned get { return get_addresses_collection_from_camel(mime_message.recipients.get(Camel.RECIPIENT_TYPE_CC)); } }

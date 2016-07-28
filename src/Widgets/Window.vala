@@ -12,7 +12,7 @@ public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
     private Envoyer.FutureGranite.ThreePane three_pane;
     
     private const string CUSTOM_STYLESHEET = """
-        .from {
+        .subject {
             font-weight: bold;
         }
         

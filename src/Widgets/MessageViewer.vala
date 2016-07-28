@@ -12,6 +12,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     private Gtk.Grid header_summary_fields;
     private Gtk.Button attachment_image;
     private Gtk.Label datetime_label;
+    private Gtk.Label subject_label;
     private Gtk.Label from_address_label;
     private Gtk.Label to_address_label;
     private Gtk.Label cc_address_label;
@@ -34,21 +35,28 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
 
         avatar = new Envoyer.Widgets.Gravatar.with_default_icon (48);
         avatar.valign = Gtk.Align.START;
-
-        from_address_label = build_address_label ();
-        from_address_label.get_style_context ().add_class ("from");
-        to_address_label = build_address_label ();
-        to_address_label.get_style_context ().add_class ("to");
-        cc_address_label = build_address_label ();
-        cc_address_label.get_style_context ().add_class ("cc");
-        bcc_address_label = build_address_label ();
-        bcc_address_label.get_style_context ().add_class ("bcc");
         
+        subject_label = build_label ();
+        subject_label.get_style_context ().add_class ("subject");
+        from_address_label = build_label ();
+        from_address_label.get_style_context ().add_class ("from");
+        from_address_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
+        to_address_label = build_label ();
+        to_address_label.get_style_context ().add_class ("to");
+        to_address_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
+        cc_address_label = build_label ();
+        cc_address_label.get_style_context ().add_class ("cc");
+        cc_address_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
+        bcc_address_label = build_label ();
+        bcc_address_label.get_style_context ().add_class ("bcc");
+        bcc_address_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
+
         header_summary_fields = new Gtk.Grid ();
         header_summary_fields.row_spacing = 1;
         header_summary_fields.margin_top = 6;
         header_summary_fields.margin_bottom = 6;
         header_summary_fields.orientation = Gtk.Orientation.VERTICAL;
+        header_summary_fields.add (subject_label);
         header_summary_fields.add (from_address_label);
         header_summary_fields.add (to_address_label);
         header_summary_fields.add (cc_address_label);
@@ -105,11 +113,10 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         return Gdk.EVENT_PROPAGATE;
     }
     
-    private Gtk.Label build_address_label () {
+    private Gtk.Label build_label () {
         var address_label = new Gtk.Label (null);
         address_label.ellipsize = Pango.EllipsizeMode.END;
         ((Gtk.Misc) address_label).xalign = 0;
-        address_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
         address_label.hexpand = true;
         address_label.use_markup = true;
         address_label.valign = Gtk.Align.BASELINE;
@@ -120,6 +127,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     private void load_data () {
         message_webview.load_html (message_item.content, null);
         
+        subject_label.set_label (GLib.Markup.escape_text(message_item.subject));
         from_address_label.set_label (message_item.from.to_escaped_string ());
         to_address_label.set_label ("to %s".printf(build_addresses_string (message_item.to)));
         
