@@ -65,7 +65,7 @@ public class Envoyer.Widgets.Gravatar : Granite.Widgets.Avatar {
         var icon = new FileIcon (File.new_for_uri (uri));
         var icon_info = Gtk.IconTheme.get_default ().lookup_by_gicon_for_scale (icon, size, scale_factor, 0);
         
-        pixbuf = yield icon_info.load_icon_async ();
+        pixbuf = yield icon_info.load_icon_async (); //@TODO cache?
     }
     
     private string get_image_uri(FallbackImage fallback = FallbackImage.NOT_FOUND) {
