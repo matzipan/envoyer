@@ -20,7 +20,6 @@ public class Envoyer.Widgets.FolderLabel : Gtk.Grid {
 
     private void build_ui () {
         name_label = new Gtk.Label ("");
-        name_label.get_style_context ().add_class ("h3");
         name_label.halign = Gtk.Align.START;
         name_label.ellipsize = Pango.EllipsizeMode.END;
         ((Gtk.Misc) name_label).xalign = 0;
