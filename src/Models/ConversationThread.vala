@@ -26,8 +26,14 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
             return messages_list_copy;
         }
     }
+    
+    public GLib.DateTime datetime { //@TODO right now this competes with time_received, unify
+        owned get {
+            return new GLib.DateTime.from_unix_utc (time_received).to_local (); //@TODO how does this work with DATE_SENT
+        } 
+    }
 
-    public int64 time_received {
+    public int64 time_received { //@TODO right now this competes with datetime, unify
         get {
             var tm = message_info.get_time (Camel.MessageInfoField.DATE_RECEIVED);
 
@@ -35,7 +41,7 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
         }
     }
 
-    public int64 time_sent {
+    public int64 time_sent { //@TODO what does thsi mean?
         get {
             var tm = message_info.get_time (Camel.MessageInfoField.DATE_SENT);
             
