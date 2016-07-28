@@ -57,7 +57,7 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
         addresses_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
 
         bottom_grid = new Gtk.Grid ();
-        outer_grid.orientation = Gtk.Orientation.VERTICAL;
+        bottom_grid.orientation = Gtk.Orientation.VERTICAL;
         bottom_grid.column_spacing = 3;
         bottom_grid.add(addresses_label);
         bottom_grid.add(star_image);
