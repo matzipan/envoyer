@@ -172,6 +172,7 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
                         <style>
                             body {
                                 overflow-y:hidden; /* prevent vertical scrollbar */
+                                font-size: 14px;
                             }
                             body > div {
                                 overflow-wrap: break-word;

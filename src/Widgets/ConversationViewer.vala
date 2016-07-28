@@ -18,7 +18,7 @@ public class Envoyer.Widgets.ConversationViewer : Gtk.Grid {
 
     private void build_ui () {
         //@TODO add find dialog
-        
+
         listbox = new Gtk.ListBox ();
         
         scrollbox = new Gtk.ScrolledWindow (null, null);
@@ -28,7 +28,7 @@ public class Envoyer.Widgets.ConversationViewer : Gtk.Grid {
 
         var view_overlay = new Gtk.Overlay();
         view_overlay.add(scrollbox);
-        
+
         conversation_overlay = new Granite.Widgets.OverlayBar(view_overlay);
 
         orientation = Gtk.Orientation.VERTICAL;
