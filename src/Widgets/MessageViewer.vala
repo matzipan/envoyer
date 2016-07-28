@@ -18,8 +18,11 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     private Gtk.Label cc_address_label;
     private Gtk.Label bcc_address_label;
     private Envoyer.Widgets.Gravatar avatar;
-    
+
     private Envoyer.Models.Message message_item;
+
+    public signal void link_mouse_in (string uri);
+    public signal void link_mouse_out ();
 
     public MessageViewer (Envoyer.Models.Message message_item) {
         this.message_item = message_item;
@@ -100,6 +103,8 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     
     private void connect_signals () {
         message_webview.scroll_event.connect (propagate_scroll_event);
+        message_webview.link_mouse_in.connect ((uri) => { link_mouse_in (uri); });
+        message_webview.link_mouse_out.connect (() => { link_mouse_out (); });
     }
     
     private bool propagate_scroll_event (Gdk.EventScroll event) {

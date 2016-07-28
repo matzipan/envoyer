@@ -21,6 +21,10 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
     private uint instance_web_view_id;
     private Envoyer.Services.IMessageViewerExtension bus = null;
 
+    public signal void link_mouse_in (string uri);
+    public signal void link_mouse_out ();
+
+
     public MessageWebView () {
         // storing the corresponding web view id for this instance and generating a new one
         instance_web_view_id = web_view_id;
@@ -74,6 +78,7 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
     }
     
     public void connect_signals () {
+        mouse_target_changed.connect (on_mouse_target_changed);
         size_allocate.connect (size_update_async);
         context_menu.connect (setup_context_menu);
         decide_policy.connect (on_decide_policy);
@@ -176,5 +181,13 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
         }
 
         return true;
+    }
+
+    private void on_mouse_target_changed (WebKit.HitTestResult hit_test_result, uint modifiers) {
+        if (hit_test_result.context_is_link ()) {
+            link_mouse_in (hit_test_result.get_link_uri ());
+        } else {
+            link_mouse_out ();
+        }
     }
 }
