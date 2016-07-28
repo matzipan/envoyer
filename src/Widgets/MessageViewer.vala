@@ -131,8 +131,12 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
 
     private void load_data () {
         message_webview.load_html (message_item.content, null);
-        
-        subject_label.set_label (GLib.Markup.escape_text(message_item.subject));
+
+        if (message_item.subject == "") {
+            subject_label.destroy ();
+        } else {
+            subject_label.set_label (GLib.Markup.escape_text(message_item.subject));
+        }
         from_address_label.set_label (message_item.from.to_escaped_string ());
         to_address_label.set_label ("to %s".printf(build_addresses_string (message_item.to)));
         
