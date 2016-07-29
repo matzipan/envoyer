@@ -14,7 +14,8 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     public bool is_trash { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_TRASH; } }
     public bool is_outbox { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_OUTBOX; } }
     public bool is_sent { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_SENT; } }
-    public bool is_normal { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_NORMAL; } }
+    // The extra check for is_starred in is_normal is needed because we wanted to avoid breaking API changes in EDS
+    public bool is_normal { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_NORMAL && !is_starred; } }
     public bool is_spam { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_JUNK; } }
     public bool is_starred { get { return (folder_info.flags & Camel.FolderInfoFlags.FLAGGED) != 0; } }
     public bool is_all_mail { get { return (folder_info.flags & Camel.FOLDER_TYPE_MASK) == Camel.FolderInfoFlags.TYPE_ALL; }  }
