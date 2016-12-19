@@ -12,16 +12,16 @@ public class Envoyer.Models.Message : GLib.Object {
     
     public GLib.DateTime datetime { 
         owned get { 
-            return new GLib.DateTime.from_unix_utc (mime_message.date).to_local ();
+            return new GLib.DateTime.from_unix_utc (mime_message.get_date (0)).to_local ();
         } 
     }
     
-    public string subject { get { return (string) message_info.get_ptr (Camel.MessageInfoField.SUBJECT); } }
+    public string subject { get { return message_info.get_subject (); } }
 
-    public Envoyer.Models.Address from { owned get { return get_address_from_camel(mime_message.from, 0); } }
-    public Gee.Collection<Envoyer.Models.Address> to { owned get { return get_addresses_collection_from_camel(mime_message.recipients.get(Camel.RECIPIENT_TYPE_TO)); } }
-    public Gee.Collection<Envoyer.Models.Address> cc { owned get { return get_addresses_collection_from_camel(mime_message.recipients.get(Camel.RECIPIENT_TYPE_CC)); } }
-    public Gee.Collection<Envoyer.Models.Address> bcc { owned get { return get_addresses_collection_from_camel(mime_message.recipients.get(Camel.RECIPIENT_TYPE_BCC));} }
+    public Envoyer.Models.Address from { owned get { return get_address_from_camel(mime_message.get_from (), 0); } }
+    public Gee.Collection<Envoyer.Models.Address> to { owned get { return get_addresses_collection_from_camel(mime_message.get_recipients (Camel.RECIPIENT_TYPE_TO)); } }
+    public Gee.Collection<Envoyer.Models.Address> cc { owned get { return get_addresses_collection_from_camel(mime_message.get_recipients (Camel.RECIPIENT_TYPE_CC)); } }
+    public Gee.Collection<Envoyer.Models.Address> bcc { owned get { return get_addresses_collection_from_camel(mime_message.get_recipients (Camel.RECIPIENT_TYPE_BCC));} }
 
     public string content { owned get { return Envoyer.Parsers.ParserRegistry.parse_mime_message (mime_message); } }
     public bool has_attachment { get { return Envoyer.Parsers.ParserHelper.has_attachment (mime_message); } }

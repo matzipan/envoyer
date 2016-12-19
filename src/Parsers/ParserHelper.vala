@@ -13,25 +13,25 @@ public class Envoyer.Parsers.ParserHelper : GLib.Object {
             //@TODO throw an error
         }
         
-        var mime_type = data_wrapper.mime_type;
+        var mime_type = data_wrapper.get_mime_type_field ();
 
-	    debug ("Checking is_attachment %s/%s", data_wrapper.mime_type.type, data_wrapper.mime_type.subtype);
+	    debug ("Checking is_attachment %s/%s", mime_type.type, mime_type.subtype);
         
         return !(
-                    mime_type.is ("multipart", "*") ||
-                    mime_type.is ("application", "x-pkcs7-mime") ||
-                    mime_type.is ("application", "pkcs7-mime") ||
-                    mime_type.is ("application", "x-inlinepgp-signed") ||
-            		mime_type.is ("application", "x-inlinepgp-encrypted") ||
-                    mime_type.is ("x-evolution", "evolution-rss-feed") ||
-                    mime_type.is ("text", "calendar") ||
-                    mime_type.is ("text", "x-calendar") ||
-                    (mime_type.is ("text", "*") && part.get_filename () == null)
+                    mime_type.is ("multipart", "*") == 1 ||
+                    mime_type.is ("application", "x-pkcs7-mime") == 1 ||
+                    mime_type.is ("application", "pkcs7-mime") == 1 ||
+                    mime_type.is ("application", "x-inlinepgp-signed") == 1 ||
+            		mime_type.is ("application", "x-inlinepgp-encrypted") == 1 ||
+                    mime_type.is ("x-evolution", "evolution-rss-feed") == 1 ||
+                    mime_type.is ("text", "calendar") == 1 ||
+                    mime_type.is ("text", "x-calendar") == 1 ||
+                    (mime_type.is ("text", "*") == 1 && part.get_filename () == null)
                 );
     }
     
     public static bool has_attachment (Camel.MimeMessage mime_message) { 
-        if (!mime_message.get_content_type ().is ("multipart", "*")) {
+        if (mime_message.get_content_type ().is ("multipart", "*") != 1) {
             return false;
         }
     

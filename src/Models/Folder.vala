@@ -80,12 +80,12 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
         owned get {  //@TODO async
             var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
             
-            var tree = thread.tree;
+            Camel.FolderThreadNode? tree = (Camel.FolderThreadNode?) thread.tree;
 
             while (tree != null) {
-                threads_list_copy.add(new Envoyer.Models.ConversationThread(*tree, this));
+                threads_list_copy.add(new Envoyer.Models.ConversationThread(tree, this));
 
-                tree = tree.next;
+                tree = (Camel.FolderThreadNode?) tree.next;
             }
             
             //@TODO async and yield

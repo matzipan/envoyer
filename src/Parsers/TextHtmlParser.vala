@@ -6,7 +6,7 @@
  */
  
 public class Envoyer.Parsers.TextHtmlParser : Envoyer.Parsers.IParser, GLib.Object {
-    public static const string mime_type = "text/html";
+    public const string mime_type = "text/html";
 
     private Camel.MimePart mime_part;
 

@@ -8,11 +8,6 @@
 public class Envoyer.Services.Session : Camel.Session {
     private E.SourceRegistry registry;
     private E.CredentialsPrompter credentials_prompter;
-    
-    public struct CredentialsPrompterData {
-        public Camel.Service service;
-        public string mechanism;
-    }
 
     public async Session () {
         Camel.init(E.get_user_data_dir(), false);
@@ -28,7 +23,7 @@ public class Envoyer.Services.Session : Camel.Session {
 
                 var service = add_service(source_item.get_uid(), ((E.SourceBackend) extension).get_backend_name(), Camel.ProviderType.STORE);
 
-                E.SourceCamel.configure_service(source_item, service); //@TODO
+                source_item.camel_configure_service(service); //@TODO
 
                 //((Camel.OfflineStore) service).set_online_sync(true); //@TODO only work when internet availalble
                 //((Camel.OfflineStore) service).connect_sync();
@@ -43,12 +38,12 @@ public class Envoyer.Services.Session : Camel.Session {
 
     public override bool authenticate_sync (Camel.Service service, string? mechanism, GLib.Cancellable? cancellable = null) throws GLib.Error {
         /* This function is heavily inspired by mail_ui_session_authenticate_sync in Evolution
-         * https://git.gnome.org/browse/evolution/tree/mail/e-mail-ui-session.c */
+         * https://git.gnome.org/browse/evolution/tree/src/mail/e-mail-ui-session.c */
 
         /* Do not chain up.  Camel's default method is only an example for
          * subclasses to follow.  Instead we mimic most of its logic here. */
 
-        Camel.ServiceAuthType* authtype;
+        Camel.ServiceAuthType authtype;
         bool try_empty_password = false;
         var result = Camel.AuthenticationResult.REJECTED;
 
@@ -63,7 +58,7 @@ public class Envoyer.Services.Session : Camel.Session {
 
             /* If the SASL mechanism does not involve a user
              * password, then it gets one shot to authenticate. */
-            if (authtype != null && !authtype->need_password) {
+            if (authtype != null && !authtype.need_password) {
                 result = service.authenticate_sync (mechanism); //@TODO make async?
 
                 if (result == Camel.AuthenticationResult.REJECTED) {
@@ -79,7 +74,7 @@ public class Envoyer.Services.Session : Camel.Session {
         	/* Some SASL mechanisms can attempt to authenticate without a
         	 * user password being provided (e.g. single-sign-on credentials),
         	 * but can fall back to a user password.  Handle that case next. */
-    		var sasl = new Camel.Sasl (((Camel.Provider*)service.provider)->protocol, mechanism, service);
+    		var sasl = new SimpleSasl (((Camel.Provider)service.provider).protocol, mechanism, service);
     		if (sasl != null) {
     			try_empty_password = sasl.try_empty_password_sync ();
     		}
@@ -115,24 +110,19 @@ public class Envoyer.Services.Session : Camel.Session {
     		/* We need a password, preferrably one cached in
     		 * the keyring or else by interactive user prompt. */
 
-             var data = new CredentialsPrompterData () {
-                 service = service,
-                 mechanism = mechanism
-             };
-
-             return credentials_prompter.loop_prompt_sync (source, E.CredentialsPrompterPromptFlags.ALLOW_SOURCE_SAVE, try_credentials_sync, &data);
+             return credentials_prompter.loop_prompt_sync (source, E.CredentialsPrompterPromptFlags.ALLOW_SOURCE_SAVE, (prompter, source, credentials, out out_authenticated, cancellable) => try_credentials_sync (prompter, source, credentials, out out_authenticated, cancellable, service, mechanism));
     	} else {
             return (result == Camel.AuthenticationResult.ACCEPTED);
         }
     }
 
-    public static bool try_credentials_sync (E.CredentialsPrompter prompter, E.Source source, E.NamedParameters credentials, bool* out_authenticated, CredentialsPrompterData* user_data, GLib.Cancellable? cancellable = null) throws GLib.Error {
+    public bool try_credentials_sync (E.CredentialsPrompter prompter, E.Source source, E.NamedParameters credentials, out bool out_authenticated, GLib.Cancellable? cancellable, Camel.Service service, string? mechanism) throws GLib.Error {
         string credential_name = null;
 
         if (source.has_extension (E.SOURCE_EXTENSION_AUTHENTICATION)) {
-            var auth_extension = (E.SourceAuthentication*) source.get_extension(E.SOURCE_EXTENSION_AUTHENTICATION);
+            var auth_extension = (E.SourceAuthentication) source.get_extension(E.SOURCE_EXTENSION_AUTHENTICATION);
 
-            credential_name = auth_extension->dup_credential_name ();
+            credential_name = auth_extension.dup_credential_name ();
 
             if (credential_name != null && credential_name.length == 0) {
                 credential_name = null;
@@ -143,11 +133,11 @@ public class Envoyer.Services.Session : Camel.Session {
             credential_name = E.SOURCE_CREDENTIAL_PASSWORD;
         }
 
-        user_data.service.set_password (credentials.get (credential_name));
+        service.set_password (credentials.get (credential_name));
 
-        Camel.AuthenticationResult result = user_data.service.authenticate_sync (user_data.mechanism); //@TODO catch error
+        Camel.AuthenticationResult result = service.authenticate_sync (mechanism); //@TODO catch error
         
-        *out_authenticated = (result == Camel.AuthenticationResult.ACCEPTED);
+        out_authenticated = (result == Camel.AuthenticationResult.ACCEPTED);
 
         if (result == Camel.AuthenticationResult.ACCEPTED) {
             var credentials_source = prompter.get_provider ().ref_credentials_source (source);
@@ -188,5 +178,10 @@ public class Envoyer.Services.Session : Camel.Session {
         
         return registry.ref_source(identity_uid);        
     }
-
+    
+    public class SimpleSasl : Camel.Sasl {
+        public SimpleSasl (string service_name, string mechanism, Camel.Service service) {
+            Object (service_name: service_name, mechanism: mechanism, service: service);
+        }
+    }
 }

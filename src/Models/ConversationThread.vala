@@ -15,12 +15,12 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
         owned get {  //@TODO async
             var messages_list_copy = new Gee.LinkedList<Envoyer.Models.Message> (null);
 
-            var node = &thread_node;
+            Camel.FolderThreadNode? node = thread_node;
 
-            while (node != null) {                
-                messages_list_copy.add(new Envoyer.Models.Message(*node, folder));
+            while (node != null) {
+                messages_list_copy.add(new Envoyer.Models.Message(node, folder));
 
-                node = node.child;
+                node = (Camel.FolderThreadNode?) node.child;
             }
 
             return messages_list_copy;
@@ -35,21 +35,17 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
 
     public int64 time_received { //@TODO right now this competes with datetime, unify
         get {
-            var tm = message_info.get_time (Camel.MessageInfoField.DATE_RECEIVED);
-
-            return tm;
+            return message_info.get_date_received ();
         }
     }
 
     public int64 time_sent { //@TODO what does thsi mean?
         get {
-            var tm = message_info.get_time (Camel.MessageInfoField.DATE_SENT);
-            
-            return tm;
+            return message_info.get_date_sent ();
         }
     }
 
-    public string subject { get { return (string) message_info.get_ptr (Camel.MessageInfoField.SUBJECT); } }
+    public string subject { get { return message_info.get_subject (); } }
 
     public ConversationThread (Camel.FolderThreadNode thread_node, Envoyer.Models.Folder folder) {
         this.thread_node = thread_node;

@@ -6,7 +6,7 @@
  */
  
 public class Envoyer.Parsers.MultipartAlternativeParser : Envoyer.Parsers.IParser, GLib.Object {
-    public static const string mime_type = "multipart/alternative";
+    public const string mime_type = "multipart/alternative";
 
     private Camel.MimeMessage mime_message;
 

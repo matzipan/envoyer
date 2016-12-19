@@ -6,7 +6,7 @@
  */
  
 public class Envoyer.Parsers.TextPlainParser : Envoyer.Parsers.IParser, GLib.Object {
-    public static const string mime_type = "text/plain";
+    public const string mime_type = "text/plain";
 
     private Camel.MimePart mime_part;
 

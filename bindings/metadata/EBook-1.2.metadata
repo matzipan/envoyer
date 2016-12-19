@@ -1,3 +1,0 @@
-BookClientView.objects_added#signal.object type="GLib.List<weak void*>"
-BookClientView.objects_removed#signal.object type="GLib.List<weak void*>"
-BookClientView.objects_modified#signal.object type="GLib.List<weak void*>"

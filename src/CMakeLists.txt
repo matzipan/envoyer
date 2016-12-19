@@ -52,12 +52,11 @@ include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
 set(APP_VALA_OPTIONS
-    --vapidir=${CMAKE_SOURCE_DIR}/bindings/vapi
-    --metadatadir=${CMAKE_SOURCE_DIR}/bindings/metadata
     --thread
     --enable-checking
     --debug
     --target-glib=2.47.6
+    --disable-since-check
     ${EXTRA_VALA_OPTIONS}
 )
 
@@ -142,8 +141,6 @@ include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
 set(WEBEXTENSION_VALA_OPTIONS
-    --vapidir=${CMAKE_SOURCE_DIR}/bindings/vapi
-    --metadatadir=${CMAKE_SOURCE_DIR}/bindings/metadata
     --thread
     --enable-checking
     --debug
