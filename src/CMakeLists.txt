@@ -1,7 +1,3 @@
-	#
-# Main application
-#
-
 configure_file (${CMAKE_SOURCE_DIR}/src/config.vala.cmake ${CMAKE_BINARY_DIR}/config.vala)
 configure_file (${CMAKE_SOURCE_DIR}/src/Services/IMessageViewerExtension.vala ${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala)
 configure_file (${CMAKE_SOURCE_DIR}/src/Services/MessageViewerExtensionServer.vala ${CMAKE_BINARY_DIR}/src/Services/MessageViewerExtensionServer.vala)
@@ -106,13 +102,33 @@ PACKAGES
 	${APP_VALA_DEPS}
 OPTIONS  
 	${APP_VALA_OPTIONS}
+CUSTOM_VAPIS
+	MailCoreInterface/core.vapi
 GENERATE_HEADER
 	envoyer
 GENERATE_VAPI
 	envoyer
 )
 
-add_executable(envoyer ${APP_VALA_C} ${generated_resources})
+add_executable(envoyer 
+	${APP_VALA_C} 
+	${generated_resources}
+	MailCoreInterface/core.cpp
+)
+
+add_subdirectory(../../mailcore2/ ${CMAKE_CURRENT_BINARY_DIR}/mailcore2)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/mailcore2/src/include)
+target_link_libraries(envoyer
+        MailCore
+        ${LIBETPAN_LIBRARY}
+        ${CTEMPLATE_LIBRARY}
+        ${TIDY_LIBRARY}
+        ${LIBXML_LIBRARY}
+        crypto
+        pthread
+        uuid
+        icuuc
+        icui18n)
 
 #
 # WebKitWebExtension

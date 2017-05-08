@@ -46,8 +46,6 @@ public class Envoyer.Application : Granite.Application {
     private async void load_session() {
         session = yield new Envoyer.Services.Session ();
         
-        session.set_online(true);
-        
         window.session_up ();
     }
 }

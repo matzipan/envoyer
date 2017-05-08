@@ -28,13 +28,13 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
         set { _expanded = value; }
     }
     
-    public AccountSummary (Camel.Service service) {
-        identity_source = Envoyer.session.get_identity_source_for_service (service);
+    public AccountSummary () {
+        /*identity_source = Envoyer.session.get_identity_source_for_service (service);*/
 
-        var folders = ((Camel.OfflineStore) service).get_folders_bag ().list ();
+        /*var folders = ((Camel.OfflineStore) service).get_folders_bag ().list ();
         folders.foreach((object) => {
             _folder_list.add (new Envoyer.Models.Folder((Camel.Folder) object, ((Camel.OfflineStore) service)));
-        });
+        });*/
 
     }
 }

@@ -10,6 +10,8 @@ public class Envoyer.Services.Settings : Granite.Services.Settings {
     public int window_height { get; set; }
     public int position_x { get; set; }
     public int position_y { get; set; }
+    public string username { get; set; }
+    public string password { get; set; }
     
     public Settings () {
         base (Constants.PROJECT_FQDN);
