@@ -20,7 +20,7 @@ development cumbersome. Envoyer intends to adhere to principled development.
 Server/Camel), but it was quickly found to be clunky and limiting. GObject
 in C (Evolution) demands a lot of boilerplate code and it makes the overall
 development experience really difficult. Envoyer uses Vala, which makes it
-much more easy to write GObject code.  Furthermore, Envoyer aims is to have a 
+much more easy to write GObject code.  Furthermore, Envoyer aims to have a 
 much lighter and friendlier UI.
 
 * Thunderbird: just as Evolution, I think many use cases for which this
@@ -33,7 +33,7 @@ toolkit goodies like theming, icons or better performance.
 ### How to setup.
 
 You will first need to clone the MailCore 2 library in the same directory you 
-cloned the envoyer repository.
+cloned the Envoyer repository.
 
 To build Envoyer, run the following commands:
 ```
