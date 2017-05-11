@@ -6,12 +6,11 @@
  */
  
 public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Object {
-    private E.Source identity_source; //@TODO write a wrapper model for E.Source
+    private Envoyer.Services.Session session;
     private Envoyer.Models.Folder _folder;
 
     public bool is_inbox { get { return _folder.is_inbox; } }
     public bool is_trash { get { return _folder.is_trash; } }
-    public bool is_outbox { get { return _folder.is_outbox; } }
     public bool is_sent { get { return _folder.is_sent; } }
     public bool is_normal { get { return _folder.is_normal; } }
     public bool is_spam { get { return _folder.is_spam; } }
@@ -19,6 +18,7 @@ public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Ob
     public bool is_all_mail { get { return _folder.is_all_mail; } }
     public bool is_drafts { get { return _folder.is_drafts; } }
     public bool is_archive { get { return _folder.is_archive; } }
+    public bool is_important { get { return _folder.is_important; } }
     public bool is_unified { get { return _folder.is_unified; } }
     
     public Envoyer.Models.IFolder.Type folder_type { get { return _folder.folder_type; } }
@@ -28,10 +28,10 @@ public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Ob
 
     public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { owned get { return _folder.threads_list; } }
 
-    public string display_name { get { return identity_source.get_display_name (); } }
+    public string display_name { get { return session.name; } }
 
-    public UnifiedFolderChild (Envoyer.Models.Folder folder, E.Source identity_source) {
-        this.identity_source = identity_source;
+    public UnifiedFolderChild (Envoyer.Models.Folder folder, Envoyer.Services.Session session) {
+        this.session = session;
         _folder = folder;
 
         connect_signals ();

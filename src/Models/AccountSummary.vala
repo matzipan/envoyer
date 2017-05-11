@@ -10,7 +10,8 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
     
     //@TODO maybe the summary should have properties for each of the special folders: inbox, sent, drafts, etc.
 
-    public E.Source identity_source { get; private set; }
+    public Envoyer.Services.Session session { get; private set; }
+    
     public Gee.Collection<Envoyer.Models.Folder> folders_list {
         owned get {
             // Create a copy of the children so that it's safe to iterate it
@@ -28,13 +29,13 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
         set { _expanded = value; }
     }
     
-    public AccountSummary () {
-        /*identity_source = Envoyer.session.get_identity_source_for_service (service);*/
-
-        /*var folders = ((Camel.OfflineStore) service).get_folders_bag ().list ();
-        folders.foreach((object) => {
-            _folder_list.add (new Envoyer.Models.Folder((Camel.Folder) object, ((Camel.OfflineStore) service)));
-        });*/
-
+    public AccountSummary (Envoyer.Services.Session session) {
+        this.session = session;
+        
+        var folders = MailCoreInterface.fetch_folders(session.session);
+        
+        folders.foreach((item) => {
+            _folder_list.add (new Envoyer.Models.Folder(item));
+        });
     }
 }

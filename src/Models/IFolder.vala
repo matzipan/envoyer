@@ -8,7 +8,6 @@
 public interface Envoyer.Models.IFolder : GLib.Object {
     public abstract bool is_inbox { get; }
     public abstract bool is_trash { get; }
-    public abstract bool is_outbox { get; }
     public abstract bool is_sent { get; }
     public abstract bool is_normal { get; }
     public abstract bool is_spam { get; }
@@ -16,6 +15,7 @@ public interface Envoyer.Models.IFolder : GLib.Object {
     public abstract bool is_all_mail { get; }
     public abstract bool is_drafts { get; }
     public abstract bool is_archive { get; }
+    public abstract bool is_important { get; }
     public abstract bool is_unified { get; }
     
     // the type keyword seems to be reserved in Vala
@@ -38,14 +38,14 @@ public interface Envoyer.Models.IFolder : GLib.Object {
     public enum Type {
         INBOX,
         TRASH,
-        OUTBOX,
         SENT,
         NORMAL,
         SPAM,
         STARRED,
         ALL,
         DRAFTS,
-        ARCHIVE;
+        ARCHIVE,
+        IMPORTANT;
         
         public unowned string to_string() {
             switch (this) {
@@ -54,10 +54,7 @@ public interface Envoyer.Models.IFolder : GLib.Object {
 
                 case TRASH:
                     return "Trash";
-
-                case OUTBOX:
-                    return "Outbox";
-
+                    
                 case SENT:
                     return "Sent";
                     
@@ -78,16 +75,19 @@ public interface Envoyer.Models.IFolder : GLib.Object {
                     
                 case ARCHIVE:
                     return "Archive";
+                    
+                case IMPORTANT:
+                    return "Important";
 
                 default:
                     assert_not_reached();
             }
         }
 
-        public static Type[] all() {
+        public static Type[] unified_folders() {
             // the order in here dictates the order in the sidebar
-            return { INBOX, STARRED, OUTBOX, DRAFTS, SENT, ARCHIVE, ALL, SPAM, TRASH, NORMAL };
-         }
+            return { INBOX, STARRED, IMPORTANT, DRAFTS, SENT, ARCHIVE, ALL, SPAM, TRASH };
+        }
     }
     
     public abstract Camel.MimeMessage get_mime_message (string uid);

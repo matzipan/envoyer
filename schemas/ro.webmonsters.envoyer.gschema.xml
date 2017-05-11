@@ -19,6 +19,12 @@
             <description>Password of default account.</description>
         </key>
         
+        <key name="account-name" type="s">
+            <default>"Gmail"</default>
+            <summary>name of default account</summary>
+            <description>Name of default account.</description>
+        </key>
+        
         <key name="position-x" type="i">
             <default>600</default>
             <summary>x axis position on screen</summary>

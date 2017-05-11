@@ -70,8 +70,6 @@ public class Envoyer.Widgets.FolderLabel : Gtk.Grid {
             } else {
                 return "user-trash-full";
             }
-        } else if(folder.is_outbox) {
-            return "mail-outbox";
         } else if(folder.is_sent) {
             return "mail-sent";
         } else if(folder.is_spam) {
@@ -79,7 +77,9 @@ public class Envoyer.Widgets.FolderLabel : Gtk.Grid {
         } else if(folder.is_starred) {
             return "starred";
         } else if(folder.is_drafts) {
-            return "folder-documents";    
+            return "folder-documents"; 
+        } else if(folder.is_important) {
+            return "mail-mark-important";   
         } else if(folder.is_all_mail || folder.is_archive) {
             return "mail-archive";
         } else {

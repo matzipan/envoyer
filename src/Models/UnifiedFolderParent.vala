@@ -28,11 +28,6 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
             return folder_type == Envoyer.Models.IFolder.Type.TRASH;
         }
     }
-    public bool is_outbox { 
-        get { 
-            return folder_type == Envoyer.Models.IFolder.Type.OUTBOX;
-        }
-    }
     public bool is_sent { 
         get { 
             return folder_type == Envoyer.Models.IFolder.Type.SENT;
@@ -66,6 +61,11 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
     public bool is_archive { 
         get {
             return folder_type == Envoyer.Models.IFolder.Type.ARCHIVE;
+        }
+    }
+    public bool is_important { 
+        get {
+            return folder_type == Envoyer.Models.IFolder.Type.IMPORTANT;
         }
     }
     public bool is_unified { get { return true; } }

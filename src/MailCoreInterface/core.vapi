@@ -1,4 +1,4 @@
 namespace MailCoreInterface {
     void* connect (string username, string password);
-    void fetch (void* session);
+    GLib.List<Envoyer.FolderStruct*> fetch_folders (void* session);
 }

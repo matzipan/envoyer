@@ -6,11 +6,13 @@
  */
 
 public class Envoyer.Services.Session : GLib.Object {
-    public async Session () {
-        Object();
+    //@TODO rename class to Identity
+    public void* session { get; private set; }
+    public string name { get; construct set; }
     
-        void* session = MailCoreInterface.connect (settings.username, settings.password);
-        
-        MailCoreInterface.fetch (session);
+    public async Session (string username, string password, string name) {
+        Object(name: name);
+    
+        session = MailCoreInterface.connect (username, password);        
     }
 }

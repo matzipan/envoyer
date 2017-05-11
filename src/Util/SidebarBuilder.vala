@@ -9,17 +9,13 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
     public static void build_list (Envoyer.FutureGranite.NestedListBox listbox) {
         var summaries_geelist = build_summaries_list ();
 
-        foreach (Envoyer.Models.IFolder.Type type in Envoyer.Models.IFolder.Type.all()) {
+        foreach (Envoyer.Models.IFolder.Type type in Envoyer.Models.IFolder.Type.unified_folders()) {
             var unified_folder = new Envoyer.Models.UnifiedFolderParent(type);
-            
-            if(type == Envoyer.Models.IFolder.Type.NORMAL) {
-                continue;
-            }
 
             foreach (var summary in summaries_geelist) {
                 foreach(var folder in summary.folders_list) {
                     if(folder.folder_type == type) {
-                        unified_folder.add (new Envoyer.Models.UnifiedFolderChild (folder, summary.identity_source));
+                        unified_folder.add (new Envoyer.Models.UnifiedFolderChild (folder, summary.session));
                     }
                 }
             }
@@ -31,7 +27,7 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
 
 
         foreach (var summary in summaries_geelist) {
-            var account_folders_parent = new Envoyer.Widgets.AccountFoldersParentItem (summary.identity_source);
+            var account_folders_parent = new Envoyer.Widgets.AccountFoldersParentItem (summary.session);
 
             foreach (var folder in summary.folders_list) {
                 if (folder.is_normal) {
@@ -46,9 +42,9 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
     public static Gee.Collection<Envoyer.Models.AccountSummary> build_summaries_list () {  //@TODO async
         var summaries_list = new Gee.ArrayList<Envoyer.Models.AccountSummary> (null);
 
-        /*Envoyer.session.get_services().foreach((service) => {
-            summaries_list.add(new Envoyer.Models.AccountSummary (service));
-        });   */
+        Envoyer.sessions.foreach((session) => {
+            summaries_list.add(new Envoyer.Models.AccountSummary (session));
+        });
         
         return summaries_list;     
     }
