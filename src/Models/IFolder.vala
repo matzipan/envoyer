@@ -23,9 +23,11 @@ public interface Envoyer.Models.IFolder : GLib.Object {
     
     public abstract uint unread_count { get; }
     public abstract uint total_count { get; }
+    public abstract uint recent_count { get; }
 
     public abstract signal void unread_count_changed (uint new_count);
-    public abstract signal void total_count_changed (string new_name);
+    public abstract signal void total_count_changed (uint total_count);
+    public abstract signal void recent_count_changed (uint recent_count);
     public abstract signal void display_name_changed (string new_name);
 
     public abstract Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { owned get; }

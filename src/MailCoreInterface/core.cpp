@@ -7,6 +7,7 @@
  
 #include <MailCore/MCIMAPSession.h>
 #include <MailCore/MCIMAPFolder.h>
+#include <MailCore/MCIMAPFolderStatus.h>
 #include <glib.h>
 #include "envoyer.h"
  
@@ -41,6 +42,15 @@ extern "C" void* mail_core_interface_fetch_folders(mailcore::IMAPSession* sessio
         EnvoyerFolderStruct* folder_struct = (EnvoyerFolderStruct*) g_malloc(sizeof(EnvoyerFolderStruct));
         folder_struct->name = folder->path()->UTF8Characters(); //@TODO copy this again
         folder_struct->flags = folder->flags();
+        
+        mailcore::IMAPFolderStatus* status = session->folderStatus(folder->path(), &error);
+        folder_struct->unseen_count = status->unseenCount();
+        folder_struct->message_count = status->messageCount();
+        folder_struct->recent_count = status->recentCount();
+        folder_struct->uid_next = status->uidNext();
+        folder_struct->uid_validity = status->uidValidity();
+        folder_struct->highest_mod_seq = status->highestModSeqValue();
+        
         list = g_list_append (list, folder_struct);
     }
     

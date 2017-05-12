@@ -8,6 +8,12 @@
 public struct Envoyer.FolderStruct {
     string* name;
     int flags;
+    int unseen_count;
+    int message_count;
+    int recent_count;
+    int uid_next;
+    int uid_validity;
+    int64 highest_mod_seq;
 }
 
 public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
@@ -74,8 +80,9 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     
     }
 
-    public uint unread_count { get { return 0; } }
-    public uint total_count { get { return 1; } }
+    public uint unread_count { get { return data->unseen_count; } }
+    public uint total_count { get { return data->message_count; } }
+    public uint recent_count { get { return data->recent_count; } }
     
     //@TODO trigger unread_count_changed
     //@TODO trigger total_count_changed

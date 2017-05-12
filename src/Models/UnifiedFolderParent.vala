@@ -100,6 +100,19 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
         }
     }
     
+    
+    public uint recent_count { 
+        get {
+            uint new_recent_count = 0;
+
+            foreach (var child in _children) {
+                new_recent_count += child.recent_count;
+            }
+
+            return new_recent_count;
+        }
+    }
+    
     private Envoyer.Models.IFolder.Type _folder_type = Envoyer.Models.IFolder.Type.NORMAL;
 
     public Envoyer.Models.IFolder.Type folder_type { get { return _folder_type; } }
