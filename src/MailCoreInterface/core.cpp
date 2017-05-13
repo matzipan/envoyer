@@ -9,6 +9,7 @@
 #include <MailCore/MCIMAPFolder.h>
 #include <MailCore/MCIMAPFolderStatus.h>
 #include <glib.h>
+#include <gee.h>
 #include "envoyer.h"
  
 extern "C" void* mail_core_interface_connect(gchar* username, gchar* password) {
@@ -30,7 +31,7 @@ extern "C" void* mail_core_interface_fetch_folders(mailcore::IMAPSession* sessio
 
     mailcore::Array* folders = session->fetchAllFolders (&error);
     
-    GList *list = NULL;
+    GeeLinkedList *list = gee_linked_list_new (ENVOYER_MODELS_TYPE_FOLDER, (GBoxedCopyFunc) g_object_ref, g_object_unref, NULL, NULL, NULL);
 
     for(uint i = 0 ; i < folders->count() ; i++) {
         mailcore::IMAPFolder* folder = (mailcore::IMAPFolder*) folders->objectAtIndex(i);
@@ -39,22 +40,20 @@ extern "C" void* mail_core_interface_fetch_folders(mailcore::IMAPSession* sessio
             continue;
         }
         
-        EnvoyerFolderStruct* folder_struct = (EnvoyerFolderStruct*) g_malloc(sizeof(EnvoyerFolderStruct));
-        folder_struct->name = folder->path()->UTF8Characters(); //@TODO copy this again
-        folder_struct->flags = folder->flags();
+        EnvoyerFolderStruct folder_struct;
         
         mailcore::IMAPFolderStatus* status = session->folderStatus(folder->path(), &error);
-        folder_struct->unseen_count = status->unseenCount();
-        folder_struct->message_count = status->messageCount();
-        folder_struct->recent_count = status->recentCount();
-        folder_struct->uid_next = status->uidNext();
-        folder_struct->uid_validity = status->uidValidity();
-        folder_struct->highest_mod_seq = status->highestModSeqValue();
+        folder_struct.unseen_count = status->unseenCount();
+        folder_struct.message_count = status->messageCount();
+        folder_struct.recent_count = status->recentCount();
+        folder_struct.uid_next = status->uidNext();
+        folder_struct.uid_validity = status->uidValidity();
+        folder_struct.highest_mod_seq = status->highestModSeqValue();
         
-        list = g_list_append (list, folder_struct);
+        EnvoyerModelsFolder* folder_model = envoyer_models_folder_new (folder->path()->UTF8Characters(), folder->flags(), &folder_struct);
+
+        gee_abstract_collection_add ((GeeAbstractCollection*) list, folder_model);
     }
     
-    return list;  
-    
-    //@TODO might have to release folders    
+    return list;
 }

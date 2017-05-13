@@ -44,7 +44,7 @@ public class Envoyer.Widgets.FolderLabel : Gtk.Grid {
     
     private void load_data () {
         set_unread_count (folder.unread_count);
-        set_name (folder.display_name);
+        set_name (folder.name);
     }
 
     private void connect_signals () {

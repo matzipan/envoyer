@@ -117,7 +117,7 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
 
     public Envoyer.Models.IFolder.Type folder_type { get { return _folder_type; } }
 
-    public string display_name {
+    public string name {
         get { 
             return folder_type.to_string ();
         }

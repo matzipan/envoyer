@@ -6,8 +6,6 @@
  */
  
 public struct Envoyer.FolderStruct {
-    string* name;
-    int flags;
     int unseen_count;
     int message_count;
     int recent_count;
@@ -17,18 +15,19 @@ public struct Envoyer.FolderStruct {
 }
 
 public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
-    private Envoyer.FolderStruct* data;
+    private Envoyer.FolderStruct data;
+    private int flags;
     
     // It appears that MailCore does the same check for name == "INBOX"
-    public bool is_inbox { get { return (data->flags & (1 << 4)) != 0 || data->name == "INBOX"; } }
-    public bool is_sent { get { return (data->flags & (1 << 5)) != 0; } }
-    public bool is_starred { get { return (data->flags & (1 << 6)) != 0; } }
-    public bool is_all_mail { get { return (data->flags & (1 << 7)) != 0; } }
-    public bool is_trash { get { return (data->flags & (1 << 8)) != 0; } }
-    public bool is_drafts { get { return (data->flags & (1 << 9)) != 0; } }
-    public bool is_spam { get { return (data->flags & (1 << 10)) != 0; } }
-    public bool is_important { get { return (data->flags & (1 << 11)) != 0; } }
-    public bool is_archive { get { return (data->flags & (1 << 12)) != 0; } }
+    public bool is_inbox { get { return (flags & (1 << 4)) != 0 || name == "INBOX"; } }
+    public bool is_sent { get { return (flags & (1 << 5)) != 0; } }
+    public bool is_starred { get { return (flags & (1 << 6)) != 0; } }
+    public bool is_all_mail { get { return (flags & (1 << 7)) != 0; } }
+    public bool is_trash { get { return (flags & (1 << 8)) != 0; } }
+    public bool is_drafts { get { return (flags & (1 << 9)) != 0; } }
+    public bool is_spam { get { return (flags & (1 << 10)) != 0; } }
+    public bool is_important { get { return (flags & (1 << 11)) != 0; } }
+    public bool is_archive { get { return (flags & (1 << 12)) != 0; } }
     // is_normal is linked to IMAPFolderFlagFolderTypeMask in MailCore. Perhaps find a more elegant solution...
     public bool is_normal { get { return !is_inbox && !is_trash && !is_sent && !is_spam && !is_starred && !is_important && !is_all_mail && !is_drafts && !is_archive; } }
     public bool is_unified { get { return false; } }
@@ -80,9 +79,9 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     
     }
 
-    public uint unread_count { get { return data->unseen_count; } }
-    public uint total_count { get { return data->message_count; } }
-    public uint recent_count { get { return data->recent_count; } }
+    public uint unread_count { get { return data.unseen_count; } }
+    public uint total_count { get { return data.message_count; } }
+    public uint recent_count { get { return data.recent_count; } }
     
     //@TODO trigger unread_count_changed
     //@TODO trigger total_count_changed
@@ -112,9 +111,12 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
         }
     }
 
-    public string display_name { get { return data->name; } }
+    private string _name;
+    public string name { get { return _name; } }
 
-    public Folder(Envoyer.FolderStruct* data) {        
+    public Folder(string name, int flags, Envoyer.FolderStruct data) {  
+        this._name = name.dup ();
+        this.flags = flags;
         this.data = data;        
     }
 

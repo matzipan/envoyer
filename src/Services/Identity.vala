@@ -13,7 +13,7 @@ public class Envoyer.Services.Identity : GLib.Object {
         Object(name: name, session: MailCoreInterface.connect (username, password));
     }
     
-    public GLib.List<Envoyer.FolderStruct*> fetch_folders () {
+    public Gee.LinkedList<Envoyer.Models.Folder> fetch_folders () {
         return MailCoreInterface.fetch_folders (session);
     }
 }

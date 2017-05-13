@@ -29,7 +29,7 @@ public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Ob
 
     public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { owned get { return _folder.threads_list; } }
 
-    public string display_name { get { return identity.name; } }
+    public string name { get { return identity.name; } }
 
     public UnifiedFolderChild (Envoyer.Models.Folder folder, Envoyer.Services.Identity identity) {
         this.identity = identity;

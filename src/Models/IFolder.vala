@@ -32,7 +32,7 @@ public interface Envoyer.Models.IFolder : GLib.Object {
 
     public abstract Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { owned get; }
 
-    public abstract string display_name { get; }
+    public abstract string name { get; }
     
     public abstract Camel.MessageInfo get_message_info (string uid);
     
