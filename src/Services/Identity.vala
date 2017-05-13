@@ -12,4 +12,8 @@ public class Envoyer.Services.Identity : GLib.Object {
     public async Identity (string username, string password, string name) {
         Object(name: name, session: MailCoreInterface.connect (username, password));
     }
+    
+    public GLib.List<Envoyer.FolderStruct*> fetch_folders () {
+        return MailCoreInterface.fetch_folders (session);
+    }
 }

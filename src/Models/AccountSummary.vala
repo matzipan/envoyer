@@ -32,10 +32,10 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
     public AccountSummary (Envoyer.Services.Identity identity) {
         Object (identity: identity);
         
-        var folders = MailCoreInterface.fetch_folders(identity.session);
+        var folders = identity.fetch_folders ();
         
         folders.foreach((item) => {
-            _folder_list.add (new Envoyer.Models.Folder(item));
+            _folder_list.add (new Envoyer.Models.Folder (item));
         });
     }
 }
