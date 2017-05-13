@@ -10,7 +10,7 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
     
     //@TODO maybe the summary should have properties for each of the special folders: inbox, sent, drafts, etc.
 
-    public Envoyer.Services.Session session { get; private set; }
+    public Envoyer.Services.Identity identity { get; construct set; }
     
     public Gee.Collection<Envoyer.Models.Folder> folders_list {
         owned get {
@@ -29,10 +29,10 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
         set { _expanded = value; }
     }
     
-    public AccountSummary (Envoyer.Services.Session session) {
-        this.session = session;
+    public AccountSummary (Envoyer.Services.Identity identity) {
+        Object (identity: identity);
         
-        var folders = MailCoreInterface.fetch_folders(session.session);
+        var folders = MailCoreInterface.fetch_folders(identity.session);
         
         folders.foreach((item) => {
             _folder_list.add (new Envoyer.Models.Folder(item));

@@ -59,7 +59,7 @@ set(APP_VALA_OPTIONS
 vala_precompile(APP_VALA_C envoyer
 	Main.vala
     Application.vala
-	Services/Session.vala 
+	Services/Identity.vala 
     Services/Settings.vala
 	FutureGranite/ExpandableItem.vala
     FutureGranite/SimpleExpandableItem.vala

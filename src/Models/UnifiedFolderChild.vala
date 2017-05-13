@@ -6,7 +6,7 @@
  */
  
 public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Object {
-    private Envoyer.Services.Session session;
+    private Envoyer.Services.Identity identity;
     private Envoyer.Models.Folder _folder;
 
     public bool is_inbox { get { return _folder.is_inbox; } }
@@ -29,17 +29,17 @@ public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Ob
 
     public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { owned get { return _folder.threads_list; } }
 
-    public string display_name { get { return session.name; } }
+    public string display_name { get { return identity.name; } }
 
-    public UnifiedFolderChild (Envoyer.Models.Folder folder, Envoyer.Services.Session session) {
-        this.session = session;
+    public UnifiedFolderChild (Envoyer.Models.Folder folder, Envoyer.Services.Identity identity) {
+        this.identity = identity;
         _folder = folder;
 
         connect_signals ();
     }
 
     public void connect_signals () {
-        // @TODO watch for identity_source display_name change
+        // @TODO watch for identity display_name change
         
         _folder.unread_count_changed.connect ((new_unread_count) => {
                 unread_count_changed (new_unread_count);

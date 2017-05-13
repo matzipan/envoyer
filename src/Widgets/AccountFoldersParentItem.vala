@@ -6,8 +6,8 @@
  */
  
 public class Envoyer.Widgets.AccountFoldersParentItem : Envoyer.FutureGranite.SimpleExpandableItem {
-    public AccountFoldersParentItem (Envoyer.Services.Session session) {
-        base (session.name);
+    public AccountFoldersParentItem (Envoyer.Services.Identity identity) {
+        base (identity.name);
         
         build_ui ();
     }

@@ -11,7 +11,7 @@ namespace Envoyer {
     public Envoyer.Widgets.ConversationViewer conversation_viewer;
     public Envoyer.Services.Settings settings;
     public GLib.Settings gnome_settings;
-    public GLib.List<Envoyer.Services.Session> sessions;
+    public GLib.List<Envoyer.Services.Identity> identities;
     public Envoyer.Widgets.Window window;
 }
 
@@ -45,9 +45,9 @@ public class Envoyer.Application : Granite.Application {
     
     private async void load_session() {
         //@TODO Add support for multiple identities
-        var session = yield new Envoyer.Services.Session (settings.username, settings.password, settings.account_name);
+        var identity = yield new Envoyer.Services.Identity (settings.username, settings.password, settings.account_name);
         
-        sessions.append (session);
+        identities.append (identity);
         
         window.session_up ();
     }

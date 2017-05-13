@@ -15,7 +15,7 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
             foreach (var summary in summaries_geelist) {
                 foreach(var folder in summary.folders_list) {
                     if(folder.folder_type == type) {
-                        unified_folder.add (new Envoyer.Models.UnifiedFolderChild (folder, summary.session));
+                        unified_folder.add (new Envoyer.Models.UnifiedFolderChild (folder, summary.identity));
                     }
                 }
             }
@@ -27,7 +27,7 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
 
 
         foreach (var summary in summaries_geelist) {
-            var account_folders_parent = new Envoyer.Widgets.AccountFoldersParentItem (summary.session);
+            var account_folders_parent = new Envoyer.Widgets.AccountFoldersParentItem (summary.identity);
 
             foreach (var folder in summary.folders_list) {
                 if (folder.is_normal) {
@@ -42,8 +42,8 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
     public static Gee.Collection<Envoyer.Models.AccountSummary> build_summaries_list () {  //@TODO async
         var summaries_list = new Gee.ArrayList<Envoyer.Models.AccountSummary> (null);
 
-        Envoyer.sessions.foreach((session) => {
-            summaries_list.add(new Envoyer.Models.AccountSummary (session));
+        Envoyer.identities.foreach((identity) => {
+            summaries_list.add(new Envoyer.Models.AccountSummary (identity));
         });
         
         return summaries_list;     
