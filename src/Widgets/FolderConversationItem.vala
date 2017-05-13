@@ -15,9 +15,9 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
     private Gtk.Button star_image;
     private Gtk.Label datetime_label;
     private double current_size = 0;
-    public Envoyer.Models.ConversationThread thread { get; private set; }
+    public Envoyer.Models.Message thread { get; private set; }
 
-    public FolderConversationItem (Envoyer.Models.ConversationThread thread) {
+    public FolderConversationItem (Envoyer.Models.Message thread) {
         this.thread = thread;
         build_ui ();
     }
@@ -83,9 +83,9 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
         //@TODO hover to see full title
         datetime_label.label = thread.subject;
         addresses_label.label = "me, Tom Cone, Mike"; //@TODO
-        if (true) { //@TODO
+        /*if (true) {
             //subject_label.get_style_context ().add_class ("unread");
-        }
+        }*/
 
         attachment_image.destroy (); //@TODO
         star_image.destroy (); //@TODO

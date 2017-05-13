@@ -30,7 +30,7 @@ public interface Envoyer.Models.IFolder : GLib.Object {
     public abstract signal void recent_count_changed (uint recent_count);
     public abstract signal void display_name_changed (string new_name);
 
-    public abstract Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { owned get; }
+    public abstract Gee.Collection<Envoyer.Models.Message> threads_list { owned get; }
 
     public abstract string name { get; }
     

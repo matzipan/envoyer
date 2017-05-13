@@ -6,19 +6,18 @@
  */
  
 public class Envoyer.Models.Address : GLib.Object {
-    public string name { get; private set; }
-    public string email { get; private set; }
+    public string name { get; construct set; }
+    public string email { get; construct set; }
     
     public Address (string name, string email) {
-        this.name = name;
-        this.email = email;
+        Object(name: name.dup (), email: email.dup ());
     }
     
     public string to_string () {
         if (name == "") {
             return email;
         } else {
-            return "%s <%s>".printf(name, email);
+            return "%s <%s>".printf (name, email);
         }
     }
 }

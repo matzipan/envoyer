@@ -18,6 +18,8 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     private Envoyer.FolderStruct data;
     private int flags;
     
+    public Envoyer.Services.Identity identity;
+    
     // It appears that MailCore does the same check for name == "INBOX"
     public bool is_inbox { get { return (flags & (1 << 4)) != 0 || name == "INBOX"; } }
     public bool is_sent { get { return (flags & (1 << 5)) != 0; } }
@@ -86,19 +88,11 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     //@TODO trigger unread_count_changed
     //@TODO trigger total_count_changed
 
-    public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list { 
+    public Gee.Collection<Envoyer.Models.Message> threads_list { 
         owned get {  //@TODO async
-            var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
+            /*var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
             
-            /*Camel.FolderThreadNode? tree = (Camel.FolderThreadNode?) thread.tree;
-
-            while (tree != null) {
-                threads_list_copy.add(new Envoyer.Models.ConversationThread(tree, this));
-
-                tree = (Camel.FolderThreadNode?) tree.next;
-            }
-            */
-            //@TODO async and yield
+            threads_list_copy.add_all ();
             threads_list_copy.sort ((first, second) => { // sort descendingly
                 if(first.time_received > second.time_received) {
                     return -1;
@@ -107,7 +101,8 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
                 }
             });
 
-            return threads_list_copy;
+            return threads_list_copy;*/
+            return identity.fetch_messages (name);
         }
     }
 

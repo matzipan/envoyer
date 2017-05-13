@@ -15,13 +15,13 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
         owned get {  //@TODO async
             var messages_list_copy = new Gee.LinkedList<Envoyer.Models.Message> (null);
 
-            Camel.FolderThreadNode? node = thread_node;
+            /*Camel.FolderThreadNode? node = thread_node;
 
             while (node != null) {
                 messages_list_copy.add(new Envoyer.Models.Message(node, folder));
 
                 node = (Camel.FolderThreadNode?) node.child;
-            }
+            }*/
 
             return messages_list_copy;
         }
@@ -31,12 +31,6 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
         owned get {
             return new GLib.DateTime.from_unix_utc (time_received).to_local (); //@TODO how does this work with DATE_SENT
         } 
-    }
-
-    public int64 time_received { //@TODO right now this competes with datetime, unify
-        get {
-            return message_info.get_date_received ();
-        }
     }
 
     public int64 time_sent { //@TODO what does thsi mean?

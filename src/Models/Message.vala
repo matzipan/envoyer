@@ -6,49 +6,46 @@
  */
  
 public class Envoyer.Models.Message : GLib.Object {
-    private Camel.FolderThreadNode message_node;
-    private Camel.MimeMessage mime_message;
-    private Camel.MessageInfo message_info { get { return message_node.message; } }
+    public Envoyer.Models.Address from { get; private set; }
+    public Envoyer.Models.Address sender { get; private set; }
+    public Gee.Collection<Envoyer.Models.Address> to { get; private set; }
+    public Gee.Collection<Envoyer.Models.Address> cc { get; private set; }
+    public Gee.Collection<Envoyer.Models.Address> bcc { get; private set; }
     
+    private time_t _datetime; 
     public GLib.DateTime datetime { 
         owned get { 
-            return new GLib.DateTime.from_unix_utc (mime_message.get_date (0)).to_local ();
+            return new GLib.DateTime.from_unix_utc (_datetime).to_local ();
         } 
     }
-    
-    public string subject { get { return message_info.get_subject (); } }
 
-    public Envoyer.Models.Address from { owned get { return get_address_from_camel(mime_message.get_from (), 0); } }
-    public Gee.Collection<Envoyer.Models.Address> to { owned get { return get_addresses_collection_from_camel(mime_message.get_recipients (Camel.RECIPIENT_TYPE_TO)); } }
-    public Gee.Collection<Envoyer.Models.Address> cc { owned get { return get_addresses_collection_from_camel(mime_message.get_recipients (Camel.RECIPIENT_TYPE_CC)); } }
-    public Gee.Collection<Envoyer.Models.Address> bcc { owned get { return get_addresses_collection_from_camel(mime_message.get_recipients (Camel.RECIPIENT_TYPE_BCC));} }
+    public string subject { get; private set; }
+    public Gee.Collection<string> references { get; private set; }
+    public string id { get; private set; }
 
-    public string content { owned get { return Envoyer.Parsers.ParserRegistry.parse_mime_message (mime_message); } }
-    public bool has_attachment { get { return Envoyer.Parsers.ParserHelper.has_attachment (mime_message); } }
+    public string content { owned get { return ""; } } //@TODO
+    public bool has_attachment { get { return false; } } //@TODO
 
-    public Message (Camel.FolderThreadNode message_node, Envoyer.Models.Folder folder) {
-        this.message_node = message_node;
-        
-        mime_message = folder.get_mime_message (message_info.uid);
-    }
-
-    private Envoyer.Models.Address get_address_from_camel (Camel.InternetAddress internet_address, int index) {
-        string temp_name;
-        string temp_email; 
-        
-        internet_address.get(index, out temp_name, out temp_email);
-        
-        return new Envoyer.Models.Address (temp_name, temp_email);
-    }
-    
-    private Gee.Collection<Envoyer.Models.Address> get_addresses_collection_from_camel (Camel.InternetAddress internet_address) {
-        var len = ((Camel.Address) internet_address).length();
-        var list = new Gee.ArrayList<Envoyer.Models.Address> ();
-    
-        for (uint i=0; i < len; i++) {
-            list.add(get_address_from_camel(internet_address, (int) i));
-        }
-        
-        return list;
+    public Message (
+            Envoyer.Models.Address from, 
+            Envoyer.Models.Address sender,
+            Gee.Collection<Envoyer.Models.Address> to,
+            Gee.Collection<Envoyer.Models.Address> cc,
+            Gee.Collection<Envoyer.Models.Address> bcc, 
+            string subject,
+            time_t datetime,
+            Gee.Collection<string> references, 
+            string id
+        ) {
+            
+        this.from = from;
+        this.sender = sender;
+        this.to = to;
+        this.cc = cc;
+        this.bcc = bcc;
+        this._datetime = datetime;
+        this.subject = subject;
+        this.references = references;
+        this.id = id.dup ();
     }
 }

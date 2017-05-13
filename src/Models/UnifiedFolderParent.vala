@@ -123,11 +123,11 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
         }
     }
 
-    public Gee.LinkedList<Envoyer.Models.ConversationThread> threads_list {
+    public Gee.Collection<Envoyer.Models.Message> threads_list {
         owned get {
             // Create a copy of the children so that it's safe to iterate it
             // (e.g. by using foreach) while removing items.
-            var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> ();
+            var threads_list_copy = new Gee.LinkedList<Envoyer.Models.Message> ();
 
             foreach (var child in _children) {
                 threads_list_copy.add_all (child.threads_list);
@@ -135,11 +135,12 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
             
             //@TODO async and yield
             threads_list_copy.sort ((first, second) => { // sort descendingly
-                if(first.time_received > second.time_received) {
+                /*if(first.time_received > second.time_received) {
                     return -1;
                 } else {
                     return 1;
-                }
+                }*/
+                return 1;
             });
 
             return threads_list_copy;
