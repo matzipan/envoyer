@@ -29,7 +29,7 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
     
     public GLib.DateTime datetime { //@TODO right now this competes with time_received, unify
         owned get {
-            return new GLib.DateTime.from_unix_utc (time_received).to_local (); //@TODO how does this work with DATE_SENT
+            return new GLib.DateTime.from_unix_utc (0).to_local (); //@TODO how does this work with DATE_SENT
         } 
     }
 
