@@ -18,7 +18,7 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     private Envoyer.FolderStruct data;
     private int flags;
     
-    public Envoyer.Services.Identity identity;
+    public Envoyer.Models.Identity identity;
     
     // It appears that MailCore does the same check for name == "INBOX"
     public bool is_inbox { get { return (flags & (1 << 4)) != 0 || name == "INBOX"; } }

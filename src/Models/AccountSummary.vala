@@ -10,7 +10,7 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
     
     //@TODO maybe the summary should have properties for each of the special folders: inbox, sent, drafts, etc.
 
-    public Envoyer.Services.Identity identity { get; construct set; }
+    public Envoyer.Models.Identity identity { get; construct set; }
     
     public Gee.Collection<Envoyer.Models.Folder> folders_list {
         owned get {
@@ -29,7 +29,7 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
         set { _expanded = value; }
     }
     
-    public AccountSummary (Envoyer.Services.Identity identity) {
+    public AccountSummary (Envoyer.Models.Identity identity) {
         Object (identity: identity);
                 
         _folder_list.add_all (identity.fetch_folders ());

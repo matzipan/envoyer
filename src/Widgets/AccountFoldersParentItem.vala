@@ -6,7 +6,7 @@
  */
  
 public class Envoyer.Widgets.AccountFoldersParentItem : Envoyer.FutureGranite.SimpleExpandableItem {
-    public AccountFoldersParentItem (Envoyer.Services.Identity identity) {
+    public AccountFoldersParentItem (Envoyer.Models.Identity identity) {
         base (identity.name);
         
         build_ui ();

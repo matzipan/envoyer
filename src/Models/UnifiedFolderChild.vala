@@ -6,7 +6,7 @@
  */
  
 public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Object {
-    private Envoyer.Services.Identity identity;
+    private Envoyer.Models.Identity identity;
     private Envoyer.Models.Folder _folder;
 
     public bool is_inbox { get { return _folder.is_inbox; } }
@@ -31,7 +31,7 @@ public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Ob
 
     public string name { get { return identity.name; } }
 
-    public UnifiedFolderChild (Envoyer.Models.Folder folder, Envoyer.Services.Identity identity) {
+    public UnifiedFolderChild (Envoyer.Models.Folder folder, Envoyer.Models.Identity identity) {
         this.identity = identity;
         _folder = folder;
 

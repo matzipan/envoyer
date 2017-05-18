@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-public class Envoyer.Services.Identity : GLib.Object {
+public class Envoyer.Models.Identity : GLib.Object {
     public void* session { get; construct set; }
     public string name { get; construct set; }
     

@@ -59,7 +59,6 @@ set(APP_VALA_OPTIONS
 vala_precompile(APP_VALA_C envoyer
 	Main.vala
     Application.vala
-	Services/Identity.vala 
     Services/Settings.vala
 	FutureGranite/ExpandableItem.vala
     FutureGranite/SimpleExpandableItem.vala
@@ -96,6 +95,7 @@ vala_precompile(APP_VALA_C envoyer
     Models/AccountSummary.vala
     Models/Address.vala
     Models/ConversationThread.vala
+	Models/Identity.vala 
     ${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala
     ${CMAKE_BINARY_DIR}/config.vala
 PACKAGES
