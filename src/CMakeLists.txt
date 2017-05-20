@@ -5,12 +5,6 @@ configure_file (${CMAKE_SOURCE_DIR}/src/Services/MessageViewerExtensionServer.va
 set (APP_PKG_DEPS
 	gobject-2.0
     gio-2.0
-    camel-1.2>=3.19.92
-    evolution-data-server-1.2>=3.19.92
-    libebook-1.2>=3.19.92
-    libebook-contacts-1.2>=3.19.92
-    libedataserver-1.2>=3.19.92
-	libedataserverui-1.2>=3.19.92
     libsoup-2.4
     libxml-2.0
     granite>=0.3
@@ -22,11 +16,6 @@ set (APP_PKG_DEPS
 set (APP_VALA_DEPS
 	gobject-2.0
     gio-2.0
-    camel-1.2
-    libebook-1.2
-    libebook-contacts-1.2
-    libedataserver-1.2
-    libedataserverui-1.2
     libsoup-2.4
     libxml-2.0
     granite
@@ -66,12 +55,6 @@ vala_precompile(APP_VALA_C envoyer
 	FutureGranite/ThreePane.vala
 	FutureGranite/HumanDateTime.vala
 	Util/SidebarBuilder.vala
-	Parsers/ParserRegistry.vala
-	Parsers/IParser.vala
-	Parsers/MultipartAlternativeParser.vala
-	Parsers/TextHtmlParser.vala
-    Parsers/TextPlainParser.vala
-    Parsers/ParserHelper.vala
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala
     Widgets/IFolderItem.vala
