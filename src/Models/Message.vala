@@ -12,10 +12,10 @@ public class Envoyer.Models.Message : GLib.Object {
     public Gee.Collection<Envoyer.Models.Address> cc { get; private set; }
     public Gee.Collection<Envoyer.Models.Address> bcc { get; private set; }
     
-    private time_t _datetime; 
-    public GLib.DateTime datetime { 
+    public time_t time_received { get; private set; } 
+    public GLib.DateTime datetime_received { 
         owned get { 
-            return new GLib.DateTime.from_unix_utc (_datetime).to_local ();
+            return new GLib.DateTime.from_unix_utc (_time_received).to_local ();
         } 
     }
 
@@ -33,7 +33,7 @@ public class Envoyer.Models.Message : GLib.Object {
             Gee.Collection<Envoyer.Models.Address> cc,
             Gee.Collection<Envoyer.Models.Address> bcc, 
             string subject,
-            time_t datetime,
+            time_t time_received,
             Gee.Collection<string> references, 
             string id
         ) {
@@ -43,7 +43,7 @@ public class Envoyer.Models.Message : GLib.Object {
         this.to = to;
         this.cc = cc;
         this.bcc = bcc;
-        this._datetime = datetime;
+        this._time_received = time_received;
         this.subject = subject;
         this.references = references;
         this.id = id.dup ();

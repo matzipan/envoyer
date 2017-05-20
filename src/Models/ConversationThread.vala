@@ -6,44 +6,53 @@
  */
  
 public class Envoyer.Models.ConversationThread : GLib.Object {
-    private Envoyer.Models.Folder folder;
-    private Camel.MessageInfo message_info { get { return thread_node.message; } }
-    private Camel.FolderThreadNode thread_node;
+    private Gee.ArrayList <Envoyer.Models.Message> _messages_list = new Gee.ArrayList <Envoyer.Models.Message> ();
 
+    //@TODO concatenate addresses
     // @TODO if this is to slow, it might be worth doing memoization
-    public Gee.LinkedList<Envoyer.Models.Message> messages {
+    public Gee.Collection <Envoyer.Models.Message> messages_list {
         owned get {  //@TODO async
             var messages_list_copy = new Gee.LinkedList<Envoyer.Models.Message> (null);
 
-            /*Camel.FolderThreadNode? node = thread_node;
-
-            while (node != null) {
-                messages_list_copy.add(new Envoyer.Models.Message(node, folder));
-
-                node = (Camel.FolderThreadNode?) node.child;
-            }*/
-
+            messages_list_copy.add_all (_messages_list);
+            
             return messages_list_copy;
         }
     }
     
-    public GLib.DateTime datetime { //@TODO right now this competes with time_received, unify
+    public time_t time_received {
         owned get {
-            return new GLib.DateTime.from_unix_utc (0).to_local (); //@TODO how does this work with DATE_SENT
+            return _messages_list[0].time_received;
+        } 
+    }
+    
+    public GLib.DateTime datetime_received {
+        owned get {
+            return _messages_list[0].datetime_received;
         } 
     }
 
-    public int64 time_sent { //@TODO what does thsi mean?
-        get {
-            return message_info.get_date_sent ();
+    public string subject { get { return _messages_list[0].subject; } }
+    
+    public ConversationThread.from_container (Envoyer.Models.Container container) {
+        if (container.message != null) {
+            _messages_list.add (container.message);
         }
-    }
-
-    public string subject { get { return message_info.get_subject (); } }
-
-    public ConversationThread (Camel.FolderThreadNode thread_node, Envoyer.Models.Folder folder) {
-        this.thread_node = thread_node;
-        this.folder = folder;
+        
+        foreach (var child_message in container.children) {
+            _messages_list.add (child_message.message);
+        }
+        
+        _messages_list.sort ((first, second) => { // sort descendingly
+            if(first.time_received > second.time_received) {
+                return -1;
+            } else {
+                return 1;
+            }
+            
+            return 1;
+        });
+        
     }
     
     public bool is_important() {

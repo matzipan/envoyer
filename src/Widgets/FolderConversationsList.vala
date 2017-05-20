@@ -64,9 +64,9 @@ public class Envoyer.Widgets.FolderConversationsList : Gtk.Grid {
             if (row == null) return;
             assert(row is Envoyer.Widgets.FolderConversationItem);
 
-            /*conversation_viewer.load_conversation_thread (((Envoyer.Widgets.FolderConversationItem) row).thread);*/
+            conversation_viewer.load_conversation_thread (((Envoyer.Widgets.FolderConversationItem) row).thread);
             
-            //conversation_viewer.give_focus ();
+            /*conversation_viewer.give_focus ();*/
         });
     }
 }

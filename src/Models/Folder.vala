@@ -88,11 +88,11 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     //@TODO trigger unread_count_changed
     //@TODO trigger total_count_changed
 
-    public Gee.Collection<Envoyer.Models.Message> threads_list { 
+    public Gee.Collection<Envoyer.Models.ConversationThread> threads_list { 
         owned get {  //@TODO async
-            /*var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
+            var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
             
-            threads_list_copy.add_all ();
+            threads_list_copy.add_all (identity.fetch_threads (name)); //@TODO cache fetch_threads
             threads_list_copy.sort ((first, second) => { // sort descendingly
                 if(first.time_received > second.time_received) {
                     return -1;
@@ -101,8 +101,7 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
                 }
             });
 
-            return threads_list_copy;*/
-            return identity.fetch_messages (name);
+            return threads_list_copy;
         }
     }
 

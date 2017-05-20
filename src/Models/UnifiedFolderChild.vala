@@ -27,7 +27,7 @@ public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Ob
     public uint total_count { get { return _folder.total_count; } }
     public uint recent_count { get { return _folder.recent_count; } }
 
-    public Gee.Collection<Envoyer.Models.Message> threads_list { owned get { return _folder.threads_list; } }
+    public Gee.Collection<Envoyer.Models.ConversationThread> threads_list { owned get { return _folder.threads_list; } }
 
     public string name { get { return identity.name; } }
 

@@ -123,11 +123,11 @@ public class Envoyer.Models.UnifiedFolderParent : Envoyer.Models.IFolder, GLib.O
         }
     }
 
-    public Gee.Collection<Envoyer.Models.Message> threads_list {
+    public Gee.Collection<Envoyer.Models.ConversationThread> threads_list {
         owned get {
             // Create a copy of the children so that it's safe to iterate it
             // (e.g. by using foreach) while removing items.
-            var threads_list_copy = new Gee.LinkedList<Envoyer.Models.Message> ();
+            var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> ();
 
             foreach (var child in _children) {
                 threads_list_copy.add_all (child.threads_list);

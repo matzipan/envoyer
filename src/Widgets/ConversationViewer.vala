@@ -43,7 +43,7 @@ public class Envoyer.Widgets.ConversationViewer : Gtk.Grid {
     private void load_data () {
         clear ();
 
-        foreach (var item in conversation_thread.messages) {
+        foreach (var item in conversation_thread.messages_list) {
             var viewer = new Envoyer.Widgets.MessageViewer(item);
             viewer.scroll_event.connect(handle_scroll_event);
             viewer.link_mouse_in.connect (show_overlay_with_text);

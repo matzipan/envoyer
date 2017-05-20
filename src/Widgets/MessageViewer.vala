@@ -11,7 +11,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     private Gtk.Grid message_header;
     private Gtk.Grid header_summary_fields;
     private Gtk.Button attachment_image;
-    private Gtk.Label datetime_label;
+    private Gtk.Label datetime_received_label;
     private Gtk.Label subject_label;
     private Gtk.Label from_address_label;
     private Gtk.Label to_address_label;
@@ -69,11 +69,11 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         header_summary_fields.add (cc_address_label);
         header_summary_fields.add (bcc_address_label);
 
-        datetime_label = new Gtk.Label (null);
-        datetime_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
-        datetime_label.valign = Gtk.Align.START;
-        datetime_label.margin_top = 6;
-        datetime_label.margin_right = 10;
+        datetime_received_label = new Gtk.Label (null);
+        datetime_received_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
+        datetime_received_label.valign = Gtk.Align.START;
+        datetime_received_label.margin_top = 6;
+        datetime_received_label.margin_right = 10;
 
         attachment_image = new Gtk.Button.from_icon_name ("mail-attachment-symbolic", Gtk.IconSize.MENU);
         attachment_image.get_style_context ().remove_class ("button");
@@ -90,7 +90,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         message_header.add (avatar);
         message_header.add (header_summary_fields);
         message_header.add (attachment_image);
-        message_header.add (datetime_label);
+        message_header.add (datetime_received_label);
         
         message_webview = new Envoyer.Widgets.MessageWebView ();
         
@@ -184,10 +184,10 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
                                     Granite.DateTime.get_default_time_format(false, true)
                                     );
                                     
-        datetime_label.tooltip_text = message_item.datetime.format(full_format);
+        datetime_received_label.tooltip_text = message_item.datetime_received.format(full_format);
     
-        var humanDateTime = new Envoyer.FutureGranite.HumanDateTime(message_item.datetime);
-        datetime_label.set_label (humanDateTime.compared_to_now ());
+        var humanDateTime = new Envoyer.FutureGranite.HumanDateTime(message_item.datetime_received);
+        datetime_received_label.set_label (humanDateTime.compared_to_now ());
     }
     
     private string build_addresses_string (Gee.Collection<Envoyer.Models.Address> addresses) {
