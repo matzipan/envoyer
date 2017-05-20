@@ -34,8 +34,6 @@ public interface Envoyer.Models.IFolder : GLib.Object {
 
     public abstract string name { get; }
     
-    public abstract Camel.MessageInfo get_message_info (string uid);
-    
     
     public enum Type {
         INBOX,
@@ -91,6 +89,4 @@ public interface Envoyer.Models.IFolder : GLib.Object {
             return { INBOX, STARRED, IMPORTANT, DRAFTS, SENT, ARCHIVE, ALL, SPAM, TRASH };
         }
     }
-    
-    public abstract Camel.MimeMessage get_mime_message (string uid);
 }

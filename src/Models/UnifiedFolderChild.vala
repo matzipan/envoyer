@@ -49,10 +49,4 @@ public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Ob
                 total_count_changed (new_total_count);
             });
     }
-    
-    public Camel.MessageInfo get_message_info (string uid) { return _folder.get_message_info(uid); }
-    
-    public Camel.MimeMessage get_mime_message (string uid) {
-        return _folder.get_mime_message (uid);
-    }
 }

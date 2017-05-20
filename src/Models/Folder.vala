@@ -113,14 +113,4 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
         this.flags = flags;
         this.data = data;        
     }
-
-    public Camel.MessageInfo get_message_info (string uid) {
-        return null;
-    }
-    
-    public Camel.MimeMessage get_mime_message (string uid) {
-        //folder.synchronize_message_sync (uid); //@TODO async? also, this should probably happen in a more batch manner
-        
-        return null;
-    }
 }
