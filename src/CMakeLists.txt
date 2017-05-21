@@ -24,19 +24,19 @@ set (APP_VALA_DEPS
 	webkit2gtk-4.0>=2.10.9
 )
 
-find_package(PkgConfig)
+find_package (PkgConfig)
 
 pkg_check_modules (APP_DEPS REQUIRED ${APP_PKG_DEPS})
 
-add_definitions(${APP_DEPS_CFLAGS})
-link_libraries(${APP_DEPS_LIBRARIES})
-link_directories(${APP_DEPS_LIBRARY_DIRS})
+add_definitions (${APP_DEPS_CFLAGS})
+link_libraries (${APP_DEPS_LIBRARIES})
+link_directories (${APP_DEPS_LIBRARY_DIRS})
 
-link_directories(${CMAKE_BINARY_DIR})
-include_directories(${CMAKE_BINARY_DIR})
-include_directories(${CMAKE_SOURCE_DIR})
+link_directories (${CMAKE_BINARY_DIR})
+include_directories (${CMAKE_BINARY_DIR})
+include_directories (${CMAKE_SOURCE_DIR})
 
-set(APP_VALA_OPTIONS
+set (APP_VALA_OPTIONS
     --thread
     --enable-checking
     --debug
@@ -45,7 +45,7 @@ set(APP_VALA_OPTIONS
     ${EXTRA_VALA_OPTIONS}
 )
 
-vala_precompile(APP_VALA_C envoyer
+vala_precompile (APP_VALA_C envoyer
 	Main.vala
     Application.vala
     Services/Settings.vala
@@ -93,14 +93,14 @@ GENERATE_VAPI
 	envoyer
 )
 
-add_executable(envoyer 
+add_executable (envoyer 
 	${APP_VALA_C} 
 	${generated_resources}
 	MailCoreInterface/core.cpp
 )
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/mailcore2/src/include)
-target_link_libraries(envoyer
+include_directories (${CMAKE_CURRENT_BINARY_DIR}/mailcore2/src/include)
+target_link_libraries (envoyer
         MailCore
         ${LIBETPAN_LIBRARY}
         ${CTEMPLATE_LIBRARY}
@@ -126,19 +126,19 @@ set (WEBEXTENSION_VALA_DEPS
 	webkit2gtk-web-extension-4.0>=2.10.9
 )
 
-find_package(PkgConfig)
+find_package (PkgConfig)
 
 pkg_check_modules (WEBEXTENSION_DEPS REQUIRED ${WEBEXTENSION_PKG_DEPS})
 
-add_definitions(${WEBEXTENSION_DEPS_CFLAGS})
-link_libraries(${WEBEXTENSION_DEPS_LIBRARIES})
-link_directories(${WEBEXTENSION_DEPS_LIBRARY_DIRS})
+add_definitions (${WEBEXTENSION_DEPS_CFLAGS})
+link_libraries (${WEBEXTENSION_DEPS_LIBRARIES})
+link_directories (${WEBEXTENSION_DEPS_LIBRARY_DIRS})
 
-link_directories(${CMAKE_BINARY_DIR})
-include_directories(${CMAKE_BINARY_DIR})
-include_directories(${CMAKE_SOURCE_DIR})
+link_directories (${CMAKE_BINARY_DIR})
+include_directories (${CMAKE_BINARY_DIR})
+include_directories (${CMAKE_SOURCE_DIR})
 
-set(WEBEXTENSION_VALA_OPTIONS
+set (WEBEXTENSION_VALA_OPTIONS
     --thread
     --enable-checking
     --debug
@@ -146,7 +146,7 @@ set(WEBEXTENSION_VALA_OPTIONS
     ${EXTRA_VALA_OPTIONS}
 )
 
-vala_precompile(WEBEXTENSION_VALA_C envoyer-webextension
+vala_precompile (WEBEXTENSION_VALA_C envoyer-webextension
 	WebExtensions/MessageViewerExtension.vala
 	${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala
     ${CMAKE_BINARY_DIR}/src/Services/MessageViewerExtensionServer.vala
@@ -161,4 +161,4 @@ GENERATE_VAPI
 	envoyer-webextension
 )
 
-add_library(envoyer-webextension SHARED ${WEBEXTENSION_VALA_C} ${generated_resources})
+add_library (envoyer-webextension SHARED ${WEBEXTENSION_VALA_C} ${generated_resources})
