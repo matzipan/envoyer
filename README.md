@@ -32,8 +32,8 @@ toolkit goodies like theming, icons or better performance.
 
 ### How to setup.
 
-You will first need to clone the MailCore 2 library in the same directory you 
-cloned the Envoyer repository.
+The repository includes the Mailcore 2 as a git submodule. Therefore, you will need to pass
+`--recursive` to git when you clone Envoyer.
 
 To build Envoyer, run the following commands:
 ```
