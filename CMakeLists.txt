@@ -28,6 +28,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_subdirectory (schemas)
 add_subdirectory (src)
+add_subdirectory(lib/mailcore2/)
 
 install(TARGETS ${APP_VALA_C} RUNTIME DESTINATION bin)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/envoyer.desktop DESTINATION ${DATADIR}/applications/)

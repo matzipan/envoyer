@@ -99,7 +99,6 @@ add_executable(envoyer
 	MailCoreInterface/core.cpp
 )
 
-add_subdirectory(../../mailcore2/ ${CMAKE_CURRENT_BINARY_DIR}/mailcore2)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/mailcore2/src/include)
 target_link_libraries(envoyer
         MailCore

@@ -1,0 +1,3 @@
+[submodule "lib/mailcore2"]
+	path = lib/mailcore2
+	url = https://github.com/mailcore/mailcore2
