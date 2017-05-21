@@ -29,9 +29,6 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
         subject_label.ellipsize = Pango.EllipsizeMode.END;
         subject_label.get_style_context ().add_class ("subject");
 
-        datetime_received_label = new Gtk.Label (null);
-        datetime_received_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
-
         attachment_image = new Gtk.Button.from_icon_name ("mail-attachment-symbolic", Gtk.IconSize.MENU);
         attachment_image.get_style_context ().remove_class ("button");
         attachment_image.sensitive = false;
@@ -42,7 +39,6 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
         top_grid.column_spacing = 3;
         top_grid.add (subject_label);
         top_grid.add (attachment_image);
-        top_grid.add (datetime_received_label);
         
         star_image = new Gtk.Button.from_icon_name ("starred", Gtk.IconSize.MENU); //@TODO make smaller
         star_image.get_style_context ().remove_class ("button");
@@ -55,12 +51,15 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
         addresses_label.ellipsize = Pango.EllipsizeMode.END;
         addresses_label.get_style_context ().add_class ("addresses");
         addresses_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
+        
+        datetime_received_label = new Gtk.Label (null);
 
         bottom_grid = new Gtk.Grid ();
-        bottom_grid.orientation = Gtk.Orientation.VERTICAL;
+        bottom_grid.orientation = Gtk.Orientation.HORIZONTAL;
         bottom_grid.column_spacing = 3;
-        bottom_grid.add(addresses_label);
-        bottom_grid.add(star_image);
+        bottom_grid.add (addresses_label);
+        bottom_grid.add (star_image);
+        bottom_grid.add (datetime_received_label);
 
         outer_grid = new Gtk.Grid ();
         outer_grid.orientation = Gtk.Orientation.VERTICAL;
@@ -80,7 +79,6 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
     private void load_data () {
         subject_label.label = thread.subject;
         subject_label.tooltip_text = thread.subject;
-        //@TODO hover to see full title
         datetime_received_label.label = thread.subject;
         addresses_label.label = "me, Tom Cone, Mike"; //@TODO
         /*if (true) {
