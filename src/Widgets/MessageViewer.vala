@@ -43,6 +43,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         
         subject_label = build_label ();
         subject_label.get_style_context ().add_class ("subject");
+        subject_label.xalign = 0;
         from_address_label = build_label ();
         from_address_label.get_style_context ().add_class ("from");
         from_address_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);

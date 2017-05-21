@@ -28,6 +28,7 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
         subject_label.halign = Gtk.Align.START;
         subject_label.ellipsize = Pango.EllipsizeMode.END;
         subject_label.get_style_context ().add_class ("subject");
+        subject_label.xalign = 0;
 
         attachment_image = new Gtk.Button.from_icon_name ("mail-attachment-symbolic", Gtk.IconSize.MENU);
         attachment_image.get_style_context ().remove_class ("button");
