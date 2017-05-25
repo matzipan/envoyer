@@ -80,8 +80,14 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
     private void load_data () {
         subject_label.label = thread.subject;
         subject_label.tooltip_text = thread.subject;
-        datetime_received_label.label = thread.subject;
-        addresses_label.label = "me, Tom Cone, Mike"; //@TODO
+        var full_format = "%s %s".printf(
+                                    Granite.DateTime.get_default_date_format(false, true, true),
+                                    Granite.DateTime.get_default_time_format(false, true)
+                                    );
+                                    
+        datetime_received_label.tooltip_text = thread.datetime_received.format(full_format);
+                
+        addresses_label.label = build_addresses_string (thread.display_addresses);
         /*if (true) {
             //subject_label.get_style_context ().add_class ("unread");
         }*/
@@ -106,16 +112,28 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
         });
     }
     
-    private void update_timestamp () {
-        var full_format = "%s %s".printf(
-                                    Granite.DateTime.get_default_date_format(false, true, true),
-                                    Granite.DateTime.get_default_time_format(false, true)
-                                    );
-                                    
-        datetime_received_label.tooltip_text = thread.datetime_received.format(full_format);
-    
+    private void update_timestamp () {    
         var humanDateTime = new Envoyer.FutureGranite.HumanDateTime(thread.datetime_received);
         datetime_received_label.set_label (humanDateTime.compared_to_now ());
+    }
+    
+    private string build_addresses_string (Gee.Collection<Envoyer.Models.Address> addresses) {
+            // @TODO replace indentity email address with "me"
+            var addresses_string_builder = new GLib.StringBuilder ();
+            var first = true;
+
+            //@TODO if there is more than one address, just use the first word
+            foreach (var address in addresses) {
+                if (first) {
+                    first = false;
+                    addresses_string_builder.append (address.display_name);
+                } else {
+                    addresses_string_builder.append (", ");
+                    addresses_string_builder.append (address.display_name);
+                }
+            }
+            
+            return addresses_string_builder.str;
     }
 }
 

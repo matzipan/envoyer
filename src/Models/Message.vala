@@ -19,6 +19,7 @@ public class Envoyer.Models.Message : GLib.Object {
         } 
     }
 
+    //@TODO add display_subject which removes Re:
     public string subject { get; private set; }
     public Gee.Collection<string> references { get; private set; }
     public string id { get; private set; }

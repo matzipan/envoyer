@@ -201,7 +201,8 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
                     first = false;
                     addresses_string_builder.append (address.to_string ());
                 } else {
-                    addresses_string_builder.append (", %s".printf(address.to_string ()));
+                    addresses_string_builder.append (", ");
+                    addresses_string_builder.append (address.to_string ());
                 }
             }
             

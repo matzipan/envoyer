@@ -9,6 +9,15 @@ public class Envoyer.Models.Address : GLib.Object {
     public string name { get; construct set; }
     public string email { get; construct set; }
     
+    public string display_name { get {
+            if (name == "") {
+                return email;
+            } else {
+                return name;
+            }
+        }
+    }
+    
     public Address (string name, string email) {
         Object(name: name.dup (), email: email.dup ());
     }
