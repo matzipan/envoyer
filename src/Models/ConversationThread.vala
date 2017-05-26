@@ -51,7 +51,7 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
 
     public string subject { get { return _messages_list[0].subject; } }
     
-    public ConversationThread.from_container (Envoyer.Models.Container container) {
+    public ConversationThread.from_container (Envoyer.Util.ThreadingContainer container) {
         if (container.message != null) {
             _messages_list.add (container.message);
         }

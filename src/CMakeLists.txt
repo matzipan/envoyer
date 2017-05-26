@@ -54,6 +54,7 @@ vala_precompile (APP_VALA_C envoyer
 	FutureGranite/ThreePane.vala
 	FutureGranite/HumanDateTime.vala
 	Util/SidebarBuilder.vala
+	Util/ThreadingHelper.vala
     Widgets/Headerbar.vala
     Widgets/FolderItem.vala
     Widgets/IFolderItem.vala
