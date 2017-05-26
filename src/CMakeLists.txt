@@ -48,7 +48,6 @@ set (APP_VALA_OPTIONS
 vala_precompile (APP_VALA_C envoyer
 	Main.vala
     Application.vala
-    Services/Settings.vala
 	FutureGranite/ExpandableItem.vala
     FutureGranite/SimpleExpandableItem.vala
 	FutureGranite/NestedListBox.vala
@@ -70,6 +69,7 @@ vala_precompile (APP_VALA_C envoyer
 	Widgets/FolderLabel.vala
     Widgets/Window.vala
     Widgets/Gravatar.vala
+	Models/Settings.vala
     Models/Folder.vala
     Models/IFolder.vala
     Models/Message.vala

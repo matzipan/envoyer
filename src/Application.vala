@@ -9,7 +9,7 @@ namespace Envoyer {
     public Envoyer.Widgets.Sidebar sidebar;
     public Envoyer.Widgets.FolderConversationsList folder_conversations_list;
     public Envoyer.Widgets.ConversationViewer conversation_viewer;
-    public Envoyer.Services.Settings settings;
+    public Envoyer.Models.Settings settings;
     public GLib.Settings gnome_settings;
     public GLib.List<Envoyer.Models.Identity> identities;
     public Envoyer.Widgets.Window window;
@@ -30,7 +30,7 @@ public class Envoyer.Application : Granite.Application {
         if (!running) {
             running = true;
             
-            settings = new Envoyer.Services.Settings ();
+            settings = new Envoyer.Models.Settings ();
             gnome_settings = new GLib.Settings ("org.gnome.desktop.interface");
 
             window = new Envoyer.Widgets.Window (this);

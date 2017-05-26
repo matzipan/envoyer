@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Services.Settings : Granite.Services.Settings {
+public class Envoyer.Models.Settings : Granite.Services.Settings {
     public int window_width { get; set; }
     public int window_height { get; set; }
     public int position_x { get; set; }
