@@ -70,7 +70,7 @@
                  // If they are already linked, don't change the existing links.
                  // Do not add a link if adding that link would introduce a loop.
                  if (previous_references_container != null &&
-                     previous_references_container.children.index_of (container) == -1 && 
+                     previous_references_container.children.index_of (container) == -1 &&
                      container.children.index_of (previous_references_container) == -1) {
                      previous_references_container.add_child (container);
                  }
@@ -78,7 +78,9 @@
                  previous_references_container = container;
              }
              
-             if (previous_references_container != null) {
+             if (previous_references_container != null &&
+                 previous_references_container.children.index_of (message_container) == -1 &&
+                 message_container.children.index_of (previous_references_container) == -1) {
                  previous_references_container.add_child (message_container);
              }
          }
