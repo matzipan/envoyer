@@ -48,8 +48,6 @@
      }
      
      private Gee.Collection <Envoyer.Util.ThreadingContainer> group_messages_by_id (Gee.Collection <Envoyer.Models.Message> messages) {
-         // @TODO Import sent messages
-
          // @TODO If both headers exist, take the first thing in the In-Reply-To header 
          // that looks like a Message-ID, and append it to the References header.
          // If there are multiple things in In-Reply-To that look like Message-IDs, 
