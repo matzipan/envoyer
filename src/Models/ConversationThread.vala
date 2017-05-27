@@ -56,9 +56,7 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
             _messages_list.add (container.message);
         }
         
-        foreach (var child_message in container.children) {
-            _messages_list.add (child_message.message);
-        }
+        walk_children_containers (container);
         
         _messages_list.sort ((first, second) => { // sort descendingly
             if(first.time_received > second.time_received) {
@@ -70,6 +68,14 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
             return 1;
         });
         
+    }
+    
+    private void walk_children_containers (Envoyer.Util.ThreadingContainer container) {
+        foreach (var child_container in container.children) {
+            walk_children_containers (child_container);
+            
+            _messages_list.add (child_container.message);
+        }
     }
     
     public bool is_important() {
