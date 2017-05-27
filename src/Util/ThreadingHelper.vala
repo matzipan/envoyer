@@ -210,7 +210,7 @@
          }
 
          while (is_reply_or_forward_subject (subject)) {
-             subject = subject.substring (3).chug (); //@TODO make for FWD
+             subject = subject.substring (subject.index_of (":") + 1).chug ();
          }
          
          return subject;
