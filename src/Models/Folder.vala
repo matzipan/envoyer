@@ -92,7 +92,7 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
         owned get {  //@TODO async
             var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
             
-            threads_list_copy.add_all (identity.fetch_threads (name)); //@TODO cache fetch_threads
+            threads_list_copy.add_all (identity.fetch_threads (this)); //@TODO cache fetch_threads
             threads_list_copy.sort ((first, second) => { // sort descendingly
                 if(first.time_received > second.time_received) {
                     return -1;

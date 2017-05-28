@@ -23,11 +23,20 @@ public class Envoyer.Models.Identity : GLib.Object {
         return folders;
     }
     
-    public Gee.Collection<Envoyer.Models.ConversationThread> fetch_threads (string name) {
-        var messages = MailCoreInterface.fetch_messages (session);
+    public Gee.Collection<Envoyer.Models.ConversationThread> fetch_threads (Envoyer.Models.Folder folder) {
+        var messages = MailCoreInterface.fetch_messages (session, folder.name);
+        
+        foreach (var item in messages) {
+            item.identity = this;
+            item.folder = folder;
+        }
         
         var threader = new Envoyer.Util.ThreadingHelper ();
                 
         return threader.process_messages (messages);
+    }
+    
+    public string get_html_for_message (Envoyer.Models.Message message) {
+        return MailCoreInterface.get_html_for_message (session, message.folder.name, message); 
     }
 }

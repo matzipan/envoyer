@@ -6,6 +6,11 @@
  */
  
 public class Envoyer.Models.Message : GLib.Object {
+    public Envoyer.Models.Identity identity;
+    public Envoyer.Models.Folder folder;
+
+    //@TODO find a way to either integrate this or get rid of it. needed for html fetching
+    public void* mailcore_message { get; private set; }
     public Envoyer.Models.Address from { get; private set; }
     public Envoyer.Models.Address sender { get; private set; }
     public Gee.Collection<Envoyer.Models.Address> to { get; private set; }
@@ -24,10 +29,11 @@ public class Envoyer.Models.Message : GLib.Object {
     public Gee.Collection<string> references { get; private set; }
     public string id { get; private set; }
 
-    public string content { owned get { return ""; } } //@TODO
+    public string content { owned get { return identity.get_html_for_message (this); } }
     public bool has_attachment { get { return false; } } //@TODO
 
     public Message (
+            void* mailcore_message,
             Envoyer.Models.Address from, 
             Envoyer.Models.Address sender,
             Gee.Collection<Envoyer.Models.Address> to,
@@ -39,6 +45,7 @@ public class Envoyer.Models.Message : GLib.Object {
             string id
         ) {
             
+        this.mailcore_message = mailcore_message;
         this.from = from;
         this.sender = sender;
         this.to = to;

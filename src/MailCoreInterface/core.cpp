@@ -56,6 +56,8 @@ extern "C" GeeLinkedList* mail_core_interface_fetch_folders (mailcore::IMAPSessi
 
         gee_abstract_collection_add ((GeeAbstractCollection*) list, folder_model);
     }
+
+    delete folders;
     
     return list;
 }
@@ -87,6 +89,7 @@ extern "C" GeeLinkedList* mail_core_interface_fetch_messages (mailcore::IMAPSess
     auto uidRange = mailcore::IndexSet::indexSetWithRange (mailcore::RangeMake (1, UINT64_MAX));
     auto kind = mailcore::IMAPMessagesRequestKindHeaders |
         mailcore::IMAPMessagesRequestKindFlags |
+        mailcore::IMAPMessagesRequestKindStructure |
         mailcore::IMAPMessagesRequestKindGmailLabels |
         mailcore::IMAPMessagesRequestKindGmailThreadID |
         mailcore::IMAPMessagesRequestKindGmailMessageID;
@@ -116,8 +119,11 @@ extern "C" GeeLinkedList* mail_core_interface_fetch_messages (mailcore::IMAPSess
                 gee_abstract_collection_add ((GeeAbstractCollection*) references_list, reference->UTF8Characters ());
             }
         }
+
+        message->retain();
         
         EnvoyerModelsMessage* message_model = envoyer_models_message_new (
+            message,
             from_address,
             sender_address,
             (GeeCollection*) to_addresses,
@@ -132,5 +138,14 @@ extern "C" GeeLinkedList* mail_core_interface_fetch_messages (mailcore::IMAPSess
         gee_abstract_collection_add ((GeeAbstractCollection*) list, message_model);
     }
 
+    delete messages;
+    //@TODO also release when Envoyer.Models.Message is deleted.
+
     return list;
+}
+
+extern "C" const gchar* mail_core_interface_get_html_for_message (mailcore::IMAPSession* session, gchar* folder_path, EnvoyerModelsMessage* envoyer_message) {
+    mailcore::ErrorCode error; //@TODO check error
+
+    return session->htmlRendering ((mailcore::IMAPMessage *) envoyer_models_message_get_mailcore_message (envoyer_message), new mailcore::String (folder_path), &error)->UTF8Characters();
 }
