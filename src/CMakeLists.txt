@@ -35,6 +35,8 @@ link_directories (${APP_DEPS_LIBRARY_DIRS})
 link_directories (${CMAKE_BINARY_DIR})
 include_directories (${CMAKE_BINARY_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
+include_directories (${CMAKE_BINARY_DIR}/lib/mailcore2/src/include)
+
 
 set (APP_VALA_OPTIONS
     --thread
@@ -100,7 +102,6 @@ add_executable (envoyer
 	MailCoreInterface/core.cpp
 )
 
-include_directories (${CMAKE_CURRENT_BINARY_DIR}/mailcore2/src/include)
 target_link_libraries (envoyer
         MailCore
         ${LIBETPAN_LIBRARY}
