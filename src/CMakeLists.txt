@@ -103,6 +103,7 @@ add_executable (envoyer
 )
 
 target_link_libraries (envoyer
+		basalt
         MailCore
         ${LIBETPAN_LIBRARY}
         ${CTEMPLATE_LIBRARY}
