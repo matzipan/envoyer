@@ -5,12 +5,12 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Widgets.Sidebar : Gtk.Grid {
+public class Envoyer.Widgets.Sidebar.Wrapper : Gtk.Grid {
     private Envoyer.FutureGranite.NestedListBox listbox;
 
     public signal void session_up ();
 
-    public Sidebar () {
+    public Wrapper () {
         build_ui ();
         connect_signals ();
         
@@ -55,13 +55,13 @@ public class Envoyer.Widgets.Sidebar : Gtk.Grid {
                 return;
             }
 
-            if(row is Envoyer.Widgets.FolderItem) {
-                folder_conversations_list.load_folder (((Envoyer.Widgets.FolderItem) row).folder);
+            if(row is Envoyer.Widgets.Sidebar.FolderItem) {
+                folder_conversations_list.load_folder (((Envoyer.Widgets.Sidebar.FolderItem) row).folder);
                 folder_conversations_list.grab_focus ();
             }
             
-            if(row is Envoyer.Widgets.UnifiedFolderParentItem) {
-                folder_conversations_list.load_folder (((Envoyer.Widgets.UnifiedFolderParentItem) row).folder);
+            if(row is Envoyer.Widgets.Sidebar.UnifiedFolderParentItem) {
+                folder_conversations_list.load_folder (((Envoyer.Widgets.Sidebar.UnifiedFolderParentItem) row).folder);
                 folder_conversations_list.grab_focus ();
             }
         });

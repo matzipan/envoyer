@@ -58,19 +58,19 @@ vala_precompile (APP_VALA_C envoyer
 	Util/SidebarBuilder.vala
 	Util/ThreadingHelper.vala
     Widgets/Headerbar.vala
-    Widgets/FolderItem.vala
-    Widgets/IFolderItem.vala
-    Widgets/UnifiedFolderParentItem.vala
-    Widgets/UnifiedFolderChildItem.vala
-    Widgets/AccountFoldersParentItem.vala
+    Widgets/Sidebar/FolderItem.vala
+    Widgets/Sidebar/IFolderItem.vala
+    Widgets/Sidebar/UnifiedFolderParentItem.vala
+    Widgets/Sidebar/UnifiedFolderChildItem.vala
+	Widgets/Sidebar/FolderLabel.vala
+	Widgets/Sidebar/Wrapper.vala
+    Widgets/Sidebar/AccountFoldersParentItem.vala
     Widgets/ConversationViewer.vala
     Widgets/MessageViewer.vala
     Widgets/MessageWebView.vala
-    Widgets/Sidebar.vala
 	Widgets/FolderConversationItem.vala
 	Widgets/FolderConversationsList.vala
-	Widgets/FolderLabel.vala
-    Widgets/Window.vala
+    Widgets/MainWindow.vala
     Widgets/Gravatar.vala
 	Models/Settings.vala
     Models/Folder.vala

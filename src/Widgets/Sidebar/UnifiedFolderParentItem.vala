@@ -5,11 +5,11 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-public class Envoyer.Widgets.UnifiedFolderParentItem : Envoyer.Widgets.IFolderItem, Envoyer.FutureGranite.SimpleExpandableItem {
+public class Envoyer.Widgets.Sidebar.UnifiedFolderParentItem : Envoyer.Widgets.Sidebar.IFolderItem, Envoyer.FutureGranite.SimpleExpandableItem {
     private Envoyer.Models.UnifiedFolderParent parent_folder;
     public Envoyer.Models.IFolder folder { get { return parent_folder; } }
 
-    private Envoyer.Widgets.FolderLabel folder_label;
+    private Envoyer.Widgets.Sidebar.FolderLabel folder_label;
     
     public UnifiedFolderParentItem (Envoyer.Models.UnifiedFolderParent parent_folder) {
         base.with_no_label ();
@@ -21,7 +21,7 @@ public class Envoyer.Widgets.UnifiedFolderParentItem : Envoyer.Widgets.IFolderIt
     }
     
     private void build_ui () {
-        folder_label = new Envoyer.Widgets.FolderLabel(parent_folder);
+        folder_label = new Envoyer.Widgets.Sidebar.FolderLabel(parent_folder);
 
         grid.add (folder_label);
         
@@ -36,7 +36,7 @@ public class Envoyer.Widgets.UnifiedFolderParentItem : Envoyer.Widgets.IFolderIt
     }
     
     private new void add(Envoyer.Models.UnifiedFolderChild child) {
-        ((Envoyer.FutureGranite.SimpleExpandableItem) this).add(new Envoyer.Widgets.UnifiedFolderChildItem (child));
+        ((Envoyer.FutureGranite.SimpleExpandableItem) this).add(new Envoyer.Widgets.Sidebar.UnifiedFolderChildItem (child));
     }
 
 }

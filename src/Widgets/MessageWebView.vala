@@ -203,7 +203,7 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
                     }
 
                     try {
-                        Gtk.show_uri(Envoyer.window.get_screen(), link, Gdk.CURRENT_TIME);
+                        Gtk.show_uri(Envoyer.main_window.get_screen(), link, Gdk.CURRENT_TIME);
                     } catch (Error err) {
                         debug("Unable to open URL %s, reason: %s", link, err.message);
                     }

@@ -6,13 +6,13 @@
  */
  
 namespace Envoyer {
-    public Envoyer.Widgets.Sidebar sidebar;
+    public Envoyer.Widgets.Sidebar.Wrapper sidebar;
     public Envoyer.Widgets.FolderConversationsList folder_conversations_list;
     public Envoyer.Widgets.ConversationViewer conversation_viewer;
     public Envoyer.Models.Settings settings;
     public GLib.Settings gnome_settings;
     public GLib.List<Envoyer.Models.Identity> identities;
-    public Envoyer.Widgets.Window window;
+    public Envoyer.Widgets.MainWindow main_window;
 }
 
 public class Envoyer.Application : Granite.Application {
@@ -33,13 +33,13 @@ public class Envoyer.Application : Granite.Application {
             settings = new Envoyer.Models.Settings ();
             gnome_settings = new GLib.Settings ("org.gnome.desktop.interface");
 
-            window = new Envoyer.Widgets.Window (this);
-            this.add_window (window);
+            main_window = new Envoyer.Widgets.MainWindow (this);
+            this.add_window (main_window);
 
             load_session ();
         } 
         
-        window.show_app ();
+        main_window.show_app ();
     }
     
     
@@ -49,6 +49,6 @@ public class Envoyer.Application : Granite.Application {
         
         identities.append (identity);
         
-        window.session_up ();
+        main_window.session_up ();
     }
 }

@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Widgets.AccountFoldersParentItem : Envoyer.FutureGranite.SimpleExpandableItem {
+public class Envoyer.Widgets.Sidebar.AccountFoldersParentItem : Envoyer.FutureGranite.SimpleExpandableItem {
     public AccountFoldersParentItem (Envoyer.Models.Identity identity) {
         base (identity.name);
         

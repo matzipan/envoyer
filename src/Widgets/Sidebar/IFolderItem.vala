@@ -5,6 +5,6 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public interface Envoyer.Widgets.IFolderItem : GLib.Object {
+public interface Envoyer.Widgets.Sidebar.IFolderItem : GLib.Object {
     public abstract Envoyer.Models.IFolder folder { get; }
 }

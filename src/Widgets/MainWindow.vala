@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
+public class Envoyer.Widgets.MainWindow : Gtk.ApplicationWindow {
     public signal void session_up ();
 
     private Envoyer.Widgets.Headerbar headerbar;
@@ -24,7 +24,7 @@ public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
             font-weight: bold;
         }
         
-        EnvoyerWidgetsConversationViewer GtkListBox, EnvoyerWidgetsSidebar GtkListBox {
+        EnvoyerWidgetsConversationViewer GtkListBox, EnvoyerWidgetsSidebarWrapper GtkListBox {
             background: #eee;
         }
         
@@ -33,7 +33,7 @@ public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
         }
     """;
 
-    public Window (Gtk.Application app) {
+    public MainWindow (Gtk.Application app) {
 		Object (application: app);
 
 	    build_ui ();
@@ -54,7 +54,7 @@ public class Envoyer.Widgets.Window : Gtk.ApplicationWindow {
         headerbar.set_title (Constants.APP_NAME);
         set_titlebar (headerbar);
 
-        sidebar = new Envoyer.Widgets.Sidebar ();
+        sidebar = new Envoyer.Widgets.Sidebar.Wrapper ();
         folder_conversations_list = new Envoyer.Widgets.FolderConversationsList ();
         conversation_viewer = new Envoyer.Widgets.ConversationViewer ();
         

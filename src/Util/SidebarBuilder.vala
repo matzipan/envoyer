@@ -21,17 +21,17 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
             }
             
             if (!unified_folder.is_empty) {
-                listbox.add (new Envoyer.Widgets.UnifiedFolderParentItem (unified_folder));
+                listbox.add (new Envoyer.Widgets.Sidebar.UnifiedFolderParentItem (unified_folder));
             }
         }
 
 
         foreach (var summary in summaries_geelist) {
-            var account_folders_parent = new Envoyer.Widgets.AccountFoldersParentItem (summary.identity);
+            var account_folders_parent = new Envoyer.Widgets.Sidebar.AccountFoldersParentItem (summary.identity);
 
             foreach (var folder in summary.folders_list) {
                 if (folder.is_normal) {
-                    account_folders_parent.add (new Envoyer.Widgets.FolderItem (folder));
+                    account_folders_parent.add (new Envoyer.Widgets.Sidebar.FolderItem (folder));
                 }
             }
             
