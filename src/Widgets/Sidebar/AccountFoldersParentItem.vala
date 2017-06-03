@@ -5,14 +5,10 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Widgets.Sidebar.AccountFoldersParentItem : Envoyer.FutureGranite.SimpleExpandableItem {
-    public AccountFoldersParentItem (Envoyer.Models.Identity identity) {
-        base (identity.name);
-        
-        build_ui ();
-    }
-    
-    public void build_ui () {
-        selectable = false;
+using Envoyer.Models.Sidebar;
+ 
+public class Envoyer.Widgets.Sidebar.AccountFoldersParentItem : Basalt.Widgets.SidebarHeader {
+    public AccountFoldersParentItem (AccountFoldersParent model) {
+        base (model);
     }
 }

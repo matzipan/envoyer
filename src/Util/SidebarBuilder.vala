@@ -5,45 +5,51 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
+using Envoyer.Models;
+using Envoyer.Models.Sidebar;
+ 
 public class Envoyer.Util.SidebarBuilder : GLib.Object {
-    public static void build_list (Envoyer.FutureGranite.NestedListBox listbox) {
+    public static Basalt.Widgets.SidebarStore build_list () {        
+        var store = new Basalt.Widgets.SidebarStore ();
+
         var summaries_geelist = build_summaries_list ();
 
-        foreach (Envoyer.Models.IFolder.Type type in Envoyer.Models.IFolder.Type.unified_folders()) {
-            var unified_folder = new Envoyer.Models.UnifiedFolderParent(type);
+        foreach (IFolder.Type type in IFolder.Type.unified_folders()) {
+            var unified_folder = new UnifiedFolderParent(type);
+            store.append(unified_folder);
 
             foreach (var summary in summaries_geelist) {
                 foreach(var folder in summary.folders_list) {
                     if(folder.folder_type == type) {
-                        unified_folder.add (new Envoyer.Models.UnifiedFolderChild (folder, summary.identity));
+                        unified_folder.children.append (new UnifiedFolderChild (folder, summary.identity));
                     }
                 }
             }
             
-            if (!unified_folder.is_empty) {
-                listbox.add (new Envoyer.Widgets.Sidebar.UnifiedFolderParentItem (unified_folder));
-            }
+            // @TODO if there is only one unified folder child, don't show the parent as expandable
         }
 
 
         foreach (var summary in summaries_geelist) {
-            var account_folders_parent = new Envoyer.Widgets.Sidebar.AccountFoldersParentItem (summary.identity);
+            var account_folders_parent = new AccountFoldersParent (summary.identity);
 
             foreach (var folder in summary.folders_list) {
                 if (folder.is_normal) {
-                    account_folders_parent.add (new Envoyer.Widgets.Sidebar.FolderItem (folder));
+                    account_folders_parent.children.append (folder);
                 }
             }
             
-            listbox.add (account_folders_parent);
+            store.append (account_folders_parent);
         }
+        
+        return store;
     }
     
-    public static Gee.Collection<Envoyer.Models.AccountSummary> build_summaries_list () {  //@TODO async
-        var summaries_list = new Gee.ArrayList<Envoyer.Models.AccountSummary> (null);
+    public static Gee.Collection<AccountSummary> build_summaries_list () {  //@TODO async
+        var summaries_list = new Gee.ArrayList<AccountSummary> (null);
 
         Envoyer.identities.foreach((identity) => {
-            summaries_list.add(new Envoyer.Models.AccountSummary (identity));
+            summaries_list.add(new AccountSummary (identity));
         });
         
         return summaries_list;     

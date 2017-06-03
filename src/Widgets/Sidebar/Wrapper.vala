@@ -5,48 +5,21 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Widgets.Sidebar.Wrapper : Gtk.Grid {
-    private Envoyer.FutureGranite.NestedListBox listbox;
-
+using Envoyer.Models;
+using Envoyer.Models.Sidebar;
+ 
+public class Envoyer.Widgets.Sidebar.Wrapper : Basalt.Widgets.Sidebar {
     public signal void session_up ();
 
     public Wrapper () {
-        build_ui ();
         connect_signals ();
         
         //@TODO open the last opened one
     }
 
-    private void build_ui () {
-        orientation = Gtk.Orientation.VERTICAL;
-        hexpand = false;
-        set_size_request (150, -1);
-
-        listbox = new Envoyer.FutureGranite.NestedListBox ();
-        
-        var scroll_box = new Gtk.ScrolledWindow (null, null);
-        scroll_box.expand = true;
-        scroll_box.add (listbox);
-
-        add (scroll_box);
-        show_all ();
-    }
-
-    private void clear_list () {
-        listbox.unselect_all ();
-        var children = listbox.get_children ();
-
-        foreach (Gtk.Widget child in children) {
-            if (child is Gtk.ListBoxRow)
-                listbox.remove (child);
-        }
-    }
-    
     // @TODO if new accounts get added, update/regenerate the list
     private void build_list () {
-        clear_list ();
-        
-        Envoyer.Util.SidebarBuilder.build_list (listbox);
+        sidebar.bind_model (Envoyer.Util.SidebarBuilder.build_list ());
     }
 
     private void connect_signals () {
@@ -54,18 +27,38 @@ public class Envoyer.Widgets.Sidebar.Wrapper : Gtk.Grid {
             if (row == null) {
                 return;
             }
-
-            if(row is Envoyer.Widgets.Sidebar.FolderItem) {
-                folder_conversations_list.load_folder (((Envoyer.Widgets.Sidebar.FolderItem) row).folder);
+            
+            if(row is FolderItem) {
+                folder_conversations_list.load_folder (((FolderItem) row).folder);
                 folder_conversations_list.grab_focus ();
             }
             
-            if(row is Envoyer.Widgets.Sidebar.UnifiedFolderParentItem) {
-                folder_conversations_list.load_folder (((Envoyer.Widgets.Sidebar.UnifiedFolderParentItem) row).folder);
+            if(row is UnifiedFolderParentItem) {
+                folder_conversations_list.load_folder (((UnifiedFolderParentItem) row).folder);
                 folder_conversations_list.grab_focus ();
             }
         });
         
         session_up.connect (build_list);
+    }
+    
+    public void bind_model (ListModel? model) {
+        listbox.bind_model (model, walk_model_items);
+        
+        listbox.show_all ();
+    }
+    
+    private Gtk.Widget walk_model_items (Object item) {
+        assert (item is Basalt.Widgets.SidebarRowModel);    
+
+        if (item is UnifiedFolderParent) {            
+            return new UnifiedFolderParentItem ((UnifiedFolderParent) item);
+        } else if (item is UnifiedFolderChild) {
+            return new UnifiedFolderChildItem ((UnifiedFolderChild) item);
+        } else if (item is AccountFoldersParent) {
+            return new AccountFoldersParentItem ((AccountFoldersParent) item);
+        } else {
+            return new FolderItem ((Folder) item);
+        }
     }
 }

@@ -4,22 +4,17 @@
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
+ 
+using Envoyer.Models;
+using Envoyer.Models.Sidebar;
 
-public class Envoyer.Widgets.Sidebar.UnifiedFolderChildItem : Envoyer.Widgets.Sidebar.FolderItem {
-    public signal void unread_count_changed (uint new_count);
-
-    public UnifiedFolderChildItem (Envoyer.Models.UnifiedFolderChild folder) {
-        base (folder);
-
-        connect_signals ();
-        build_ui ();
-    }
+public class Envoyer.Widgets.Sidebar.UnifiedFolderChildItem : IFolderItem, Basalt.Widgets.SidebarRow {
+    private UnifiedFolderChild child_folder;
+    public IFolder folder { get { return child_folder; } }
     
-    private void connect_signals () {
-        folder.unread_count_changed.connect (new_count => { unread_count_changed(new_count); });
-    }
-    
-    private void build_ui () {
-        set_left_spacing (30);
+    public UnifiedFolderChildItem (UnifiedFolderChild child_folder) {
+            base ((Basalt.Widgets.SidebarRowModel) child_folder);
+            
+            this.child_folder = child_folder;
     }
 }

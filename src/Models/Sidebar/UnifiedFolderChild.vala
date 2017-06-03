@@ -5,9 +5,11 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Object {
-    private Envoyer.Models.Identity identity;
-    private Envoyer.Models.Folder _folder;
+using Envoyer.Models;
+ 
+public class Envoyer.Models.Sidebar.UnifiedFolderChild : IFolder, Basalt.Widgets.SidebarRowModel {
+    private Identity identity;
+    private Folder _folder;
 
     public bool is_inbox { get { return _folder.is_inbox; } }
     public bool is_trash { get { return _folder.is_trash; } }
@@ -21,19 +23,24 @@ public class Envoyer.Models.UnifiedFolderChild : Envoyer.Models.IFolder, GLib.Ob
     public bool is_important { get { return _folder.is_important; } }
     public bool is_unified { get { return _folder.is_unified; } }
     
-    public Envoyer.Models.IFolder.Type folder_type { get { return _folder.folder_type; } }
+    public IFolder.Type folder_type { get { return _folder.folder_type; } }
 
     public uint unread_count { get { return _folder.unread_count; } }
     public uint total_count { get { return _folder.total_count; } }
     public uint recent_count { get { return _folder.recent_count; } }
 
-    public Gee.Collection<Envoyer.Models.ConversationThread> threads_list { owned get { return _folder.threads_list; } }
+    public Gee.Collection <ConversationThread> threads_list { owned get { return _folder.threads_list; } }
 
     public string name { get { return identity.name; } }
 
-    public UnifiedFolderChild (Envoyer.Models.Folder folder, Envoyer.Models.Identity identity) {
+    public UnifiedFolderChild (Folder folder, Identity identity) {
+        base (identity.name);
+
         this.identity = identity;
         _folder = folder;
+        
+        //@TODO listen to total_count_changed signal and change the icon accordingly
+        icon_name = IFolder.get_icon_for_folder (this);
 
         connect_signals ();
     }

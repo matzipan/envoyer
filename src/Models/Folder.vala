@@ -14,7 +14,7 @@ public struct Envoyer.FolderStruct {
     int64 highest_mod_seq;
 }
 
-public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
+public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.SidebarRowModel {
     private Envoyer.FolderStruct data;
     private int flags;
     
@@ -108,9 +108,12 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, GLib.Object {
     private string _name;
     public string name { get { return _name; } }
 
-    public Folder(string name, int flags, Envoyer.FolderStruct data) {  
-        this._name = name.dup ();
+    public Folder(string name, int flags, Envoyer.FolderStruct data) {
+        base (name.dup ());
+
+        _name = name.dup ();
         this.flags = flags;
-        this.data = data;        
+        this.data = data;
+        icon_name = IFolder.get_icon_for_folder (this);
     }
 }

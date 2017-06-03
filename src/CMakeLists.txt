@@ -36,7 +36,7 @@ link_directories (${CMAKE_BINARY_DIR})
 include_directories (${CMAKE_BINARY_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 include_directories (${CMAKE_BINARY_DIR}/lib/mailcore2/src/include)
-
+include_directories (${CMAKE_BINARY_DIR}/lib/basalt/lib)
 
 set (APP_VALA_OPTIONS
     --thread
@@ -58,13 +58,12 @@ vala_precompile (APP_VALA_C envoyer
 	Util/SidebarBuilder.vala
 	Util/ThreadingHelper.vala
     Widgets/Headerbar.vala
-    Widgets/Sidebar/FolderItem.vala
-    Widgets/Sidebar/IFolderItem.vala
+	Widgets/Sidebar/AccountFoldersParentItem.vala
+	Widgets/Sidebar/FolderItem.vala
+	Widgets/Sidebar/IFolderItem.vala
     Widgets/Sidebar/UnifiedFolderParentItem.vala
     Widgets/Sidebar/UnifiedFolderChildItem.vala
-	Widgets/Sidebar/FolderLabel.vala
 	Widgets/Sidebar/Wrapper.vala
-    Widgets/Sidebar/AccountFoldersParentItem.vala
     Widgets/ConversationViewer.vala
     Widgets/MessageViewer.vala
     Widgets/MessageWebView.vala
@@ -76,8 +75,9 @@ vala_precompile (APP_VALA_C envoyer
     Models/Folder.vala
     Models/IFolder.vala
     Models/Message.vala
-    Models/UnifiedFolderChild.vala
-    Models/UnifiedFolderParent.vala
+    Models/Sidebar/AccountFoldersParent.vala
+    Models/Sidebar/UnifiedFolderChild.vala
+    Models/Sidebar/UnifiedFolderParent.vala
     Models/AccountSummary.vala
     Models/Address.vala
     Models/ConversationThread.vala
@@ -90,6 +90,7 @@ OPTIONS
 	${APP_VALA_OPTIONS}
 CUSTOM_VAPIS
 	MailCoreInterface/core.vapi
+	${CMAKE_BINARY_DIR}/lib/basalt/lib/basalt.vapi
 GENERATE_HEADER
 	envoyer
 GENERATE_VAPI

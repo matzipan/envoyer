@@ -4,37 +4,16 @@
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
-
-public class Envoyer.Widgets.Sidebar.FolderItem : Envoyer.Widgets.Sidebar.IFolderItem, Gtk.ListBoxRow {
-    private Gtk.Grid grid;
-    private Envoyer.Widgets.Sidebar.FolderLabel folder_label;
+ 
+using Envoyer.Models;
+ 
+public class Envoyer.Widgets.Sidebar.FolderItem : IFolderItem, Basalt.Widgets.SidebarRow {
+    private Folder _folder;
+    public IFolder folder { get { return _folder; } }
     
-    private Envoyer.Models.IFolder _folder;
-    public Envoyer.Models.IFolder folder { get { return _folder; } }
-
-    public FolderItem (Envoyer.Models.IFolder folder) {
-        _folder = folder;
-
-        build_ui ();
-    }
-
-    private void build_ui () {
-        grid = new Gtk.Grid ();
-        grid.margin_top = 4;
-        grid.margin_bottom = 4;
-        grid.margin_right = 8;
-
-        set_left_spacing (20);
-
-        grid.add (new Envoyer.Widgets.Sidebar.FolderLabel(folder));
-
-        add (grid);
-
-        show_all ();
-    }
-
-    protected void set_left_spacing (int margin) {
-        grid.margin_left = margin;
+    public FolderItem (Folder model) {
+            base (model);
+            
+            this._folder = model;
     }
 }
-

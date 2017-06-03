@@ -34,7 +34,6 @@ public interface Envoyer.Models.IFolder : GLib.Object {
 
     public abstract string name { get; }
     
-    
     public enum Type {
         INBOX,
         TRASH,
@@ -88,5 +87,31 @@ public interface Envoyer.Models.IFolder : GLib.Object {
             // The order in here dictates the order in the sidebar
             return { INBOX, STARRED, IMPORTANT, DRAFTS, SENT, ARCHIVE, ALL, SPAM, TRASH };
         }
+    }
+    
+    public static string get_icon_for_folder (Envoyer.Models.IFolder folder) {
+        if(folder.is_inbox) {
+            return "mail-inbox";
+        } else if(folder.is_trash) {
+            if(folder.total_count == 0) {
+                return "user-trash";
+            } else {
+                return "user-trash-full";
+            }
+        } else if(folder.is_sent) {
+            return "mail-sent";
+        } else if(folder.is_spam) {
+            return "edit-flag";
+        } else if(folder.is_starred) {
+            return "starred";
+        } else if(folder.is_drafts) {
+            return "folder-documents"; 
+        } else if(folder.is_important) {
+            return "mail-mark-important";   
+        } else if(folder.is_all_mail || folder.is_archive) {
+            return "mail-archive";
+        } else {
+            return "folder-tag";
+        }        
     }
 }
