@@ -50,9 +50,6 @@ set (APP_VALA_OPTIONS
 vala_precompile (APP_VALA_C envoyer
 	Main.vala
     Controllers/Application.vala
-	FutureGranite/ExpandableItem.vala
-    FutureGranite/SimpleExpandableItem.vala
-	FutureGranite/NestedListBox.vala
 	FutureGranite/ThreePane.vala
 	FutureGranite/HumanDateTime.vala
 	Util/SidebarBuilder.vala
