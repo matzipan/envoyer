@@ -4,23 +4,22 @@
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
- 
-namespace Envoyer {
-    public Envoyer.Widgets.Sidebar.Wrapper sidebar;
-    public Envoyer.Widgets.FolderConversationsList folder_conversations_list;
-    public Envoyer.Widgets.ConversationViewer conversation_viewer;
+
+using Envoyer.Models;
+using Envoyer.Globals.Main;
+using Envoyer.Globals.Application; 
+
+namespace Envoyer.Globals.Application {
     public Envoyer.Models.Settings settings;
     public GLib.Settings gnome_settings;
     public GLib.List<Envoyer.Models.Identity> identities;
-    public Envoyer.Widgets.MainWindow main_window;
+    public Envoyer.Controllers.Application application;
 }
 
-public class Envoyer.Application : Granite.Application {
-    public const string PROGRAM_NAME = N_(Constants.APP_NAME);
-    public const string COMMENT = N_(Constants.PROJECT_DESCRIPTION);
-    public const string ABOUT_STOCK = N_("About "+ Constants.APP_NAME);
-
+public class Envoyer.Controllers.Application : Granite.Application {
     public bool running = false;
+    public signal void session_up ();
+    public signal void load_folder (IFolder folder);
 
     public Application () {
         Object (application_id: Constants.PROJECT_FQDN);
@@ -34,7 +33,7 @@ public class Envoyer.Application : Granite.Application {
             gnome_settings = new GLib.Settings ("org.gnome.desktop.interface");
 
             main_window = new Envoyer.Widgets.MainWindow (this);
-            this.add_window (main_window);
+            add_window (main_window);
 
             load_session ();
         } 
@@ -49,6 +48,6 @@ public class Envoyer.Application : Granite.Application {
         
         identities.append (identity);
         
-        main_window.session_up ();
+        session_up ();
     }
 }

@@ -4,6 +4,8 @@
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
+ 
+using Envoyer.Globals.Application;
 
 public static int main (string[] args) {
     /* Initiliaze gettext support */
@@ -13,7 +15,7 @@ public static int main (string[] args) {
     Environment.set_application_name (Constants.APP_NAME);
     Environment.set_prgname (Constants.PROJECT_FQDN);
 
-    var application = new Envoyer.Application ();
+    application = new Envoyer.Controllers.Application ();
 
     return application.run (args);
 }

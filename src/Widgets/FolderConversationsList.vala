@@ -5,9 +5,13 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
+using Envoyer.Models;
+using Envoyer.Globals.Main;
+using Envoyer.Globals.Application;
+ 
 public class Envoyer.Widgets.FolderConversationsList : Gtk.Grid {
     private Gtk.ListBox listbox; //@TODO abstract this
-    private Envoyer.Models.IFolder current_folder;
+    private IFolder current_folder;
 
     //@TODO persist scroller state
 
@@ -17,13 +21,16 @@ public class Envoyer.Widgets.FolderConversationsList : Gtk.Grid {
     }
     
     public new void grab_focus () {
-        //@TODO
+        listbox.grab_focus ();
     }
     
-    public void load_folder (Envoyer.Models.IFolder folder) {
+    public void load_folder (IFolder folder) {
         current_folder = folder;
                         
-        render_list();
+        render_list ();
+        grab_focus ();
+        
+        // @TODO listbox.select_row (item);
     }
 
     private void build_ui () {
@@ -32,6 +39,7 @@ public class Envoyer.Widgets.FolderConversationsList : Gtk.Grid {
         set_size_request (200, -1);
 
         listbox = new Gtk.ListBox ();
+        listbox.set_selection_mode (Gtk.SelectionMode.MULTIPLE);
 
         var scroll_box = new Gtk.ScrolledWindow (null, null);
         scroll_box.expand = true;
@@ -55,16 +63,18 @@ public class Envoyer.Widgets.FolderConversationsList : Gtk.Grid {
         clear_list ();
         
         foreach (var thread in current_folder.threads_list) {
-            listbox.add(new Envoyer.Widgets.FolderConversationItem(thread));
+            listbox.add(new FolderConversationItem(thread));
         }
     }
 
     private void connect_signals () {
+        application.load_folder.connect (load_folder);
+        
         listbox.row_selected.connect ((row) => {
             if (row == null) return;
-            assert(row is Envoyer.Widgets.FolderConversationItem);
+            assert(row is FolderConversationItem);
 
-            conversation_viewer.load_conversation_thread (((Envoyer.Widgets.FolderConversationItem) row).thread);
+            conversation_viewer.load_conversation_thread (((FolderConversationItem) row).thread);
             
             /*conversation_viewer.give_focus ();*/
         });

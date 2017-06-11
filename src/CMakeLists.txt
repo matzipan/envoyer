@@ -49,7 +49,7 @@ set (APP_VALA_OPTIONS
 
 vala_precompile (APP_VALA_C envoyer
 	Main.vala
-    Application.vala
+    Controllers/Application.vala
 	FutureGranite/ExpandableItem.vala
     FutureGranite/SimpleExpandableItem.vala
 	FutureGranite/NestedListBox.vala

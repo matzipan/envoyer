@@ -4,9 +4,18 @@
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
+ 
+using Envoyer.Globals.Main;
+using Envoyer.Globals.Application;
+ 
+namespace Envoyer.Globals.Main {
+    public Envoyer.Widgets.Sidebar.Wrapper sidebar;
+    public Envoyer.Widgets.FolderConversationsList folder_conversations_list;
+    public Envoyer.Widgets.ConversationViewer conversation_viewer;
+    public Envoyer.Widgets.MainWindow main_window;
+}
 
 public class Envoyer.Widgets.MainWindow : Gtk.ApplicationWindow {
-    public signal void session_up ();
 
     private Envoyer.Widgets.Headerbar headerbar;
     private Envoyer.FutureGranite.ThreePane three_pane;
@@ -74,9 +83,7 @@ public class Envoyer.Widgets.MainWindow : Gtk.ApplicationWindow {
         /*var new_action = new SimpleAction ("new-action", null);
         new_action.activate.connect (new_page);
         add_action (new_action);
-        app.set_accels_for_action ("win.new-action", {"<Ctrl>N"});*/
-        
-        session_up.connect(() => { sidebar.session_up (); });
+        app.set_accels_for_action ("win.new-action", {"<Ctrl>N"});*/        
     }
     
     protected override bool delete_event (Gdk.EventAny event) {

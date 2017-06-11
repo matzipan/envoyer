@@ -7,10 +7,10 @@
  
 using Envoyer.Models;
 using Envoyer.Models.Sidebar;
+using Envoyer.Globals.Main;
+using Envoyer.Globals.Application;
  
 public class Envoyer.Widgets.Sidebar.Wrapper : Basalt.Widgets.Sidebar {
-    public signal void session_up ();
-
     public Wrapper () {
         connect_signals ();
         
@@ -29,17 +29,15 @@ public class Envoyer.Widgets.Sidebar.Wrapper : Basalt.Widgets.Sidebar {
             }
             
             if(row is FolderItem) {
-                folder_conversations_list.load_folder (((FolderItem) row).folder);
-                folder_conversations_list.grab_focus ();
+                application.load_folder (((FolderItem) row).folder);
             }
             
             if(row is UnifiedFolderParentItem) {
-                folder_conversations_list.load_folder (((UnifiedFolderParentItem) row).folder);
-                folder_conversations_list.grab_focus ();
+                application.load_folder (((UnifiedFolderParentItem) row).folder);
             }
         });
         
-        session_up.connect (build_list);
+        application.session_up.connect (build_list);
     }
     
     public void bind_model (ListModel? model) {

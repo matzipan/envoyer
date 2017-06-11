@@ -7,6 +7,7 @@
  
 using Envoyer.Models;
 using Envoyer.Models.Sidebar;
+using Envoyer.Globals.Application;
  
 public class Envoyer.Util.SidebarBuilder : GLib.Object {
     public static Basalt.Widgets.SidebarStore build_list () {        
@@ -48,7 +49,7 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
     public static Gee.Collection<AccountSummary> build_summaries_list () {  //@TODO async
         var summaries_list = new Gee.ArrayList<AccountSummary> (null);
 
-        Envoyer.identities.foreach((identity) => {
+        identities.foreach((identity) => {
             summaries_list.add(new AccountSummary (identity));
         });
         

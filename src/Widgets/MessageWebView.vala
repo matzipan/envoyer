@@ -4,6 +4,9 @@
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
+ 
+using Envoyer.Globals.Application;
+using Envoyer.Globals.Main;
 
 public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
     private static uint web_view_id = 0;
@@ -203,7 +206,7 @@ public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
                     }
 
                     try {
-                        Gtk.show_uri(Envoyer.main_window.get_screen(), link, Gdk.CURRENT_TIME);
+                        Gtk.show_uri(main_window.get_screen(), link, Gdk.CURRENT_TIME);
                     } catch (Error err) {
                         debug("Unable to open URL %s, reason: %s", link, err.message);
                     }
