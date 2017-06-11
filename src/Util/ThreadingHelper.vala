@@ -127,17 +127,19 @@
              if (container.message == null && container.children.size == 0) {
                  // If it is a dummy message with no children, delete it.
                  parent.children.remove (container);
-             } else if (container.message == null && container.children.size != 0) {
-                 // If it is a dummy message with children, delete it. 
+             } else if (container.message == null) {
+                 // If it is a dummy message with children. 
                  
                  // Do not promote the children if doing so would make them 
                  // children of the root, unless there is only one child.
-                 if (parent.parent != null || (parent.parent == null && container.children.size == 1)) {
-                     foreach (var promoted_child in container.children_copied) {
-                         parent.add_child (promoted_child);
-                     }
-                     parent.children.remove (container);
+                 
+                 // Since we're iterating through parent's items, container will 
+                 // never be a root item. So unlike other JWZ algorithm
+                 // implementations, no further checks are needed.
+                 foreach (var promoted_child in container.children_copied) {
+                     parent.add_child (promoted_child);
                  }
+                 parent.children.remove (container);
              }
          }
      }
