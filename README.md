@@ -30,9 +30,9 @@ application was built are no longer as important today.
 communication. Built on the Electron framework, it cannot make use of native
 toolkit goodies like theming, icons or better performance.
 
-### How to setup.
+### How to setup
 
-The repository includes the Mailcore 2 as a git submodule. Therefore, you will need to pass
+The repository includes Mailcore 2 and Basalt libraries as a git submodule. Therefore, you will need to pass
 `--recursive` to git when you clone Envoyer.
 
 To build Envoyer, run the following commands:
