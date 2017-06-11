@@ -6,15 +6,20 @@
  */
 
 public class Envoyer.Models.Identity : GLib.Object {
-    public void* session { get; construct set; }
+    public void* imap_session { get; construct set; }
+    public void* smtp_session { get; construct set; }
     public string name { get; construct set; }
     
     public async Identity (string username, string password, string name) {
-        Object(name: name, session: MailCoreInterface.connect (username, password));
+        Object(
+            name: name,
+            imap_session: MailCoreInterface.imap_connect (username, password),
+            smtp_session: MailCoreInterface.smtp_connect (username, password)
+        );
     }
     
     public Gee.Collection<Envoyer.Models.Folder> fetch_folders () {
-        var folders = MailCoreInterface.fetch_folders (session);
+        var folders = MailCoreInterface.imap_fetch_folders (imap_session);
         
         foreach (var item in folders) {
             item.identity = this;
@@ -24,7 +29,7 @@ public class Envoyer.Models.Identity : GLib.Object {
     }
     
     public Gee.Collection<Envoyer.Models.ConversationThread> fetch_threads (Envoyer.Models.Folder folder) {
-        var messages = MailCoreInterface.fetch_messages (session, folder.name);
+        var messages = MailCoreInterface.imap_fetch_messages (imap_session, folder.name);
         
         foreach (var item in messages) {
             item.identity = this;
@@ -37,6 +42,6 @@ public class Envoyer.Models.Identity : GLib.Object {
     }
     
     public string get_html_for_message (Envoyer.Models.Message message) {
-        return MailCoreInterface.get_html_for_message (session, message.folder.name, message); 
+        return MailCoreInterface.imap_get_html_for_message (imap_session, message.folder.name, message); 
     }
 }

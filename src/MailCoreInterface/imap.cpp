@@ -14,21 +14,20 @@
 #include <gee.h>
 #include "envoyer.h"
  
-extern "C" void* mail_core_interface_connect (gchar* username, gchar* password) {
-    auto session = new mailcore::IMAPSession();
+extern "C" void* mail_core_interface_imap_connect (gchar* username, gchar* password) {
+    auto session = new mailcore::IMAPSession ();
 
     session->setUsername (new mailcore::String (username));
     session->setPassword (new mailcore::String (password));
     session->setHostname (new mailcore::String ("imap.gmail.com"));
     session->setPort (993);
     session->setConnectionType (mailcore::ConnectionTypeTLS);
-    
-    
+        
     //@TODO also close the connection?
     return session;
 }
 
-extern "C" GeeLinkedList* mail_core_interface_fetch_folders (mailcore::IMAPSession* session) {
+extern "C" GeeLinkedList* mail_core_interface_imap_fetch_folders (mailcore::IMAPSession* session) {
     mailcore::ErrorCode error; //@TODO check error
 
     auto folders = session->fetchAllFolders (&error);
@@ -83,7 +82,7 @@ GeeLinkedList* get_as_list_of_envoyer_addresses (mailcore::Array* addresses) {
     return list;
 }
 
-extern "C" GeeLinkedList* mail_core_interface_fetch_messages (mailcore::IMAPSession* session, gchar* folder_path) {
+extern "C" GeeLinkedList* mail_core_interface_imap_fetch_messages (mailcore::IMAPSession* session, gchar* folder_path) {
     mailcore::ErrorCode error; //@TODO check error
         
     auto uidRange = mailcore::IndexSet::indexSetWithRange (mailcore::RangeMake (1, UINT64_MAX));
@@ -120,7 +119,7 @@ extern "C" GeeLinkedList* mail_core_interface_fetch_messages (mailcore::IMAPSess
             }
         }
 
-        message->retain();
+        message->retain(); //@TODO this should be called from Envoyer.Models.Message constructor
         
         EnvoyerModelsMessage* message_model = envoyer_models_message_new (
             message,
@@ -144,7 +143,7 @@ extern "C" GeeLinkedList* mail_core_interface_fetch_messages (mailcore::IMAPSess
     return list;
 }
 
-extern "C" const gchar* mail_core_interface_get_html_for_message (mailcore::IMAPSession* session, gchar* folder_path, EnvoyerModelsMessage* envoyer_message) {
+extern "C" const gchar* mail_core_interface_imap_get_html_for_message (mailcore::IMAPSession* session, gchar* folder_path, EnvoyerModelsMessage* envoyer_message) {
     mailcore::ErrorCode error; //@TODO check error
 
     return session->htmlRendering ((mailcore::IMAPMessage *) envoyer_models_message_get_mailcore_message (envoyer_message), new mailcore::String (folder_path), &error)->UTF8Characters();

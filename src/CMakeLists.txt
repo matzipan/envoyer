@@ -100,12 +100,15 @@ GENERATE_VAPI
 add_executable (envoyer 
 	${APP_VALA_C} 
 	${generated_resources}
-	MailCoreInterface/core.cpp
+	MailCoreInterface/imap.cpp
+	MailCoreInterface/smtp.cpp
 )
 
 target_link_libraries (envoyer
-		basalt
+        z	
+        basalt
         MailCore
+        ${APP_DEPS_LIBRARIES}
         ${LIBETPAN_LIBRARY}
         ${CTEMPLATE_LIBRARY}
         ${TIDY_LIBRARY}

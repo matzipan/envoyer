@@ -31,6 +31,8 @@ public class Envoyer.Models.Message : GLib.Object {
 
     public string content { owned get { return identity.get_html_for_message (this); } }
     public bool has_attachment { get { return false; } } //@TODO
+    
+    public string text { get; set; default = "BLA"; }
 
     public Message (
             void* mailcore_message,
