@@ -9,7 +9,7 @@ using Envoyer.Models;
 using Envoyer.Globals.Main;
 using Envoyer.Globals.Application;
  
-public class Envoyer.Widgets.FolderConversationsList : Gtk.Grid {
+public class Envoyer.Widgets.Main.FolderConversationsList : Gtk.Grid {
     private Gtk.ListBox listbox; //@TODO abstract this
     private IFolder current_folder;
 

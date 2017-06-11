@@ -8,7 +8,7 @@
 using Envoyer.Models;
 using Envoyer.Models.Sidebar;
 
-public class Envoyer.Widgets.Sidebar.UnifiedFolderParentItem : IFolderItem, Basalt.Widgets.SidebarExpandableRow {
+public class Envoyer.Widgets.Main.Sidebar.UnifiedFolderParentItem : IFolderItem, Basalt.Widgets.SidebarExpandableRow {
     private UnifiedFolderParent parent_folder;
     public IFolder folder { get { return parent_folder; } }
     

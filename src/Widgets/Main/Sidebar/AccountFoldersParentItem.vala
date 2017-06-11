@@ -7,7 +7,7 @@
  
 using Envoyer.Models.Sidebar;
  
-public class Envoyer.Widgets.Sidebar.AccountFoldersParentItem : Basalt.Widgets.SidebarHeader {
+public class Envoyer.Widgets.Main.Sidebar.AccountFoldersParentItem : Basalt.Widgets.SidebarHeader {
     public AccountFoldersParentItem (AccountFoldersParent model) {
         base (model);
     }

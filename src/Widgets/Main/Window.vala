@@ -9,15 +9,15 @@ using Envoyer.Globals.Main;
 using Envoyer.Globals.Application;
  
 namespace Envoyer.Globals.Main {
-    public Envoyer.Widgets.Sidebar.Wrapper sidebar;
-    public Envoyer.Widgets.FolderConversationsList folder_conversations_list;
-    public Envoyer.Widgets.ConversationViewer conversation_viewer;
-    public Envoyer.Widgets.MainWindow main_window;
+    public Envoyer.Widgets.Main.Sidebar.Wrapper sidebar;
+    public Envoyer.Widgets.Main.FolderConversationsList folder_conversations_list;
+    public Envoyer.Widgets.Main.ConversationViewer conversation_viewer;
+    public Envoyer.Widgets.Main.Window main_window;
 }
 
-public class Envoyer.Widgets.MainWindow : Gtk.ApplicationWindow {
+public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
 
-    private Envoyer.Widgets.Headerbar headerbar;
+    private Headerbar headerbar;
     private Envoyer.FutureGranite.ThreePane three_pane;
     
     private const string CUSTOM_STYLESHEET = """
@@ -42,7 +42,7 @@ public class Envoyer.Widgets.MainWindow : Gtk.ApplicationWindow {
         }
     """;
 
-    public MainWindow (Gtk.Application app) {
+    public Window (Gtk.Application app) {
 		Object (application: app);
 
 	    build_ui ();
@@ -59,13 +59,13 @@ public class Envoyer.Widgets.MainWindow : Gtk.ApplicationWindow {
     private void build_ui () {
         Granite.Widgets.Utils.set_theming_for_screen (this.get_screen (), CUSTOM_STYLESHEET, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
         
-        headerbar = new Envoyer.Widgets.Headerbar ();
+        headerbar = new Headerbar ();
         headerbar.set_title (Constants.APP_NAME);
         set_titlebar (headerbar);
 
-        sidebar = new Envoyer.Widgets.Sidebar.Wrapper ();
-        folder_conversations_list = new Envoyer.Widgets.FolderConversationsList ();
-        conversation_viewer = new Envoyer.Widgets.ConversationViewer ();
+        sidebar = new Sidebar.Wrapper ();
+        folder_conversations_list = new FolderConversationsList ();
+        conversation_viewer = new ConversationViewer ();
         
         three_pane = new Envoyer.FutureGranite.ThreePane.with_children (sidebar, folder_conversations_list, conversation_viewer);
 

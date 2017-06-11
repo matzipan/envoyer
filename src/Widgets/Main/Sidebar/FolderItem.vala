@@ -7,7 +7,7 @@
  
 using Envoyer.Models;
  
-public class Envoyer.Widgets.Sidebar.FolderItem : IFolderItem, Basalt.Widgets.SidebarRow {
+public class Envoyer.Widgets.Main.Sidebar.FolderItem : IFolderItem, Basalt.Widgets.SidebarRow {
     private Folder _folder;
     public IFolder folder { get { return _folder; } }
     

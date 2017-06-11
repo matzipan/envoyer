@@ -5,7 +5,9 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
  
-public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
+using Envoyer.Models;
+
+public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
     private Gtk.Grid top_grid;
     private Gtk.Grid bottom_grid;
     private Gtk.Grid outer_grid;
@@ -15,9 +17,9 @@ public class Envoyer.Widgets.FolderConversationItem : Gtk.ListBoxRow {
     private Gtk.Button star_image;
     private Gtk.Label datetime_received_label;
     private double current_size = 0;
-    public Envoyer.Models.ConversationThread thread { get; private set; }
+    public ConversationThread thread { get; private set; }
 
-    public FolderConversationItem (Envoyer.Models.ConversationThread thread) {
+    public FolderConversationItem (ConversationThread thread) {
         this.thread = thread;
         build_ui ();
     }

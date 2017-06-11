@@ -48,25 +48,25 @@ set (APP_VALA_OPTIONS
 )
 
 vala_precompile (APP_VALA_C envoyer
-	Main.vala
+	main.vala
     Controllers/Application.vala
 	FutureGranite/ThreePane.vala
 	FutureGranite/HumanDateTime.vala
 	Util/SidebarBuilder.vala
 	Util/ThreadingHelper.vala
-    Widgets/Headerbar.vala
-	Widgets/Sidebar/AccountFoldersParentItem.vala
-	Widgets/Sidebar/FolderItem.vala
-	Widgets/Sidebar/IFolderItem.vala
-    Widgets/Sidebar/UnifiedFolderParentItem.vala
-    Widgets/Sidebar/UnifiedFolderChildItem.vala
-	Widgets/Sidebar/Wrapper.vala
-    Widgets/ConversationViewer.vala
-    Widgets/MessageViewer.vala
-    Widgets/MessageWebView.vala
-	Widgets/FolderConversationItem.vala
-	Widgets/FolderConversationsList.vala
-    Widgets/MainWindow.vala
+    Widgets/Main/Headerbar.vala
+	Widgets/Main/Sidebar/AccountFoldersParentItem.vala
+	Widgets/Main/Sidebar/FolderItem.vala
+	Widgets/Main/Sidebar/IFolderItem.vala
+    Widgets/Main/Sidebar/UnifiedFolderParentItem.vala
+    Widgets/Main/Sidebar/UnifiedFolderChildItem.vala
+	Widgets/Main/Sidebar/Wrapper.vala
+    Widgets/Main/ConversationViewer.vala
+    Widgets/Main/MessageViewer.vala
+    Widgets/Main/MessageWebView.vala
+	Widgets/Main/FolderConversationItem.vala
+	Widgets/Main/FolderConversationsList.vala
+    Widgets/Main/Window.vala
     Widgets/Gravatar.vala
 	Models/Settings.vala
     Models/Folder.vala

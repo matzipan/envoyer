@@ -5,7 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-public class Envoyer.Widgets.Headerbar : Gtk.HeaderBar {
+public class Envoyer.Widgets.Main.Headerbar : Gtk.HeaderBar {
     private Gtk.Button compose_button;
     private Gtk.MenuButton menu_button;
 

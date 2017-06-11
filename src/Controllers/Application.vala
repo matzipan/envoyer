@@ -32,7 +32,7 @@ public class Envoyer.Controllers.Application : Granite.Application {
             settings = new Envoyer.Models.Settings ();
             gnome_settings = new GLib.Settings ("org.gnome.desktop.interface");
 
-            main_window = new Envoyer.Widgets.MainWindow (this);
+            main_window = new Envoyer.Widgets.Main.Window (this);
             add_window (main_window);
 
             load_session ();

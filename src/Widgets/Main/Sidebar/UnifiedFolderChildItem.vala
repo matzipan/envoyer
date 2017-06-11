@@ -8,7 +8,7 @@
 using Envoyer.Models;
 using Envoyer.Models.Sidebar;
 
-public class Envoyer.Widgets.Sidebar.UnifiedFolderChildItem : IFolderItem, Basalt.Widgets.SidebarRow {
+public class Envoyer.Widgets.Main.Sidebar.UnifiedFolderChildItem : IFolderItem, Basalt.Widgets.SidebarRow {
     private UnifiedFolderChild child_folder;
     public IFolder folder { get { return child_folder; } }
     

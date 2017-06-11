@@ -8,7 +8,7 @@
 using Envoyer.Globals.Application;
 using Envoyer.Globals.Main;
 
-public class Envoyer.Widgets.MessageWebView : WebKit.WebView {
+public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
     private static uint web_view_id = 0;
 
     class construct {

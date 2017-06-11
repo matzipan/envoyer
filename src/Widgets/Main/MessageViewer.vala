@@ -5,8 +5,10 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
-public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
-    private Envoyer.Widgets.MessageWebView message_webview;
+using Envoyer.Models;
+
+public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
+    private MessageWebView message_webview;
     private Gtk.Grid grid;
     private Gtk.Grid message_header;
     private Gtk.Grid header_summary_fields;
@@ -19,12 +21,12 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
     private Gtk.Label bcc_address_label;
     private Envoyer.Widgets.Gravatar avatar;
 
-    private Envoyer.Models.Message message_item;
+    private Message message_item;
 
     public signal void link_mouse_in (string uri);
     public signal void link_mouse_out ();
 
-    public MessageViewer (Envoyer.Models.Message message_item) {
+    public MessageViewer (Message message_item) {
         this.message_item = message_item;
 
         build_ui ();
@@ -93,7 +95,7 @@ public class Envoyer.Widgets.MessageViewer : Gtk.ListBoxRow {
         message_header.add (attachment_image);
         message_header.add (datetime_received_label);
         
-        message_webview = new Envoyer.Widgets.MessageWebView ();
+        message_webview = new MessageWebView ();
         
         grid = new Gtk.Grid ();
         grid.orientation = Gtk.Orientation.VERTICAL;

@@ -10,7 +10,7 @@ using Envoyer.Models.Sidebar;
 using Envoyer.Globals.Main;
 using Envoyer.Globals.Application;
  
-public class Envoyer.Widgets.Sidebar.Wrapper : Basalt.Widgets.Sidebar {
+public class Envoyer.Widgets.Main.Sidebar.Wrapper : Basalt.Widgets.Sidebar {
     public Wrapper () {
         connect_signals ();
         
