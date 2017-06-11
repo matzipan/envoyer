@@ -10,6 +10,17 @@
      public Envoyer.Util.ThreadingContainer parent = null;
      public Gee.LinkedList <Envoyer.Util.ThreadingContainer> children = new Gee.LinkedList <Envoyer.Util.ThreadingContainer> ();
      
+     // This returns a copied list which is not susceptible to changes when the original list has items removed from it
+     public Gee.LinkedList <Envoyer.Util.ThreadingContainer> children_copied {
+         owned get {
+             var children_copy = new Gee.LinkedList<Envoyer.Util.ThreadingContainer> (null);
+             
+             children_copy.add_all (children);
+             
+             return children_copy;
+         }
+     }
+     
      public void add_child (Envoyer.Util.ThreadingContainer child) {
          if (child.parent != null) {
              child.parent.children.remove (child);
@@ -121,8 +132,8 @@
                  
                  // Do not promote the children if doing so would make them 
                  // children of the root, unless there is only one child.
-                 if (parent.parent != null || (parent.parent == null && container.children.size == 1)) {                     
-                     foreach (var promoted_child in container.children) {
+                 if (parent.parent != null || (parent.parent == null && container.children.size == 1)) {
+                     foreach (var promoted_child in container.children_copied) {
                          parent.add_child (promoted_child);
                      }
                      parent.children.remove (container);
