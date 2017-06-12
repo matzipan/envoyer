@@ -21,23 +21,23 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
     private Envoyer.FutureGranite.ThreePane three_pane;
     
     private const string CUSTOM_STYLESHEET = """
-        EnvoyerWidgetsFolderConversationItem {
+        EnvoyerWidgetsMainFolderConversationItem {
             border-bottom: 1px solid #efefef;
         }
         
-        EnvoyerWidgetsMessageViewer {
+        EnvoyerWidgetsMainMessageViewer {
             border-bottom: 1px solid #efefef;
         }
 
-        EnvoyerWidgetsConversationViewer .subject, EnvoyerWidgetsFolderConversationItem .subject.unread {
+        EnvoyerWidgetsMainConversationViewer .subject, EnvoyerWidgetsMainFolderConversationItem .subject.unread {
             font-weight: bold;
         }
         
-        EnvoyerWidgetsConversationViewer GtkListBox, EnvoyerWidgetsSidebarWrapper GtkListBox {
+        EnvoyerWidgetsMainConversationViewer GtkListBox, EnvoyerWidgetsMainSidebarWrapper GtkListBox {
             background: #eee;
         }
         
-        EnvoyerWidgetsConversationViewer GtkListBoxRow {
+        EnvoyerWidgetsMainConversationViewer GtkListBoxRow {
             background: #fff;
         }
     """;
