@@ -39,7 +39,7 @@ To build Envoyer, run the following commands:
 ```
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make
 ```
 
@@ -50,7 +50,7 @@ WebKitGTK+ Web Extension will not get loaded (there is no dynamic mechanism yet)
 
 * `src/FutureGranite` - modules that are intended to be merged into `libgranite` when finished
 * `src/WebExtensions` - implementation of `webkit2gtk-web-extension-4.0` as exemplified [here](https://github.com/rschroll/webkitdom/tree/extension)
-* `src/Widgets` - view folder, almost always backed by some models. Never accesses backend libraries, such as `libcamel`, directly.
+* `src/Widgets` - view folder, almost always backed by some models. Never accesses backend libraries, such as `mailcore`, directly.
 
 ### License
 
