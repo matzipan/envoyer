@@ -19,6 +19,12 @@
             <description>Password of default account.</description>
         </key>
         
+        <key name="full-name" type="s">
+            <default>"Andrei Zisu"</default>
+            <summary>full name of user for default account</summary>
+            <description>Full name of user for default account.</description>
+        </key>
+        
         <key name="account-name" type="s">
             <default>"Gmail"</default>
             <summary>name of default account</summary>

@@ -9,6 +9,6 @@ using Envoyer.Models;
 
 public class Envoyer.Models.Sidebar.AccountFoldersParent : Basalt.Widgets.SidebarHeaderModel  {
     public AccountFoldersParent (Identity identity) {
-        base (identity.name, false);
+        base (identity.account_name, false);
     }
 }

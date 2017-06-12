@@ -12,6 +12,7 @@ public class Envoyer.Models.Settings : Granite.Services.Settings {
     public int position_y { get; set; }
     public string username { get; set; }
     public string password { get; set; }
+    public string full_name { get; set; }
     public string account_name { get; set; }
     
     public Settings () {

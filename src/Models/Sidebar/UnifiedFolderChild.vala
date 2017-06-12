@@ -31,10 +31,10 @@ public class Envoyer.Models.Sidebar.UnifiedFolderChild : IFolder, Basalt.Widgets
 
     public Gee.Collection <ConversationThread> threads_list { owned get { return _folder.threads_list; } }
 
-    public string name { get { return identity.name; } }
+    public string name { get { return identity.account_name; } }
 
     public UnifiedFolderChild (Folder folder, Identity identity) {
-        base (identity.name);
+        base (identity.account_name);
 
         this.identity = identity;
         _folder = folder;

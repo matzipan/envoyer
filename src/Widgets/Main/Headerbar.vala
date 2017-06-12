@@ -5,6 +5,8 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
+using Envoyer.Globals.Application;
+
 public class Envoyer.Widgets.Main.Headerbar : Gtk.HeaderBar {
     private Gtk.Button compose_button;
     private Gtk.MenuButton menu_button;
@@ -17,7 +19,7 @@ public class Envoyer.Widgets.Main.Headerbar : Gtk.HeaderBar {
 
     private void build_ui () {
         set_show_close_button (true);
-        Granite.Widgets.Utils.set_theming_for_screen (this.get_screen (), CUSTOM_STYLESHEET, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+        Granite.Widgets.Utils.set_theming_for_screen (get_screen (), CUSTOM_STYLESHEET, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
                 
         // @TODO use this instead of set_theming when granite gets fixed 
         //var headerbar_color = Gdk.RGBA();
@@ -39,8 +41,12 @@ public class Envoyer.Widgets.Main.Headerbar : Gtk.HeaderBar {
         menu_button.set_popup (menu);
     }
     
+    private void compose_button_clicked () {
+        application.open_composer ();
+    }
+    
     private void connect_signals () {
-        /*compose_button.clicked.connect ();*/
+        compose_button.clicked.connect (compose_button_clicked);
     }
     
     private const string CUSTOM_STYLESHEET = """

@@ -12,7 +12,7 @@ using Envoyer.Globals.Application;
 namespace Envoyer.Globals.Application {
     public Envoyer.Models.Settings settings;
     public GLib.Settings gnome_settings;
-    public GLib.List<Envoyer.Models.Identity> identities;
+    public Gee.List <Identity> identities;
     public Envoyer.Controllers.Application application;
 }
 
@@ -41,13 +41,19 @@ public class Envoyer.Controllers.Application : Granite.Application {
         main_window.show_app ();
     }
     
-    
-    private async void load_session() {
+    private async void load_session () {
         //@TODO Add support for multiple identities
-        var identity = yield new Envoyer.Models.Identity (settings.username, settings.password, settings.account_name);
+        identities = new Gee.ArrayList <Identity> ();
         
-        identities.append (identity);
+        var identity = yield new Identity (settings.username, settings.password, settings.full_name, settings.account_name);
+        
+        identities.add (identity);
         
         session_up ();
+    }
+    
+    public void open_composer () {
+        var composer_window = new Envoyer.Widgets.Composer.Window ();
+        composer_window.show_all ();
     }
 }

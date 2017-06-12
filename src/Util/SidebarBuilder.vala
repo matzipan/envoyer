@@ -49,9 +49,9 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
     public static Gee.Collection<AccountSummary> build_summaries_list () {  //@TODO async
         var summaries_list = new Gee.ArrayList<AccountSummary> (null);
 
-        identities.foreach((identity) => {
+        foreach (var identity in identities) {
             summaries_list.add(new AccountSummary (identity));
-        });
+        };
         
         return summaries_list;     
     }

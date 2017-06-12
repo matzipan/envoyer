@@ -67,6 +67,8 @@ vala_precompile (APP_VALA_C envoyer
 	Widgets/Main/FolderConversationItem.vala
 	Widgets/Main/FolderConversationsList.vala
     Widgets/Main/Window.vala
+    Widgets/Composer/Headerbar.vala
+    Widgets/Composer/Window.vala
     Widgets/Gravatar.vala
 	Models/Settings.vala
     Models/Folder.vala

@@ -8,17 +8,19 @@
 public class Envoyer.Models.Identity : GLib.Object {
     public void* imap_session { get; construct set; }
     public void* smtp_session { get; construct set; }
-    public string name { get; construct set; }
+    public string account_name { get; construct set; }
+    public Address address { get; construct set; }
     
-    public async Identity (string username, string password, string name) {
+    public async Identity (string username, string password, string full_name, string account_name) {
         Object(
-            name: name,
+            account_name: account_name,
             imap_session: MailCoreInterface.imap_connect (username, password),
-            smtp_session: MailCoreInterface.smtp_connect (username, password)
+            smtp_session: MailCoreInterface.smtp_connect (username, password),
+            address: new Address (full_name, account_name)
         );
     }
     
-    public Gee.Collection<Envoyer.Models.Folder> fetch_folders () {
+    public Gee.Collection <Folder> fetch_folders () {
         var folders = MailCoreInterface.imap_fetch_folders (imap_session);
         
         foreach (var item in folders) {
@@ -28,7 +30,7 @@ public class Envoyer.Models.Identity : GLib.Object {
         return folders;
     }
     
-    public Gee.Collection<Envoyer.Models.ConversationThread> fetch_threads (Envoyer.Models.Folder folder) {
+    public Gee.Collection <ConversationThread> fetch_threads (Folder folder) {
         var messages = MailCoreInterface.imap_fetch_messages (imap_session, folder.name);
         
         foreach (var item in messages) {
@@ -41,7 +43,13 @@ public class Envoyer.Models.Identity : GLib.Object {
         return threader.process_messages (messages);
     }
     
-    public string get_html_for_message (Envoyer.Models.Message message) {
+    public string get_html_for_message (Message message) {
         return MailCoreInterface.imap_get_html_for_message (imap_session, message.folder.name, message); 
+    }
+    
+    public void send_message (Message message) {
+        message.from = address; 
+        
+        MailCoreInterface.smtp_send_message (smtp_session, message);
     }
 }

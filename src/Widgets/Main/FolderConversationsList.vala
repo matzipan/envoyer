@@ -24,7 +24,7 @@ public class Envoyer.Widgets.Main.FolderConversationsList : Gtk.Grid {
         listbox.grab_focus ();
     }
     
-    public void load_folder (IFolder folder) {
+    public void load_folder_handler (IFolder folder) {
         current_folder = folder;
                         
         render_list ();
@@ -68,7 +68,7 @@ public class Envoyer.Widgets.Main.FolderConversationsList : Gtk.Grid {
     }
 
     private void connect_signals () {
-        application.load_folder.connect (load_folder);
+        application.load_folder.connect (load_folder_handler);
         
         listbox.row_selected.connect ((row) => {
             if (row == null) return;
