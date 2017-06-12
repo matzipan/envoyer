@@ -39,7 +39,7 @@ To build Envoyer, run the following commands:
 ```
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make
 ```
 
