@@ -80,15 +80,16 @@ vala_precompile (APP_VALA_C envoyer
     Models/AccountSummary.vala
     Models/Address.vala
     Models/ConversationThread.vala
-	Models/Identity.vala 
+	Models/Identity.vala
     ${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala
     ${CMAKE_BINARY_DIR}/config.vala
 PACKAGES
 	${APP_VALA_DEPS}
-OPTIONS  
+OPTIONS
 	${APP_VALA_OPTIONS}
 CUSTOM_VAPIS
-	MailCoreInterface/core.vapi
+	MailCoreInterface/smtp.vapi
+	MailCoreInterface/imap.vapi
 	${CMAKE_BINARY_DIR}/lib/basalt/lib/basalt.vapi
 GENERATE_HEADER
 	envoyer
@@ -96,15 +97,16 @@ GENERATE_VAPI
 	envoyer
 )
 
-add_executable (envoyer 
-	${APP_VALA_C} 
+add_executable (envoyer
+	${APP_VALA_C}
 	${generated_resources}
 	MailCoreInterface/imap.cpp
+	MailCoreInterface/imap_fetch_folders.cpp
 	MailCoreInterface/smtp.cpp
 )
 
 target_link_libraries (envoyer
-        z	
+        z
         basalt
         MailCore
         ${APP_DEPS_LIBRARIES}
@@ -159,7 +161,7 @@ vala_precompile (WEBEXTENSION_VALA_C envoyer-webextension
     ${CMAKE_BINARY_DIR}/config.vala
 PACKAGES
 	${WEBEXTENSION_VALA_DEPS}
-OPTIONS  
+OPTIONS
 	${WEBEXTENSION_VALA_OPTIONS}
 GENERATE_HEADER
 	envoyer-webextension

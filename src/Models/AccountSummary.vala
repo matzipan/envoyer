@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
@@ -7,11 +7,11 @@
 
 public class Envoyer.Models.AccountSummary : GLib.Object {
     private bool _expanded = true; //@TODO persist this
-    
+
     //@TODO maybe the summary should have properties for each of the special folders: inbox, sent, drafts, etc.
 
     public Identity identity { get; construct set; }
-    
+
     public Gee.Collection<Envoyer.Models.Folder> folders_list {
         owned get {
             // Create a copy of the children so that it's safe to iterate it
@@ -28,10 +28,10 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
         get { return _expanded; }
         set { _expanded = value; }
     }
-    
-    public AccountSummary (Envoyer.Models.Identity identity) {
+
+    public async AccountSummary (Envoyer.Models.Identity identity) {
         Object (identity: identity);
-                
-        _folder_list.add_all (identity.fetch_folders ());
+
+        _folder_list.add_all (yield identity.fetch_folders ());
     }
 }
