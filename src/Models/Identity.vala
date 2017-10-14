@@ -43,8 +43,8 @@ public class Envoyer.Models.Identity : GLib.Object {
         return threader.process_messages (messages);
     }
 
-    public string get_html_for_message (Message message) {
-        return MailCoreInterface.Imap.get_html_for_message (imap_session, message.folder.name, message);
+    public async string get_html_for_message (Message message) {
+        return yield MailCoreInterface.Imap.get_html_for_message (imap_session, message.folder.name, message);
     }
 
     public void send_message (Message message) {

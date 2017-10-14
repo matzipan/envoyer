@@ -11,7 +11,7 @@
 
 mailcore::AutoreleasePool * pool; //@TODO clear pool
 
-extern "C" void* mail_core_interface_imap_connect (gchar* username, gchar* password) {    
+extern "C" void* mail_core_interface_imap_connect (gchar* username, gchar* password) {
     pool = new mailcore::AutoreleasePool();
 
     auto session = new mailcore::IMAPAsyncSession ();
@@ -24,11 +24,4 @@ extern "C" void* mail_core_interface_imap_connect (gchar* username, gchar* passw
 
     //@TODO also close the connection?
     return session;
-}
-
-extern "C" const gchar* mail_core_interface_imap_get_html_for_message (mailcore::IMAPAsyncSession* session, gchar* folder_path, EnvoyerModelsMessage* envoyer_message) {
-    mailcore::ErrorCode error; //@TODO check error
-
-    // return session->htmlRendering ((mailcore::IMAPMessage *) envoyer_models_message_get_mailcore_message (envoyer_message), new mailcore::String (folder_path), &error)->UTF8Characters();
-    return "";
 }

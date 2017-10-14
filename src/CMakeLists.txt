@@ -103,6 +103,7 @@ add_executable (envoyer
 	MailCoreInterface/imap.cpp
 	MailCoreInterface/imap_fetch_folders.cpp
 	MailCoreInterface/imap_fetch_messages.cpp
+	MailCoreInterface/imap_html_rendering.cpp
 	MailCoreInterface/smtp.cpp
 )
 
