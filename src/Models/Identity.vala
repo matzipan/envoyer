@@ -30,8 +30,8 @@ public class Envoyer.Models.Identity : GLib.Object {
         return folders;
     }
 
-    public Gee.Collection <ConversationThread> fetch_threads (Folder folder) {
-        var messages = MailCoreInterface.Imap.fetch_messages (imap_session, folder.name);
+    public async Gee.Collection <ConversationThread> fetch_threads (Folder folder) {
+        var messages = yield MailCoreInterface.Imap.fetch_messages (imap_session, folder.name);
 
         foreach (var item in messages) {
             item.identity = this;

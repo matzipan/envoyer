@@ -102,6 +102,7 @@ add_executable (envoyer
 	${generated_resources}
 	MailCoreInterface/imap.cpp
 	MailCoreInterface/imap_fetch_folders.cpp
+	MailCoreInterface/imap_fetch_messages.cpp
 	MailCoreInterface/smtp.cpp
 )
 
