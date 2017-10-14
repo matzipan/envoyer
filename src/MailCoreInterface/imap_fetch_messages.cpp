@@ -37,9 +37,9 @@ GeeLinkedList* get_as_list_of_envoyer_addresses (mailcore::Array* addresses) {
     return list;
 }
 
-class MailCoreInterfaceImapFetchMessagesByUIDCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
+class MailCoreInterfaceIMAPFetchMessagesByUIDCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
 public:
-    MailCoreInterfaceImapFetchMessagesByUIDCallback (GTask* task) {
+    MailCoreInterfaceIMAPFetchMessagesByUIDCallback (GTask* task) {
             this->task = task;
     }
 
@@ -114,14 +114,14 @@ extern "C" void mail_core_interface_imap_fetch_messages (mailcore::IMAPAsyncSess
         mailcore::IMAPMessagesRequestKindGmailThreadID |
         mailcore::IMAPMessagesRequestKindGmailMessageID;
 
-    auto fetchMessagesOperation = session->fetchMessagesByUIDOperation(new mailcore::String (folder_path), (mailcore::IMAPMessagesRequestKind) kind, uidRange);
+    auto fetch_messages_operation = session->fetchMessagesByUIDOperation(new mailcore::String (folder_path), (mailcore::IMAPMessagesRequestKind) kind, uidRange);
 
-    auto session_callback = new MailCoreInterfaceImapFetchMessagesByUIDCallback(task);
+    auto session_callback = new MailCoreInterfaceIMAPFetchMessagesByUIDCallback(task);
 
-    // fetchMessagesOperation->setImapCallback(session_callback); @TODO for progress feedback
-    ((mailcore::Operation *) fetchMessagesOperation)->setCallback (session_callback);
+    // fetch_messages_operation->setImapCallback(session_callback); @TODO for progress feedback
+    ((mailcore::Operation *) fetch_messages_operation)->setCallback (session_callback);
 
-    fetchMessagesOperation->start();
+    fetch_messages_operation->start();
 }
 
 extern "C" GeeLinkedList* mail_core_interface_imap_fetch_messages_finish (GTask *task) {

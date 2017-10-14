@@ -25,20 +25,20 @@ public:
             this->folders = folders;
     }
 
-    void incrementIssuedCount() {
-        issuedCount++;
+    void increment_issued_count() {
+        issued_count++;
     }
 
-    void statusReady (mailcore::IMAPFolderStatusOperation* op) {
+    void status_ready (mailcore::IMAPFolderStatusOperation* op) {
         statuses[std::string(op->folder()->UTF8Characters())] = op->status();
 
-        readyCount++;
-        if (readyCount == issuedCount) {
-            centralizationFinished();
+        ready_count++;
+        if (ready_count == issued_count) {
+            centralization_finished();
         }
     }
 
-    void centralizationFinished() {
+    void centralization_finished() {
         auto list = gee_linked_list_new (ENVOYER_MODELS_TYPE_FOLDER, (GBoxedCopyFunc) g_object_ref, g_object_unref, NULL, NULL, NULL);
 
         for(uint i = 0 ; i < folders->count () ; i++) {
@@ -73,21 +73,21 @@ public:
 private:
     GTask* task;
     mailcore::Array*  /* mailcore::Folder */ folders;
-    int readyCount = 0;
-    int issuedCount = 0;
+    int ready_count = 0;
+    int issued_count = 0;
     std::map<std::string, mailcore::IMAPFolderStatus*> statuses;
 };
 
-class MailCoreInterfaceImapFoldersStatusCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
+class MailCoreInterfaceIMAPFoldersStatusCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
 public:
-    MailCoreInterfaceImapFoldersStatusCallback (MailCoreInterfaceFetchFoldersCallbackCentralizer* centralizer) {
+    MailCoreInterfaceIMAPFoldersStatusCallback (MailCoreInterfaceFetchFoldersCallbackCentralizer* centralizer) {
             this->centralizer = centralizer;
     }
 
     virtual void operationFinished(mailcore::Operation * op) {
         //@TODO check IMAPOperation::error
 
-        centralizer->statusReady((mailcore::IMAPFolderStatusOperation*) op);
+        centralizer->status_ready((mailcore::IMAPFolderStatusOperation*) op);
 
         delete this;
     }
@@ -128,11 +128,11 @@ public:
 
             auto folderStatusOperation = ((mailcore::IMAPOperation*) op)->mainSession()->folderStatusOperation(folder->path());
 
-            auto folderStatusCallback = new MailCoreInterfaceImapFoldersStatusCallback (centralizer);
+            auto folderStatusCallback = new MailCoreInterfaceIMAPFoldersStatusCallback (centralizer);
 
             ((mailcore::Operation *) folderStatusOperation)->setCallback(folderStatusCallback);
 
-            centralizer->incrementIssuedCount();
+            centralizer->increment_issued_count();
 
             folderStatusOperation->start();
         }
@@ -147,13 +147,13 @@ private:
 extern "C" void mail_core_interface_imap_fetch_folders (mailcore::IMAPAsyncSession* session, GAsyncReadyCallback callback, void* user_data) {
     auto task = g_task_new (NULL, NULL, callback, user_data);
 
-    auto fetchOperation = session->fetchAllFoldersOperation();
+    auto fetch_operation = session->fetchAllFoldersOperation();
 
     auto session_callback = new MailCoreInterfaceImapFetchFoldersCallback(task);
-    fetchOperation->setImapCallback(session_callback);
-    ((mailcore::Operation *) fetchOperation)->setCallback (session_callback);
+    fetch_operation->setImapCallback(session_callback);
+    ((mailcore::Operation *) fetch_operation)->setCallback (session_callback);
 
-    fetchOperation->start();
+    fetch_operation->start();
 }
 
 extern "C" GeeLinkedList* mail_core_interface_imap_fetch_folders_finish (GTask *task) {

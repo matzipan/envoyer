@@ -12,9 +12,9 @@
 #include <glib.h>
 #include "envoyer.h"
 
-class MailCoreInterfaceImapHTMLRenderingCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
+class MailCoreInterfaceIMAPHTMLRenderingCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
 public:
-    MailCoreInterfaceImapHTMLRenderingCallback (GTask* task) {
+    MailCoreInterfaceIMAPHTMLRenderingCallback (GTask* task) {
             this->task = task;
     }
 
@@ -37,9 +37,9 @@ extern "C" void mail_core_interface_imap_get_html_for_message (mailcore::IMAPAsy
 
     auto html_rendering_operation = session->htmlRenderingOperation ((mailcore::IMAPMessage *) envoyer_models_message_get_mailcore_message (envoyer_message), new mailcore::String (folder_path));
 
-    auto session_callback = new MailCoreInterfaceImapHTMLRenderingCallback(task);
-    html_rendering_operation->setImapCallback(session_callback);
-    ((mailcore::Operation *) html_rendering_operation)->setCallback (session_callback);
+    auto rendering_callback = new MailCoreInterfaceIMAPHTMLRenderingCallback(task);
+    html_rendering_operation->setImapCallback(rendering_callback);
+    ((mailcore::Operation *) html_rendering_operation)->setCallback (rendering_callback);
 
     html_rendering_operation->start();
 }
