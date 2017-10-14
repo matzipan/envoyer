@@ -4,8 +4,11 @@
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
- 
-#include <MailCore/MCSMTPSession.h>
+
+#include <MailCore/MCSMTPAsyncSession.h>
+#include <MailCore/MCOperationCallback.h>
+#include <MailCore/MCSMTPOperationCallback.h>
+#include <MailCore/MCSMTPOperation.h>
 #include <MailCore/MCMessageBuilder.h>
 #include <MailCore/MCMessageHeader.h>
 #include <MailCore/MCAddress.h>
@@ -13,25 +16,29 @@
 #include <gee.h>
 #include "envoyer.h"
 
+mailcore::AutoreleasePool * smtp_pool; //@TODO clear pool
+
 extern "C" void* mail_core_interface_smtp_connect (gchar* username, gchar* password) {
-    auto session = new mailcore::SMTPSession ();
+    smtp_pool = new mailcore::AutoreleasePool();
+
+    auto session = new mailcore::SMTPAsyncSession ();
 
     session->setUsername (new mailcore::String (username));
     session->setPassword (new mailcore::String (password));
     session->setHostname (new mailcore::String ("imap.gmail.com"));
     session->setPort (465);
     session->setConnectionType (mailcore::ConnectionTypeTLS);
-        
+
     //@TODO also close the connection?
     return session;
 }
 
 mailcore::Array* /* mailcore::Address */ get_as_array_of_mailcore_addresses (GeeCollection * envoyer_addresses) {
     auto addresses_array = new mailcore::Array ();
-    
+
     for (uint i = 0; i < gee_abstract_collection_get_size ((GeeAbstractCollection*) envoyer_addresses); i++) {
         auto item = (EnvoyerModelsAddress*) gee_abstract_list_get ((GeeAbstractList*) envoyer_addresses, i);
-        
+
         addresses_array->addObject(
             mailcore::Address::addressWithDisplayName(
                 new mailcore::String (envoyer_models_address_get_name (item)),
@@ -39,13 +46,33 @@ mailcore::Array* /* mailcore::Address */ get_as_array_of_mailcore_addresses (Gee
             )
         );
     }
-    
+
     return addresses_array;
 }
 
-extern "C" void mail_core_interface_smtp_send_message (mailcore::SMTPSession* session, EnvoyerModelsMessage* message) {
-    mailcore::ErrorCode error; //@TODO check error
-    
+class MailCoreInterfaceSMTPMessageSendCallback : public mailcore::OperationCallback, public mailcore::SMTPOperationCallback {
+public:
+    MailCoreInterfaceSMTPMessageSendCallback (GTask* task) {
+            this->task = task;
+    }
+
+    virtual void operationFinished(mailcore::Operation * op) {
+        //@TODO check SMTPOperation::error
+
+        auto operation = ((mailcore::SMTPOperation *) op);
+
+        g_task_return_pointer (task, NULL, g_object_unref);
+
+        g_object_unref (task);
+        delete this;
+    }
+private:
+    GTask* task;
+};
+
+extern "C" void mail_core_interface_smtp_send_message (mailcore::SMTPAsyncSession* session, EnvoyerModelsMessage* message, GAsyncReadyCallback callback, void* user_data) {
+    auto task = g_task_new (NULL, NULL, callback, user_data);
+
     //@TODO ref and unref message
 
     auto builder = new mailcore::MessageBuilder ();
@@ -66,5 +93,17 @@ extern "C" void mail_core_interface_smtp_send_message (mailcore::SMTPSession* se
 
     // @TODO setHTMLBody();
 
-    session->sendMessage(builder->data(), NULL, &error);
+    auto send_message_operation = session->sendMessageOperation(builder->data());
+
+    auto send_callback = new MailCoreInterfaceSMTPMessageSendCallback(task);
+    send_message_operation->setSmtpCallback(send_callback);
+    //@TODO smtp operation callback
+    //@TODO smtp progress callback
+    ((mailcore::Operation *) send_message_operation)->setCallback (send_callback);
+
+    send_message_operation->start();
+}
+
+extern "C" void mail_core_interface_smtp_send_message_finish (GTask *task) {
+    return;
 }
