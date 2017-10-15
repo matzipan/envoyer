@@ -4,22 +4,22 @@ configure_file (${CMAKE_SOURCE_DIR}/src/Services/MessageViewerExtensionServer.va
 
 set (APP_PKG_DEPS
 	gobject-2.0
-    gio-2.0
-    libsoup-2.4
-    libxml-2.0
-    granite>=0.3
-    gthread-2.0
-    gtk+-3.0>=3.9.10
+	gio-2.0
+	libsoup-2.4
+	libxml-2.0
+	granite>=0.3
+	gthread-2.0
+	gtk+-3.0>=3.9.10
 	webkit2gtk-4.0>=2.10.9
 )
 
 set (APP_VALA_DEPS
 	gobject-2.0
-    gio-2.0
-    libsoup-2.4
-    libxml-2.0
-    granite
-    gtk+-3.0
+	gio-2.0
+	libsoup-2.4
+	libxml-2.0
+	granite
+	gtk+-3.0
 	posix
 	webkit2gtk-4.0>=2.10.9
 )
@@ -39,50 +39,50 @@ include_directories (${CMAKE_BINARY_DIR}/lib/mailcore2/src/include)
 include_directories (${CMAKE_BINARY_DIR}/lib/basalt/lib)
 
 set (APP_VALA_OPTIONS
-    --thread
-    --enable-checking
-    --debug
-    --target-glib=2.47.6
-    --disable-since-check
-    ${EXTRA_VALA_OPTIONS}
+	--thread
+	--enable-checking
+	--debug
+	--target-glib=2.47.6
+	--disable-since-check
+	${EXTRA_VALA_OPTIONS}
 )
 
 vala_precompile (APP_VALA_C envoyer
 	main.vala
-    Controllers/Application.vala
+	Controllers/Application.vala
 	FutureGranite/ThreePane.vala
 	FutureGranite/HumanDateTime.vala
 	Util/SidebarBuilder.vala
 	Util/ThreadingHelper.vala
-    Widgets/Main/Headerbar.vala
+	Widgets/Main/Headerbar.vala
 	Widgets/Main/Sidebar/AccountFoldersParentItem.vala
 	Widgets/Main/Sidebar/FolderItem.vala
 	Widgets/Main/Sidebar/IFolderItem.vala
-    Widgets/Main/Sidebar/UnifiedFolderParentItem.vala
-    Widgets/Main/Sidebar/UnifiedFolderChildItem.vala
+	Widgets/Main/Sidebar/UnifiedFolderParentItem.vala
+	Widgets/Main/Sidebar/UnifiedFolderChildItem.vala
 	Widgets/Main/Sidebar/Wrapper.vala
-    Widgets/Main/ConversationViewer.vala
-    Widgets/Main/MessageViewer.vala
-    Widgets/Main/MessageWebView.vala
+	Widgets/Main/ConversationViewer.vala
+	Widgets/Main/MessageViewer.vala
+	Widgets/Main/MessageWebView.vala
 	Widgets/Main/FolderConversationItem.vala
 	Widgets/Main/FolderConversationsList.vala
-    Widgets/Main/Window.vala
-    Widgets/Composer/Headerbar.vala
-    Widgets/Composer/Window.vala
-    Widgets/Gravatar.vala
+	Widgets/Main/Window.vala
+	Widgets/Composer/Headerbar.vala
+	Widgets/Composer/Window.vala
+	Widgets/Gravatar.vala
 	Models/Settings.vala
-    Models/Folder.vala
-    Models/IFolder.vala
-    Models/Message.vala
-    Models/Sidebar/AccountFoldersParent.vala
-    Models/Sidebar/UnifiedFolderChild.vala
-    Models/Sidebar/UnifiedFolderParent.vala
-    Models/AccountSummary.vala
-    Models/Address.vala
-    Models/ConversationThread.vala
+	Models/Folder.vala
+	Models/IFolder.vala
+	Models/Message.vala
+	Models/Sidebar/AccountFoldersParent.vala
+	Models/Sidebar/UnifiedFolderChild.vala
+	Models/Sidebar/UnifiedFolderParent.vala
+	Models/AccountSummary.vala
+	Models/Address.vala
+	Models/ConversationThread.vala
 	Models/Identity.vala
-    ${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala
-    ${CMAKE_BINARY_DIR}/config.vala
+	${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala
+	${CMAKE_BINARY_DIR}/config.vala
 PACKAGES
 	${APP_VALA_DEPS}
 OPTIONS
@@ -108,19 +108,20 @@ add_executable (envoyer
 )
 
 target_link_libraries (envoyer
-        z
-        basalt
-        MailCore
-        ${APP_DEPS_LIBRARIES}
-        ${LIBETPAN_LIBRARY}
-        ${CTEMPLATE_LIBRARY}
-        ${TIDY_LIBRARY}
-        ${LIBXML_LIBRARY}
-        crypto
-        pthread
-        uuid
-        icuuc
-        icui18n)
+	z
+	basalt
+	MailCore
+	${APP_DEPS_LIBRARIES}
+	${LIBETPAN_LIBRARY}
+	${CTEMPLATE_LIBRARY}
+	${TIDY_LIBRARY}
+	${LIBXML_LIBRARY}
+	crypto
+	pthread
+	uuid
+	icuuc
+	icui18n
+)
 
 #
 # WebKitWebExtension
@@ -149,18 +150,18 @@ include_directories (${CMAKE_BINARY_DIR})
 include_directories (${CMAKE_SOURCE_DIR})
 
 set (WEBEXTENSION_VALA_OPTIONS
-    --thread
-    --enable-checking
-    --debug
-    --target-glib=2.47.6
-    ${EXTRA_VALA_OPTIONS}
+	--thread
+	--enable-checking
+	--debug
+	--target-glib=2.47.6
+	${EXTRA_VALA_OPTIONS}
 )
 
 vala_precompile (WEBEXTENSION_VALA_C envoyer-webextension
 	WebExtensions/MessageViewerExtension.vala
 	${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala
-    ${CMAKE_BINARY_DIR}/src/Services/MessageViewerExtensionServer.vala
-    ${CMAKE_BINARY_DIR}/config.vala
+	${CMAKE_BINARY_DIR}/src/Services/MessageViewerExtensionServer.vala
+	${CMAKE_BINARY_DIR}/config.vala
 PACKAGES
 	${WEBEXTENSION_VALA_DEPS}
 OPTIONS
