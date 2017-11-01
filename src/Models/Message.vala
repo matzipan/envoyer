@@ -6,16 +6,15 @@
  */
 
 public class Envoyer.Models.Message : GLib.Object {
-    public Envoyer.Models.Identity identity;
-    public Envoyer.Models.Folder folder;
+    public Folder folder;
 
     //@TODO find a way to either integrate this or get rid of it. needed for html fetching
     public void* mailcore_message { get; construct set; }
-    public Envoyer.Models.Address from { get; set; }
-    public Envoyer.Models.Address sender { get; construct set; }
-    public Gee.Collection<Envoyer.Models.Address> to { get; construct set; }
-    public Gee.Collection<Envoyer.Models.Address> cc { get; construct set; }
-    public Gee.Collection<Envoyer.Models.Address> bcc { get; construct set; }
+    public Address from { get; set; }
+    public Address sender { get; construct set; }
+    public Gee.Collection<Address> to { get; construct set; }
+    public Gee.Collection<Address> cc { get; construct set; }
+    public Gee.Collection<Address> bcc { get; construct set; }
 
     public time_t time_received { get; private set; }
     public GLib.DateTime datetime_received {
@@ -26,7 +25,7 @@ public class Envoyer.Models.Message : GLib.Object {
 
     //@TODO add display_subject which removes Re:
     public string subject { get; construct set; }
-    public Gee.Collection<string> references { get; construct set; }
+    public Gee.Collection <string> references { get; construct set; }
     public string id { get; construct set; }
 
     public string content { owned get { return ""; /*identity.get_html_for_message (this);*/ } }
@@ -36,11 +35,11 @@ public class Envoyer.Models.Message : GLib.Object {
 
     public Message (
             void* mailcore_message,
-            Envoyer.Models.Address from,
-            Envoyer.Models.Address sender,
-            Gee.Collection <Envoyer.Models.Address> to,
-            Gee.Collection <Envoyer.Models.Address> cc,
-            Gee.Collection <Envoyer.Models.Address> bcc,
+            Address from,
+            Address sender,
+            Gee.Collection <Address> to,
+            Gee.Collection <Address> cc,
+            Gee.Collection <Address> bcc,
             string subject,
             time_t time_received,
             Gee.Collection <string> references,
@@ -54,7 +53,7 @@ public class Envoyer.Models.Message : GLib.Object {
             to: to,
             cc: cc,
             bcc: bcc,
-            subject: subject,
+            subject: subject.dup (),
             references: references,
             id: id.dup ()
         );
@@ -63,9 +62,9 @@ public class Envoyer.Models.Message : GLib.Object {
     }
 
     public Message.for_sending (
-            Gee.Collection <Envoyer.Models.Address> to,
-            Gee.Collection <Envoyer.Models.Address> cc,
-            Gee.Collection <Envoyer.Models.Address> bcc,
+            Gee.Collection <Address> to,
+            Gee.Collection <Address> cc,
+            Gee.Collection <Address> bcc,
             string subject,
             string text
         ) {

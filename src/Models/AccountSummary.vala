@@ -12,7 +12,9 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
 
     public Identity identity { get; construct set; }
 
-    public Gee.Collection<Envoyer.Models.Folder> folders_list {
+    public signal void folder_list_changed ();
+
+    public Gee.Collection<Folder> folders_list {
         owned get {
             // Create a copy of the children so that it's safe to iterate it
             // (e.g. by using foreach) while removing items.
@@ -22,16 +24,25 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
         }
     }
 
-    private Gee.ArrayList<Envoyer.Models.Folder> _folder_list = new Gee.ArrayList<Envoyer.Models.Folder> (null);
+    private Gee.ArrayList<Folder> _folder_list = new Gee.ArrayList<Folder> (null);
 
     public bool expanded {
         get { return _expanded; }
         set { _expanded = value; }
     }
 
-    public async AccountSummary (Envoyer.Models.Identity identity) {
+    public AccountSummary (Identity identity) {
         Object (identity: identity);
+    }
 
-        _folder_list.add_all (yield identity.fetch_folders ());
+
+    construct {
+        _folder_list.add_all (identity.get_folders ());
+
+        // @TODO find a better place for this
+        identity.fetch_folders.begin ((obj, res) => {
+            identity.fetch_folders.end (res);
+            folder_list_changed ();
+        });
     }
 }

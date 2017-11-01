@@ -16,8 +16,7 @@ public struct Envoyer.FolderStruct {
 
 public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.SidebarRowModel {
     private Envoyer.FolderStruct data;
-    private int flags;
-
+    public int flags { get; private set; }
     public Envoyer.Models.Identity identity;
 
     // It appears that MailCore does the same check for name == "INBOX"
@@ -92,7 +91,13 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.Side
         owned get {  //@TODO async
             var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
 
-            //threads_list_copy.add_all (identity.fetch_threads (this)); //@TODO cache fetch_threads
+            threads_list_copy.add_all (identity.get_threads (this)); //@TODO cache fetch_threads
+
+            identity.fetch_threads.begin (this, (obj, res) => {
+                identity.fetch_threads.end (res);
+                /*folder_list_changed (); @TODO*/
+            });
+
             threads_list_copy.sort ((first, second) => { // sort descendingly
                 if(first.time_received > second.time_received) {
                     return -1;

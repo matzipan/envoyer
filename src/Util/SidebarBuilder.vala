@@ -50,7 +50,7 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
         var summaries_list = new Gee.ArrayList<AccountSummary> (null);
 
         foreach (var identity in identities) {
-            summaries_list.add(yield new AccountSummary (identity));
+            summaries_list.add(new AccountSummary (identity));
         };
 
         return summaries_list;

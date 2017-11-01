@@ -11,6 +11,7 @@ set (APP_PKG_DEPS
 	gthread-2.0
 	gtk+-3.0>=3.9.10
 	webkit2gtk-4.0>=2.10.9
+	libgda-5.0
 )
 
 set (APP_VALA_DEPS
@@ -22,6 +23,7 @@ set (APP_VALA_DEPS
 	gtk+-3.0
 	posix
 	webkit2gtk-4.0>=2.10.9
+	libgda-5.0
 )
 
 find_package (PkgConfig)
@@ -41,6 +43,7 @@ include_directories (${CMAKE_BINARY_DIR}/lib/basalt/lib)
 set (APP_VALA_OPTIONS
 	--thread
 	--enable-checking
+	--vapidir=${CMAKE_SOURCE_DIR}/vapi
 	--debug
 	--target-glib=2.47.6
 	--disable-since-check
@@ -50,6 +53,7 @@ set (APP_VALA_OPTIONS
 vala_precompile (APP_VALA_C envoyer
 	main.vala
 	Controllers/Application.vala
+	Controllers/Database.vala
 	FutureGranite/ThreePane.vala
 	FutureGranite/HumanDateTime.vala
 	Util/SidebarBuilder.vala

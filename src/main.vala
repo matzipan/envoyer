@@ -1,10 +1,10 @@
-/* 
+/*
  * Copyright 2016 Andrei-Costin Zisu
  *
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
- 
+
 using Envoyer.Globals.Application;
 
 public static int main (string[] args) {
@@ -16,8 +16,7 @@ public static int main (string[] args) {
     Environment.set_prgname (Constants.PROJECT_FQDN);
 
     application = new Envoyer.Controllers.Application ();
+    database = new Envoyer.Controllers.Database ();
 
     return application.run (args);
 }
-
-
