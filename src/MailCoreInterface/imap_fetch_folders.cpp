@@ -56,7 +56,7 @@ public:
             folder_struct.recent_count = status->recentCount ();
             folder_struct.uid_next = status->uidNext ();
             folder_struct.uid_validity = status->uidValidity ();
-            folder_struct.highest_mod_seq = status->highestModSeqValue ();
+            folder_struct.highest_modification_sequence = status->highestModSeqValue ();
 
             auto folder_model = envoyer_models_folder_new (folder->path ()->UTF8Characters (), folder->flags (), &folder_struct);
 

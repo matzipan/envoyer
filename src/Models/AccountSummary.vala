@@ -35,14 +35,7 @@ public class Envoyer.Models.AccountSummary : GLib.Object {
         Object (identity: identity);
     }
 
-
     construct {
         _folder_list.add_all (identity.get_folders ());
-
-        // @TODO find a better place for this
-        identity.fetch_folders.begin ((obj, res) => {
-            identity.fetch_folders.end (res);
-            folder_list_changed ();
-        });
     }
 }

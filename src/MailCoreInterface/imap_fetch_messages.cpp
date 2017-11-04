@@ -47,6 +47,7 @@ public:
         //@TODO check IMAPOperation::error
 
         auto messages = ((mailcore::IMAPFetchMessagesOperation *) op)->messages();
+        auto vanished_messages = ((mailcore::IMAPFetchMessagesOperation *) op)->vanishedMessages(); //@TODO
 
         auto list = gee_linked_list_new (ENVOYER_MODELS_TYPE_MESSAGE, (GBoxedCopyFunc) g_object_ref, g_object_unref, NULL, NULL, NULL);
 
@@ -84,7 +85,9 @@ public:
                 message->header ()->subject ()->UTF8Characters (),
                 message->header ()->receivedDate (),
                 (GeeCollection*) references_list,
-                message->header ()->messageID ()->UTF8Characters ()
+                message->header ()->messageID ()->UTF8Characters (),
+                message->uid (),
+                message->sequenceNumber ()
             );
 
             gee_abstract_collection_add ((GeeAbstractCollection*) list, message_model);
@@ -103,16 +106,19 @@ private:
     GTask* task;
 };
 
-extern "C" void mail_core_interface_imap_fetch_messages (mailcore::IMAPAsyncSession* session, gchar* folder_path, GAsyncReadyCallback callback, void* user_data) {
+extern "C" void mail_core_interface_imap_fetch_messages (mailcore::IMAPAsyncSession* session, gchar* folder_path, guint starting_uid_value, GAsyncReadyCallback callback, void* user_data) {
     auto task = g_task_new (NULL, NULL, callback, user_data);
 
-    auto uidRange = mailcore::IndexSet::indexSetWithRange (mailcore::RangeMake (1, UINT64_MAX));
+    auto uidRange = mailcore::IndexSet::indexSetWithRange (mailcore::RangeMake (starting_uid_value+1, UINT64_MAX));
     auto kind = mailcore::IMAPMessagesRequestKindHeaders |
         mailcore::IMAPMessagesRequestKindFlags |
         mailcore::IMAPMessagesRequestKindStructure |
         mailcore::IMAPMessagesRequestKindGmailLabels |
         mailcore::IMAPMessagesRequestKindGmailThreadID |
         mailcore::IMAPMessagesRequestKindGmailMessageID;
+
+        // FETCH <lastseenuid+1>:* <descriptors>
+        // FETCH 1:<lastseenuid> FLAGS
 
     auto fetch_messages_operation = session->fetchMessagesByUIDOperation(new mailcore::String (folder_path), (mailcore::IMAPMessagesRequestKind) kind, uidRange);
 

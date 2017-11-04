@@ -12,6 +12,8 @@ public class Envoyer.Models.Message : GLib.Object {
     public void* mailcore_message { get; construct set; }
     public Address from { get; set; }
     public Address sender { get; construct set; }
+    public uint uid { get; construct set; }
+    public uint modification_sequence { get; construct set; }
     public Gee.Collection<Address> to { get; construct set; }
     public Gee.Collection<Address> cc { get; construct set; }
     public Gee.Collection<Address> bcc { get; construct set; }
@@ -43,7 +45,9 @@ public class Envoyer.Models.Message : GLib.Object {
             string subject,
             time_t time_received,
             Gee.Collection <string> references,
-            string id
+            string id,
+            uint uid,
+            uint modification_sequence
         ) {
 
         Object (
@@ -55,7 +59,9 @@ public class Envoyer.Models.Message : GLib.Object {
             bcc: bcc,
             subject: subject.dup (),
             references: references,
-            id: id.dup ()
+            id: id.dup (),
+            uid: uid,
+            modification_sequence: modification_sequence
         );
 
         this.time_received = time_received;

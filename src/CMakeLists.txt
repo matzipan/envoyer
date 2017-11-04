@@ -53,7 +53,7 @@ set (APP_VALA_OPTIONS
 vala_precompile (APP_VALA_C envoyer
 	main.vala
 	Controllers/Application.vala
-	Controllers/Database.vala
+	Services/Database.vala
 	FutureGranite/ThreePane.vala
 	FutureGranite/HumanDateTime.vala
 	Util/SidebarBuilder.vala
@@ -108,6 +108,7 @@ add_executable (envoyer
 	MailCoreInterface/imap_fetch_folders.cpp
 	MailCoreInterface/imap_fetch_messages.cpp
 	MailCoreInterface/imap_html_rendering.cpp
+	MailCoreInterface/imap_idle_listener.cpp
 	MailCoreInterface/smtp.cpp
 )
 

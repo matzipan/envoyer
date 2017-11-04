@@ -14,7 +14,7 @@ namespace Envoyer.Globals.Application {
     public GLib.Settings gnome_settings;
     public Gee.List <Identity> identities;
     public Envoyer.Controllers.Application application;
-    public Envoyer.Controllers.Database database;
+    public Envoyer.Services.Database database;
 }
 
 public class Envoyer.Controllers.Application : Granite.Application {

@@ -5,13 +5,15 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
+ using Envoyer.Globals.Application;
+
 public struct Envoyer.FolderStruct {
     int unseen_count;
     int message_count;
     int recent_count;
     int uid_next;
     int uid_validity;
-    int64 highest_mod_seq;
+    int64 highest_modification_sequence;
 }
 
 public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.SidebarRowModel {
@@ -80,6 +82,12 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.Side
 
     }
 
+    public uint highest_uid {
+        get {
+            return database.get_highest_uid_for_folder (this);
+        }
+    }
+
     public uint unread_count { get { return data.unseen_count; } }
     public uint total_count { get { return data.message_count; } }
     public uint recent_count { get { return data.recent_count; } }
@@ -91,12 +99,7 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.Side
         owned get {  //@TODO async
             var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
 
-            threads_list_copy.add_all (identity.get_threads (this)); //@TODO cache fetch_threads
-
-            identity.fetch_threads.begin (this, (obj, res) => {
-                identity.fetch_threads.end (res);
-                /*folder_list_changed (); @TODO*/
-            });
+            threads_list_copy.add_all (identity.get_threads (this));
 
             threads_list_copy.sort ((first, second) => { // sort descendingly
                 if(first.time_received > second.time_received) {

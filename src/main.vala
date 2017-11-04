@@ -16,7 +16,7 @@ public static int main (string[] args) {
     Environment.set_prgname (Constants.PROJECT_FQDN);
 
     application = new Envoyer.Controllers.Application ();
-    database = new Envoyer.Controllers.Database ();
+    database = new Envoyer.Services.Database ();
 
     return application.run (args);
 }
