@@ -48,6 +48,37 @@ public class Envoyer.Models.Identity : GLib.Object {
             yield MailCoreInterface.Imap.idle_listener (imap_idle_session, index_folder.name, index_folder.highest_uid);
 
             var messages = yield fetch_messages (index_folder);
+
+            // @TODO improve this
+            // @TODO implement https://gist.github.com/matzipan/d0199db1706426a8f4436d707b3288fd
+            foreach (var new_message in messages) {
+                //string body = EmailUtil.strip_subject_prefixes(email);
+
+                //@TODO strip/down in Address not here
+                string md5 = GLib.Checksum.compute_for_string(ChecksumType.MD5, new_message.from.email.strip().down());
+
+                var url = "https://secure.gravatar.com/avatar/%s?d=404&s=%d".printf(md5, 80);
+
+                var avatar_file = File.new_for_uri (url);
+                GLib.Icon icon = new ThemedIcon("internet-mail");
+                try {
+                    FileIOStream iostream;
+                    var file = File.new_tmp("geary-contact-XXXXXX.png", out iostream);
+                    iostream.close();
+                    avatar_file.copy(file, GLib.FileCopyFlags.OVERWRITE);
+                    icon = new FileIcon(file);
+                } catch (Error e) {
+                    debug ("Did not find avatar for %s".printf(new_message.from.email));
+                }
+
+                var notification = new GLib.Notification (new_message.from.email);
+                notification.set_body (new_message.subject);
+                notification.set_icon (icon);
+
+                application.withdraw_notification ("message.new"); // @TODO this appears to not work in elementary?
+                application.send_notification ("message.new", notification);
+            }
+
         }
     }
 
