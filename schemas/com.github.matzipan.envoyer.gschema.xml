@@ -1,54 +1,53 @@
 <schemalist>
-    <schema id="ro.webmonsters.envoyer" path="/ro/webmonsters/envoyer/">
-        
+    <schema id="com.github.matzipan.envoyer" path="/com/github/matzipan/envoyer/">
         <key name="window-maximize" type="b">
             <default>false</default>
             <summary>maximize window</summary>
             <description>True if library application is maximized, false otherwise.</description>
         </key>
-        
+
         <key name="username" type="s">
             <default>""</default>
             <summary>default account username</summary>
             <description>Username of default account.</description>
         </key>
-        
+
         <key name="password" type="s">
             <default>""</default>
             <summary>default account password</summary>
             <description>Password of default account.</description>
         </key>
-        
+
         <key name="full-name" type="s">
             <default>"Andrei Zisu"</default>
             <summary>full name of user for default account</summary>
             <description>Full name of user for default account.</description>
         </key>
-        
+
         <key name="account-name" type="s">
             <default>"Gmail"</default>
             <summary>name of default account</summary>
             <description>Name of default account.</description>
         </key>
-        
+
         <key name="position-x" type="i">
             <default>600</default>
             <summary>x axis position on screen</summary>
             <description>The last recorded x position of the application window.</description>
         </key>
-        
+
         <key name="position-y" type="i">
             <default>600</default>
             <summary>y axis position on screen</summary>
             <description>The last recorded y position of the application window.</description>
         </key>
-        
+
         <key name="window-width" type="i">
             <default>1024</default>
             <summary>width of window</summary>
             <description>The last recorded width of the application window.</description>
         </key>
-        
+
         <key name="window-height" type="i">
             <default>768</default>
             <summary>height of window</summary>

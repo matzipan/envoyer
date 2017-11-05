@@ -1,2 +1,2 @@
 include (GSettings)
-add_schema ("ro.webmonsters.envoyer.gschema.xml")
+add_schema ("com.github.matzipan.envoyer.gschema.xml")

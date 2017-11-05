@@ -1,7 +1,7 @@
 # Envoyer app
 
 Envoyer intends to be the mail app for the Linux desktop of 2016. It is written
-in Vala using the MailCore 2 library as a backend and GTK+3 as a toolkit. It is 
+in Vala using the MailCore 2 library as a backend and GTK+3 as a toolkit. It is
 designed to be used with elementary OS.
 
 The application is currently in full development.
@@ -20,7 +20,7 @@ development cumbersome. Envoyer intends to adhere to principled development.
 Server/Camel), but it was quickly found to be clunky and limiting. GObject
 in C (Evolution) demands a lot of boilerplate code and it makes the overall
 development experience really difficult. Envoyer uses Vala, which makes it
-much more easy to write GObject code.  Furthermore, Envoyer aims to have a 
+much more easy to write GObject code.  Furthermore, Envoyer aims to have a
 much lighter and friendlier UI.
 
 * Thunderbird: just as Evolution, I think many use cases for which this
@@ -43,7 +43,7 @@ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make
 ```
 
-You will have to first run `cd src` and then `./envoyer`, otherwise the 
+You will have to first run `cd src` and then `./com.github.matzipan.envoyer`, otherwise the 
 WebKitGTK+ Web Extension will not get loaded (there is no dynamic mechanism yet).
 
 ### Folder structure
@@ -56,5 +56,5 @@ WebKitGTK+ Web Extension will not get loaded (there is no dynamic mechanism yet)
 
 Copyright 2011-2016 Andrei-Costin Zisu.
 
-This software is licensed under the GNU Lesser General Public License (version 
+This software is licensed under the GNU Lesser General Public License (version
     2.1 or later).  See the COPYING file in this distribution.
