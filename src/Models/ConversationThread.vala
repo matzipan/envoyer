@@ -50,6 +50,19 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
     }
 
     public string subject { get { return _messages_list[0].subject; } }
+    public bool seen { get { return _messages_list[0].seen; } }
+    public bool flagged {
+        get {
+            foreach (var current_message in _messages_list) {
+                if (current_message.flagged) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+    } //@TODO look through the entire thread and check flagged
+    public bool deleted { get { return _messages_list[0].deleted; } }
 
     public ConversationThread.from_container (Envoyer.Util.ThreadingContainer container) {
         if (container.message != null) {

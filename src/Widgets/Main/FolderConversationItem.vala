@@ -4,7 +4,7 @@
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
- 
+
 using Envoyer.Models;
 
 public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
@@ -42,7 +42,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
         top_grid.column_spacing = 3;
         top_grid.add (subject_label);
         top_grid.add (attachment_image);
-        
+
         star_image = new Gtk.Button.from_icon_name ("starred", Gtk.IconSize.MENU); //@TODO make smaller
         star_image.get_style_context ().remove_class ("button");
         star_image.sensitive = true;
@@ -54,15 +54,15 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
         addresses_label.ellipsize = Pango.EllipsizeMode.END;
         addresses_label.get_style_context ().add_class ("addresses");
         addresses_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
-        
+
         datetime_received_label = new Gtk.Label (null);
 
         bottom_grid = new Gtk.Grid ();
         bottom_grid.orientation = Gtk.Orientation.HORIZONTAL;
         bottom_grid.column_spacing = 3;
         bottom_grid.add (addresses_label);
-        bottom_grid.add (star_image);
         bottom_grid.add (datetime_received_label);
+        bottom_grid.add (star_image);
 
         outer_grid = new Gtk.Grid ();
         outer_grid.orientation = Gtk.Orientation.VERTICAL;
@@ -86,39 +86,41 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
                                     Granite.DateTime.get_default_date_format(false, true, true),
                                     Granite.DateTime.get_default_time_format(false, true)
                                     );
-                                    
+
         datetime_received_label.tooltip_text = thread.datetime_received.format(full_format);
-                
+
         addresses_label.label = build_addresses_string (thread.display_addresses);
-        /*if (true) {
-            //subject_label.get_style_context ().add_class ("unread");
-        }*/
+        if (!thread.seen) {
+            subject_label.get_style_context ().add_class ("unread"); //@TODO if flag is updated
+        }
 
         attachment_image.destroy (); //@TODO
-        star_image.destroy (); //@TODO
+        if (!thread.flagged) {
+            star_image.destroy (); //@TODO if flag is updated
+        }
 
         setup_timestamp ();
     }
-    
-    private void setup_timestamp () {  
+
+    private void setup_timestamp () {
         update_timestamp (); //@TODO mabe write an autoupdating timestamp class
 
-        var timeout_reference = GLib.Timeout.add_seconds(10, () => { 
+        var timeout_reference = GLib.Timeout.add_seconds(10, () => {
             update_timestamp();
-            
-            return true; 
+
+            return true;
         });
-        
-        unrealize.connect(() => { 
+
+        unrealize.connect(() => {
             GLib.Source.remove (timeout_reference);
         });
     }
-    
-    private void update_timestamp () {    
+
+    private void update_timestamp () {
         var humanDateTime = new Envoyer.FutureGranite.HumanDateTime(thread.datetime_received);
         datetime_received_label.set_label (humanDateTime.compared_to_now ());
     }
-    
+
     private string build_addresses_string (Gee.Collection<Envoyer.Models.Address> addresses) {
             // @TODO replace indentity email address with "me"
             var addresses_string_builder = new GLib.StringBuilder ();
@@ -134,8 +136,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
                     addresses_string_builder.append (address.display_name);
                 }
             }
-            
+
             return addresses_string_builder.str;
     }
 }
-

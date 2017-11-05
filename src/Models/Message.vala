@@ -13,6 +13,10 @@ public class Envoyer.Models.Message : GLib.Object {
     public Address from { get; set; }
     public Address sender { get; construct set; }
     public uint uid { get; construct set; }
+    public bool seen { get; construct set; }
+    public bool flagged { get; construct set; }
+    public bool deleted { get; construct set; }
+    public bool draft { get; construct set; }
     public uint modification_sequence { get; construct set; }
     public Gee.Collection<Address> to { get; construct set; }
     public Gee.Collection<Address> cc { get; construct set; }
@@ -47,7 +51,11 @@ public class Envoyer.Models.Message : GLib.Object {
             Gee.Collection <string> references,
             string id,
             uint uid,
-            uint modification_sequence
+            uint modification_sequence,
+            bool seen,
+            bool flagged,
+            bool deleted,
+            bool draft
         ) {
 
         Object (
@@ -61,7 +69,11 @@ public class Envoyer.Models.Message : GLib.Object {
             references: references,
             id: id.dup (),
             uid: uid,
-            modification_sequence: modification_sequence
+            modification_sequence: modification_sequence,
+            seen: seen,
+            flagged: flagged,
+            deleted: deleted,
+            draft: draft
         );
 
         this.time_received = time_received;

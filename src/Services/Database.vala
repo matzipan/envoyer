@@ -135,8 +135,11 @@ public class Envoyer.Services.Database : Object {
                                        split_references(data_model_iter.get_value_for_field ("references").get_string ()),
                                        data_model_iter.get_value_for_field ("id").get_string (),
                                        data_model_iter.get_value_for_field ("uid").get_int (),
-                                       data_model_iter.get_value_for_field ("modification_sequence").get_int ());
-
+                                       data_model_iter.get_value_for_field ("modification_sequence").get_int (),
+                                       data_model_iter.get_value_for_field ("seen").get_int () != 0,
+                                       data_model_iter.get_value_for_field ("flagged").get_int () != 0,
+                                       data_model_iter.get_value_for_field ("deleted").get_int () != 0,
+                                       data_model_iter.get_value_for_field ("draft").get_int () != 0);
             list.add (current_message);
         }
 
@@ -182,6 +185,7 @@ public class Envoyer.Services.Database : Object {
         }
 
         foreach (var current_message in messages) {
+            //@TODO also take into account identity for multi-account
             if (hashed_messages.contains (current_message.id)) {
                 continue;
             }
@@ -202,7 +206,45 @@ public class Envoyer.Services.Database : Object {
             builder.add_field_value_as_gvalue ("bcc", join_addresses (current_message.bcc));
             builder.add_field_value_as_gvalue ("content", current_message.content);
             builder.add_field_value_as_gvalue ("references", join_references (current_message.references));
+            builder.add_field_value_as_gvalue ("seen", (int) current_message.seen);
+            builder.add_field_value_as_gvalue ("flagged", (int) current_message.flagged);
+            builder.add_field_value_as_gvalue ("draft", (int) current_message.draft);
+            builder.add_field_value_as_gvalue ("deleted", (int) current_message.deleted);
             /*builder.add_field_value_as_gvalue ("has_attachment", );*/
+            var statement = builder.get_statement ();
+            Gda.Set last_insert_row;
+            connection.statement_execute_non_select (statement, null, out last_insert_row);
+        }
+    }
+
+    public void update_messages_for_folder (Gee.Collection <Message> messages, Folder folder) {
+        var hashed_messages = new Gee.HashSet <string> ();
+        foreach (var existing_message in get_messages_for_folder (folder)) {
+            hashed_messages.add(existing_message.id);
+        }
+
+        foreach (var current_message in messages) {
+            //@TODO || message does nto belong to this identity
+            if (!hashed_messages.contains (current_message.id)) {
+                warning ("Unable to find message %s to update its flags", current_message.id);
+                continue;
+            }
+
+            var builder = new Gda.SqlBuilder (Gda.SqlStatementType.UPDATE);
+            builder.set_table (MESSAGES_TABLE);
+            builder.add_field_value_as_gvalue ("modification_sequence", current_message.modification_sequence);
+            builder.add_field_value_as_gvalue ("owning_folder", current_message.folder.name);
+            builder.add_field_value_as_gvalue ("seen", (int) current_message.seen);
+            builder.add_field_value_as_gvalue ("flagged", (int) current_message.flagged);
+            builder.add_field_value_as_gvalue ("draft", (int) current_message.draft);
+            builder.add_field_value_as_gvalue ("deleted", (int) current_message.deleted);
+            var owning_identity_field = builder.add_id ("owning_identity");
+            var owning_identity_value = builder.add_expr_value (null, folder.identity.address.email); //@TODO is .email really good enough?
+            var owning_identity_condition = builder.add_cond (Gda.SqlOperatorType.GEQ, owning_identity_field, owning_identity_value, 0);
+            var uid_field = builder.add_id ("uid");
+            var uid_value = builder.add_expr_value (null, current_message.uid); //@TODO is .email really good enough?
+            var uid_condition = builder.add_cond (Gda.SqlOperatorType.GEQ, uid_field, uid_value, 0);
+            builder.set_where (builder.add_cond (Gda.SqlOperatorType.AND, owning_identity_condition, uid_condition, 0));
             var statement = builder.get_statement ();
             Gda.Set last_insert_row;
             connection.statement_execute_non_select (statement, null, out last_insert_row);

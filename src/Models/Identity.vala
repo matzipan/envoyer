@@ -45,7 +45,7 @@ public class Envoyer.Models.Identity : GLib.Object {
         var index_folder = get_folder_with_label ("INBOX");
 
         while (true) {
-            yield MailCoreInterface.Imap.idle_listener (imap_idle_session, index_folder.name, index_folder.highest_uid);
+            yield MailCoreInterface.Imap.idle_listener (imap_idle_session, index_folder.name, index_folder.highest_uid); //@TODO this fails when there are no emails in db
 
             var messages = yield fetch_messages (index_folder);
 
@@ -79,6 +79,7 @@ public class Envoyer.Models.Identity : GLib.Object {
                 application.send_notification ("message.new", notification);
             }
 
+            yield fetch_message_updates (index_folder); //@TODO use mod seq number to reduce the number of updates fetched
         }
     }
 
@@ -119,13 +120,21 @@ public class Envoyer.Models.Identity : GLib.Object {
     }
 
     public async Gee.Collection <Message> fetch_messages (Folder folder) {
-        var messages = yield MailCoreInterface.Imap.fetch_messages (imap_session, folder.name, folder.highest_uid);
+        var messages = yield MailCoreInterface.Imap.fetch_messages (imap_session, folder.name, folder.highest_uid + 1, uint.MAX, false);
 
         foreach (var item in messages) {
             item.folder = folder;
         }
 
         database.set_messages_for_folder (messages, folder);
+
+        return messages;
+    }
+
+    public async Gee.Collection <Message> fetch_message_updates (Folder folder) {
+        var messages = yield MailCoreInterface.Imap.fetch_messages (imap_session, folder.name, 0, folder.highest_uid, true);
+
+        database.update_messages_for_folder (messages, folder);
 
         return messages;
     }
