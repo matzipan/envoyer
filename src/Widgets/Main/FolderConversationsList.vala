@@ -4,11 +4,11 @@
  * This software is licensed under the GNU Lesser General Public License
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
- 
+
 using Envoyer.Models;
 using Envoyer.Globals.Main;
 using Envoyer.Globals.Application;
- 
+
 public class Envoyer.Widgets.Main.FolderConversationsList : Gtk.Grid {
     private Gtk.ListBox listbox; //@TODO abstract this
     private IFolder current_folder;
@@ -19,17 +19,17 @@ public class Envoyer.Widgets.Main.FolderConversationsList : Gtk.Grid {
         build_ui ();
         connect_signals ();
     }
-    
+
     public new void grab_focus () {
         listbox.grab_focus ();
     }
-    
+
     public void load_folder_handler (IFolder folder) {
         current_folder = folder;
-                        
-        render_list ();
+
+        listbox.bind_model (folder.conversations_list_model, walk_model_items);
+
         grab_focus ();
-        
         // @TODO listbox.select_row (item);
     }
 
@@ -44,38 +44,26 @@ public class Envoyer.Widgets.Main.FolderConversationsList : Gtk.Grid {
         var scroll_box = new Gtk.ScrolledWindow (null, null);
         scroll_box.expand = true;
         scroll_box.add (listbox);
-        
+
         add (scroll_box);
         show_all ();
     }
-    
-    private void clear_list () { //@TODO abstract this? 
-        listbox.unselect_all ();
-        var children = listbox.get_children ();
 
-        foreach (Gtk.Widget child in children) {
-            if (child is Gtk.ListBoxRow)
-                listbox.remove (child);
-        }
-    }
-    
-    private void render_list () {
-        clear_list ();
-        
-        foreach (var thread in current_folder.threads_list) {
-            listbox.add(new FolderConversationItem(thread));
-        }
+    private Gtk.Widget walk_model_items (Object item) {
+        var model = (ConversationThread) item;
+
+        return new FolderConversationItem (model);
     }
 
     private void connect_signals () {
         application.load_folder.connect (load_folder_handler);
-        
+
         listbox.row_selected.connect ((row) => {
             if (row == null) return;
             assert(row is FolderConversationItem);
 
             conversation_viewer.load_conversation_thread (((FolderConversationItem) row).thread);
-            
+
             /*conversation_viewer.give_focus ();*/
         });
     }

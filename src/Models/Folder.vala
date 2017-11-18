@@ -95,7 +95,7 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.Side
     //@TODO trigger unread_count_changed
     //@TODO trigger total_count_changed
 
-    public Gee.Collection<Envoyer.Models.ConversationThread> threads_list {
+    public Gee.List<Envoyer.Models.ConversationThread> threads_list {
         owned get {  //@TODO async
             var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
 
@@ -113,6 +113,12 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.Side
         }
     }
 
+    public FolderConversationsListModel conversations_list_model {
+        owned get {
+            return new FolderConversationsListModel (this);
+        }
+    }
+
     private string _name;
     public string name { get { return _name; } }
 
@@ -123,5 +129,13 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.Side
         this.flags = flags;
         this.data = data;
         icon_name = IFolder.get_icon_for_folder (this);
+    }
+
+    construct {
+        application.database_updated.connect ((folder_name) => {
+            if (folder_name == name) {
+                database_updated ();
+            }
+        });
     }
 }

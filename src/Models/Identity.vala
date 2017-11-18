@@ -80,6 +80,7 @@ public class Envoyer.Models.Identity : GLib.Object {
             }
 
             yield fetch_message_updates (index_folder); //@TODO use mod seq number to reduce the number of updates fetched
+            application.database_updated ("INBOX"); //@TODO there needs to be a centralized factory of objects, conversation threads so that we can nicely handle updates and signals
         }
     }
 

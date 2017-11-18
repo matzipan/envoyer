@@ -22,6 +22,9 @@ public class Envoyer.Controllers.Application : Granite.Application {
     public signal void session_up ();
     public signal void load_folder (IFolder folder);
 
+    // @TODO this is a temporary setup to get a simple MVP. This should be streamlined in a different way
+    public signal void database_updated (string folder_name);
+
     public Application () {
         Object (application_id: Constants.PROJECT_FQDN);
     }

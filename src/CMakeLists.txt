@@ -84,6 +84,7 @@ vala_precompile (APP_VALA_C ${PROJECT_FQDN}
 	Models/AccountSummary.vala
 	Models/Address.vala
 	Models/ConversationThread.vala
+	Models/FolderConversationsListModel.vala
 	Models/Identity.vala
 	${CMAKE_BINARY_DIR}/src/Services/IMessageViewerExtension.vala
 	${CMAKE_BINARY_DIR}/config.vala
