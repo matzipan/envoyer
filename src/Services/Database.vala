@@ -275,6 +275,10 @@ public class Envoyer.Services.Database : Object {
 
         var data_model = connection.statement_execute_select (statement, null);
 
-        return data_model.get_value_at (0, 0).get_int ();
+        if (data_model.get_n_rows () == 0) {
+            return 0;
+        } else {
+            return data_model.get_value_at (0, 0).get_int ();
+        }
     }
 }
