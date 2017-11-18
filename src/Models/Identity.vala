@@ -25,14 +25,14 @@ public class Envoyer.Models.Identity : GLib.Object {
     }
 
     construct {
-        fetch_folders.begin ((obj, result) => {
+        /*fetch_folders.begin ((obj, result) => {
             fetch_folders.end (result);
             /*folder_list_changed ();*/
-        });
+        //});
 
-        //@TODO fetch once when initalized
-        /*identity.fetch_threads.begin (this, (obj, res) => {
-            identity.fetch_threads.end (res);
+        //@TODO improve this... fetch only once when identity is initialized, fetch for all folders?
+        /*fetch_messages.begin (get_folder_with_label ("INBOX"), 0, uint64.MAX, (obj, res) => {
+            fetch_messages.end (res);
         });*/
 
         idle_loop.begin ();
@@ -45,9 +45,16 @@ public class Envoyer.Models.Identity : GLib.Object {
         var index_folder = get_folder_with_label ("INBOX");
 
         while (true) {
-            yield MailCoreInterface.Imap.idle_listener (imap_idle_session, index_folder.name, index_folder.highest_uid); //@TODO this fails when there are no emails in db
+            var highest_uid = index_folder.highest_uid;
 
-            var messages = yield fetch_messages (index_folder);
+            debug ("Idle loop: listening (highest uid %u)", highest_uid);
+            yield MailCoreInterface.Imap.idle_listener (imap_idle_session, index_folder.name, highest_uid);
+
+            debug ("Idle loop: idle stopped, fetching messages");
+            var messages = yield fetch_messages (index_folder, highest_uid + 1, uint64.MAX);
+
+            debug ("Idle loop: found %u messages, fetching updates", messages.size);
+            yield fetch_message_updates (index_folder, 0, highest_uid); //@TODO use mod seq number to reduce the number of updates fetched
 
             // @TODO improve this
             // @TODO implement https://gist.github.com/matzipan/d0199db1706426a8f4436d707b3288fd
@@ -79,7 +86,6 @@ public class Envoyer.Models.Identity : GLib.Object {
                 application.send_notification ("message.new", notification);
             }
 
-            yield fetch_message_updates (index_folder); //@TODO use mod seq number to reduce the number of updates fetched
             application.database_updated ("INBOX"); //@TODO there needs to be a centralized factory of objects, conversation threads so that we can nicely handle updates and signals
         }
     }
@@ -120,8 +126,8 @@ public class Envoyer.Models.Identity : GLib.Object {
         return database.get_threads_for_folder (folder);
     }
 
-    public async Gee.Collection <Message> fetch_messages (Folder folder) {
-        var messages = yield MailCoreInterface.Imap.fetch_messages (imap_session, folder.name, folder.highest_uid + 1, uint.MAX, false);
+    public async Gee.Collection <Message> fetch_messages (Folder folder, uint64 start_uid_value, uint64 end_uid_value) {
+        var messages = yield MailCoreInterface.Imap.fetch_messages (imap_session, folder.name, start_uid_value, end_uid_value, false);
 
         foreach (var item in messages) {
             item.folder = folder;
@@ -132,8 +138,12 @@ public class Envoyer.Models.Identity : GLib.Object {
         return messages;
     }
 
-    public async Gee.Collection <Message> fetch_message_updates (Folder folder) {
-        var messages = yield MailCoreInterface.Imap.fetch_messages (imap_session, folder.name, 0, folder.highest_uid, true);
+    public async Gee.Collection <Message> fetch_message_updates (Folder folder, uint64 start_uid_value, uint64 end_uid_value) {
+        var messages = yield MailCoreInterface.Imap.fetch_messages (imap_session, folder.name, start_uid_value, end_uid_value, true);
+
+        foreach (var item in messages) {
+            item.folder = folder;
+        }
 
         database.update_messages_for_folder (messages, folder);
 

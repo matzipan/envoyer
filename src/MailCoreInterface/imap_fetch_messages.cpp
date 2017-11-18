@@ -39,8 +39,9 @@ GeeLinkedList* get_as_list_of_envoyer_addresses (mailcore::Array* addresses) {
 
 class MailCoreInterfaceIMAPFetchMessagesByUIDCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
 public:
-    MailCoreInterfaceIMAPFetchMessagesByUIDCallback (GTask* task) {
+    MailCoreInterfaceIMAPFetchMessagesByUIDCallback (GTask* task, gboolean flags_only) {
             this->task = task;
+            this->flags_only = flags_only;
     }
 
     virtual void operationFinished(mailcore::Operation * op) {
@@ -54,45 +55,61 @@ public:
         for(uint i = 0 ; i < messages->count () ; i++) {
             auto message = (mailcore::IMAPMessage*) messages->objectAtIndex (i);
 
-            auto from_address = get_as_envoyer_address (message->header ()->from ());
-            auto sender_address = get_as_envoyer_address (message->header ()->sender ());
+            EnvoyerModelsMessage* message_model;
 
-            auto to_addresses = get_as_list_of_envoyer_addresses (message->header ()->to ());
-            auto cc_addresses = get_as_list_of_envoyer_addresses (message->header ()->cc ());
-            auto bcc_addresses = get_as_list_of_envoyer_addresses (message->header ()->bcc ());
+            if (flags_only) {
+                message_model = envoyer_models_message_new_for_flag_updating (
+                    message,
+                    message->header ()->messageID ()->UTF8Characters (),
+                    message->uid (),
+                    message->sequenceNumber (),
+                    (message->flags () & mailcore::MessageFlagSeen) != 0,
+                    (message->flags () & mailcore::MessageFlagFlagged) != 0,
+                    (message->flags () & mailcore::MessageFlagDeleted) != 0,
+                    (message->flags () & mailcore::MessageFlagDraft) != 0
+                );
+            } else {
+                auto from_address = get_as_envoyer_address (message->header ()->from ());
+                auto sender_address = get_as_envoyer_address (message->header ()->sender ());
 
-            auto references_list = gee_linked_list_new (G_TYPE_STRING, (GBoxedCopyFunc) g_strdup, g_free, NULL, NULL, NULL);
+                auto to_addresses = get_as_list_of_envoyer_addresses (message->header ()->to ());
+                auto cc_addresses = get_as_list_of_envoyer_addresses (message->header ()->cc ());
+                auto bcc_addresses = get_as_list_of_envoyer_addresses (message->header ()->bcc ());
 
-            auto references = message-> header()->references ();
+                auto references_list = gee_linked_list_new (G_TYPE_STRING, (GBoxedCopyFunc) g_strdup, g_free, NULL, NULL, NULL);
 
-            if (references != NULL) {
-                for(uint j = 0 ; j < references->count (); j++) {
-                    mailcore::String* reference = (mailcore::String*) references->objectAtIndex (j);
+                auto references = message-> header()->references ();
 
-                    gee_abstract_collection_add ((GeeAbstractCollection*) references_list, reference->UTF8Characters ());
+                if (references != NULL) {
+                    for(uint j = 0 ; j < references->count (); j++) {
+                        mailcore::String* reference = (mailcore::String*) references->objectAtIndex (j);
+
+                        gee_abstract_collection_add ((GeeAbstractCollection*) references_list, reference->UTF8Characters ());
+                    }
                 }
+
+                message->retain(); //@TODO this should be called from Envoyer.Models.Message constructor
+
+                message_model = envoyer_models_message_new (
+                    message,
+                    from_address,
+                    sender_address,
+                    (GeeCollection*) to_addresses,
+                    (GeeCollection*) cc_addresses,
+                    (GeeCollection*) bcc_addresses,
+                    message->header ()->subject ()->UTF8Characters (),
+                    message->header ()->receivedDate (),
+                    (GeeCollection*) references_list,
+                    message->header ()->messageID ()->UTF8Characters (),
+                    message->uid (),
+                    message->sequenceNumber (),
+                    (message->flags () & mailcore::MessageFlagSeen) != 0,
+                    (message->flags () & mailcore::MessageFlagFlagged) != 0,
+                    (message->flags () & mailcore::MessageFlagDeleted) != 0,
+                    (message->flags () & mailcore::MessageFlagDraft) != 0
+                );
+
             }
-
-            message->retain(); //@TODO this should be called from Envoyer.Models.Message constructor
-
-            EnvoyerModelsMessage* message_model = envoyer_models_message_new (
-                message,
-                from_address,
-                sender_address,
-                (GeeCollection*) to_addresses,
-                (GeeCollection*) cc_addresses,
-                (GeeCollection*) bcc_addresses,
-                message->header ()->subject ()->UTF8Characters (),
-                message->header ()->receivedDate (),
-                (GeeCollection*) references_list,
-                message->header ()->messageID ()->UTF8Characters (),
-                message->uid (),
-                message->sequenceNumber (),
-                (message->flags () & mailcore::MessageFlagSeen) != 0,
-                (message->flags () & mailcore::MessageFlagFlagged) != 0,
-                (message->flags () & mailcore::MessageFlagDeleted) != 0,
-                (message->flags () & mailcore::MessageFlagDraft) != 0
-            );
 
             gee_abstract_collection_add ((GeeAbstractCollection*) list, message_model);
         }
@@ -108,23 +125,24 @@ public:
 
 private:
     GTask* task;
+    gboolean flags_only;
 };
 
 extern "C" void mail_core_interface_imap_fetch_messages (mailcore::IMAPAsyncSession* session,
                                                         gchar* folder_path,
-                                                        guint starting_uid_value,
-                                                        guint end_uid_value,
+                                                        guint64 start_uid_value,
+                                                        guint64 end_uid_value,
                                                         gboolean flags_only,
                                                         GAsyncReadyCallback callback,
                                                         void* user_data) {
     auto task = g_task_new (NULL, NULL, callback, user_data);
 
-    //@TODO this won't work with on 32 bit, becasue of UINT64
-    auto uidRange = mailcore::IndexSet::indexSetWithRange (mailcore::RangeMake (starting_uid_value, UINT64_MAX));
+    auto uidRange = mailcore::IndexSet::indexSetWithRange (mailcore::RangeMake (start_uid_value, end_uid_value - start_uid_value));
 
     int kind;
     if (flags_only) {
-        kind = mailcore::IMAPMessagesRequestKindFlags;
+        kind = mailcore::IMAPMessagesRequestKindHeaders |
+            mailcore::IMAPMessagesRequestKindFlags;
     } else {
         kind = mailcore::IMAPMessagesRequestKindHeaders |
             mailcore::IMAPMessagesRequestKindFlags |
@@ -136,7 +154,7 @@ extern "C" void mail_core_interface_imap_fetch_messages (mailcore::IMAPAsyncSess
 
     auto fetch_messages_operation = session->fetchMessagesByUIDOperation(new mailcore::String (folder_path), (mailcore::IMAPMessagesRequestKind) kind, uidRange);
 
-    auto session_callback = new MailCoreInterfaceIMAPFetchMessagesByUIDCallback(task);
+    auto session_callback = new MailCoreInterfaceIMAPFetchMessagesByUIDCallback(task, flags_only);
 
     // fetch_messages_operation->setImapCallback(session_callback); @TODO for progress feedback
     ((mailcore::Operation *) fetch_messages_operation)->setCallback (session_callback);

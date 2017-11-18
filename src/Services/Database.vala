@@ -187,8 +187,11 @@ public class Envoyer.Services.Database : Object {
         foreach (var current_message in messages) {
             //@TODO also take into account identity for multi-account
             if (hashed_messages.contains (current_message.id)) {
+                debug ("Message already exists: %u, %s, %s", current_message.uid, current_message.id, current_message.subject);
                 continue;
             }
+
+            debug ("Saving message: %u, %s, %s", current_message.uid, current_message.id, current_message.subject);
 
             var builder = new Gda.SqlBuilder (Gda.SqlStatementType.INSERT);
             builder.set_table (MESSAGES_TABLE);
@@ -224,11 +227,13 @@ public class Envoyer.Services.Database : Object {
         }
 
         foreach (var current_message in messages) {
-            //@TODO || message does nto belong to this identity
+            //@TODO add to if -> || message does nto belong to this identity
             if (!hashed_messages.contains (current_message.id)) {
-                warning ("Unable to find message %s to update its flags", current_message.id);
+                warning ("Unable to find message to update its flags: %u, %s, %s", current_message.uid, current_message.id, current_message.subject);
                 continue;
             }
+
+            debug ("Updating message: %u, %s", current_message.uid, current_message.id);
 
             var builder = new Gda.SqlBuilder (Gda.SqlStatementType.UPDATE);
             builder.set_table (MESSAGES_TABLE);

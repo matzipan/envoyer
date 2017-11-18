@@ -11,16 +11,16 @@ public class Envoyer.Models.Message : GLib.Object {
     //@TODO find a way to either integrate this or get rid of it. needed for html fetching
     public void* mailcore_message { get; construct set; }
     public Address from { get; set; }
-    public Address sender { get; construct set; }
+    public Address sender { get; set; }
     public uint uid { get; construct set; }
     public bool seen { get; construct set; }
     public bool flagged { get; construct set; }
     public bool deleted { get; construct set; }
     public bool draft { get; construct set; }
     public uint modification_sequence { get; construct set; }
-    public Gee.Collection<Address> to { get; construct set; }
-    public Gee.Collection<Address> cc { get; construct set; }
-    public Gee.Collection<Address> bcc { get; construct set; }
+    public Gee.Collection<Address> to { get; set; }
+    public Gee.Collection<Address> cc { get; set; }
+    public Gee.Collection<Address> bcc { get; set; }
 
     public time_t time_received { get; private set; }
     public GLib.DateTime datetime_received {
@@ -31,7 +31,7 @@ public class Envoyer.Models.Message : GLib.Object {
 
     //@TODO add display_subject which removes Re:
     public string subject { get; construct set; }
-    public Gee.Collection <string> references { get; construct set; }
+    public Gee.Collection <string> references { get; set; }
     public string id { get; construct set; }
 
     public string content { owned get { return ""; /*identity.get_html_for_message (this);*/ } }
@@ -93,6 +93,28 @@ public class Envoyer.Models.Message : GLib.Object {
             bcc: bcc,
             subject: subject,
             text: text
+        );
+    }
+
+    public Message.for_flag_updating (
+            void* mailcore_message,
+            string id,
+            uint uid,
+            uint modification_sequence,
+            bool seen,
+            bool flagged,
+            bool deleted,
+            bool draft
+        ) {
+        Object (
+            mailcore_message: mailcore_message,
+            id: id.dup (),
+            uid: uid,
+            modification_sequence: modification_sequence,
+            seen: seen,
+            flagged: flagged,
+            deleted: deleted,
+            draft: draft
         );
     }
 }
