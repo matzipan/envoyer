@@ -10,11 +10,83 @@ using Envoyer.Models;
 public class Envoyer.Services.Database : Object {
     private const string FOLDERS_TABLE = "folders";
     private const string MESSAGES_TABLE = "messages";
+    private const string DB_FILE_PATH = "db.db";
+    // Are we going through the initialization phase? (empty tables in the database)
+    public bool is_initialization { get; private set; default = false; }
 
     private Gda.Connection connection;
 
     construct {
-        connection = Gda.Connection.open_from_string (null, "SQLite://DB_DIR=.;DB_NAME=db.db", null, Gda.ConnectionOptions.NONE);
+        //@TODO Improve error handling?
+        var db_file = File.new_for_path (DB_FILE_PATH);
+
+        if (!db_file.query_exists ()) {
+            try {
+                db_file.create (FileCreateFlags.PRIVATE);
+
+                is_initialization = true;
+            } catch (Error e) {
+                critical ("Error: %s", e.message);
+            }
+        }
+
+        connection = Gda.Connection.open_from_string (null, "SQLite://DB_DIR=.;DB_NAME=%s".printf (DB_FILE_PATH), null, Gda.ConnectionOptions.NONE);
+
+        Error e = null;
+
+        var operation = Gda.ServerOperation.prepare_create_table (connection, FOLDERS_TABLE, e,
+                                                                    "folder_id",        typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
+                                                                    "folder_name",      typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "owning_identity",  typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "flags",            typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "unread_count",     typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "total_count",      typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
+                                                                    );
+        is_initialization |= !create_table (operation, e); //@TODO catch isseus
+
+        e = null;
+
+        operation = Gda.ServerOperation.prepare_create_table (connection, MESSAGES_TABLE, e,
+                                                                    "id",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "subject",          typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "owning_folder",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "owning_identity",  typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "time_received",    typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "from",             typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "sender",           typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "to",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "cc",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "bcc",              typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "content",          typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "references",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "uid",                      typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "modification_sequence",    typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "seen",             typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "flagged",          typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "draft",            typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "deleted",          typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
+                                                                    );
+        is_initialization |= !create_table (operation, e); //@TODO catch issues
+    }
+
+    // Returns whether the table already existed or not
+    public bool create_table (Gda.ServerOperation operation, Error e) {
+        if (e != null) {
+            critical (e.message);
+        } else {
+            try {
+                operation.perform_create_table ();
+            } catch (Error e) {
+                // e.code == 1 is when the table already exists.
+                if (e.code != 1) {
+                    critical (e.message);
+                } else {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public Gee.Collection <Folder> get_folders_for_identity (string identity) {

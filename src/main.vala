@@ -15,8 +15,8 @@ public static int main (string[] args) {
     Environment.set_application_name (Constants.APP_NAME);
     Environment.set_prgname (Constants.PROJECT_FQDN);
 
-    application = new Envoyer.Controllers.Application ();
     database = new Envoyer.Services.Database ();
+    application = new Envoyer.Controllers.Application (database.is_initialization);
 
     return application.run (args);
 }

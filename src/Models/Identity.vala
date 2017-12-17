@@ -14,29 +14,41 @@ public class Envoyer.Models.Identity : GLib.Object {
     public void* smtp_session { get; construct set; }
     public string account_name { get; construct set; }
     public Address address { get; construct set; }
+    public bool is_initialization { get; construct set; }
+    public signal void initialized ();
 
-    public async Identity (string username, string password, string full_name, string account_name) {
+    public async Identity (string username, string password, string full_name, string account_name, bool is_initialization) {
         Object (account_name: account_name,
                 imap_session: MailCoreInterface.Imap.connect (username, password),
                 smtp_session: MailCoreInterface.Smtp.connect (username, password),
                 imap_idle_session: MailCoreInterface.Imap.connect (username, password),
-                address: new Address (full_name, username) //@TODO username is the same as email ony for Gmail, others might not work
+                address: new Address (full_name, username), //@TODO username is the same as email ony for Gmail, others might not work
+                is_initialization: is_initialization
         );
     }
 
     construct {
-        /*fetch_folders.begin ((obj, result) => {
-            fetch_folders.end (result);
-            /*folder_list_changed ();*/
-        //});
+        if (is_initialization) {
+            fetch_folders.begin ((obj, result) => {
+                fetch_folders.end (result);
+                /*folder_list_changed ();*/
 
-        //@TODO improve this... fetch only once when identity is initialized, fetch for all folders?
-        /*fetch_messages.begin (get_folder_with_label ("INBOX"), 0, uint64.MAX, (obj, res) => {
-            fetch_messages.end (res);
-        });*/
+                fetch_messages.begin (get_folder_with_label ("INBOX"), 1, uint64.MAX, (obj, res) => {
+                    fetch_messages.end (res);
 
-        idle_loop.begin ();
+                    idle_loop.begin ();
 
+                    initialized ();
+                });
+            });
+        } else {
+            fetch_folders.begin ((obj, result) => {
+                fetch_folders.end (result);
+                /*folder_list_changed ();*/
+            });
+
+            idle_loop.begin ();
+        }
         //@TODO status changes from the other folders
     }
 
@@ -54,7 +66,7 @@ public class Envoyer.Models.Identity : GLib.Object {
             var messages = yield fetch_messages (index_folder, highest_uid + 1, uint64.MAX);
 
             debug ("Idle loop: found %u messages, fetching updates", messages.size);
-            yield fetch_message_updates (index_folder, 0, highest_uid); //@TODO use mod seq number to reduce the number of updates fetched
+            yield fetch_message_updates (index_folder, 1, highest_uid); //@TODO use mod seq number to reduce the number of updates fetched
 
             // @TODO improve this
             // @TODO implement https://gist.github.com/matzipan/d0199db1706426a8f4436d707b3288fd
