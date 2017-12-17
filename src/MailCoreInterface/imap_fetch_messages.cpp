@@ -90,6 +90,12 @@ public:
 
                 message->retain(); //@TODO this should be called from Envoyer.Models.Message constructor
 
+                auto subject = "";
+
+                if(message->header ()->subject ()  != 0) {
+                    subject = message->header ()->subject ()->UTF8Characters ();
+                }
+
                 message_model = envoyer_models_message_new (
                     message,
                     from_address,
@@ -97,7 +103,7 @@ public:
                     (GeeCollection*) to_addresses,
                     (GeeCollection*) cc_addresses,
                     (GeeCollection*) bcc_addresses,
-                    message->header ()->subject ()->UTF8Characters (),
+                    subject,
                     message->header ()->receivedDate (),
                     (GeeCollection*) references_list,
                     message->header ()->messageID ()->UTF8Characters (),
