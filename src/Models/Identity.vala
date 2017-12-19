@@ -17,11 +17,11 @@ public class Envoyer.Models.Identity : GLib.Object {
     public bool is_initialization { get; construct set; }
     public signal void initialized ();
 
-    public async Identity (string username, string password, string full_name, string account_name, bool is_initialization) {
+    public async Identity (string username, string access_token, string full_name, string account_name, bool is_initialization) {
         Object (account_name: account_name,
-                imap_session: MailCoreInterface.Imap.connect (username, password),
-                smtp_session: MailCoreInterface.Smtp.connect (username, password),
-                imap_idle_session: MailCoreInterface.Imap.connect (username, password),
+                imap_session: MailCoreInterface.Imap.connect (username, access_token),
+                smtp_session: MailCoreInterface.Smtp.connect (username, access_token),
+                imap_idle_session: MailCoreInterface.Imap.connect (username, access_token),
                 address: new Address (full_name, username), //@TODO username is the same as email ony for Gmail, others might not work
                 is_initialization: is_initialization
         );

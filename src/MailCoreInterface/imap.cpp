@@ -11,13 +11,14 @@
 
 mailcore::AutoreleasePool * imap_pool; //@TODO clear pool
 
-extern "C" void* mail_core_interface_imap_connect (gchar* username, gchar* password) {
+extern "C" void* mail_core_interface_imap_connect (gchar* username, gchar* access_token) {
     imap_pool = new mailcore::AutoreleasePool();
 
     auto session = new mailcore::IMAPAsyncSession ();
 
     session->setUsername (new mailcore::String (username));
-    session->setPassword (new mailcore::String (password));
+    session->setAuthType(mailcore::AuthTypeXOAuth2);
+    session->setOAuth2Token(new mailcore::String (access_token));
     session->setHostname (new mailcore::String ("imap.gmail.com"));
     session->setPort (993);
     session->setConnectionType (mailcore::ConnectionTypeTLS);

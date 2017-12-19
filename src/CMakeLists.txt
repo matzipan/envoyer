@@ -12,6 +12,7 @@ set (APP_PKG_DEPS
 	gtk+-3.0>=3.9.10
 	webkit2gtk-4.0>=2.10.9
 	libgda-5.0
+	json-glib-1.0
 )
 
 set (APP_VALA_DEPS
@@ -24,6 +25,7 @@ set (APP_VALA_DEPS
 	posix
 	webkit2gtk-4.0>=2.10.9
 	libgda-5.0
+	json-glib-1.0
 )
 
 find_package (PkgConfig)

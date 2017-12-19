@@ -10,6 +10,7 @@ using Envoyer.Models;
 public class Envoyer.Services.Database : Object {
     private const string FOLDERS_TABLE = "folders";
     private const string MESSAGES_TABLE = "messages";
+    private const string IDENTITIES_TABLE = "identities";
     private const string DB_FILE_PATH = "db.db";
     // Are we going through the initialization phase? (empty tables in the database)
     public bool is_initialization { get; private set; default = false; }
@@ -47,7 +48,8 @@ public class Envoyer.Services.Database : Object {
         e = null;
 
         operation = Gda.ServerOperation.prepare_create_table (connection, MESSAGES_TABLE, e,
-                                                                    "id",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "id",               typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
+                                                                    "message_id",       typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "subject",          typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "owning_folder",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "owning_identity",  typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
@@ -67,6 +69,19 @@ public class Envoyer.Services.Database : Object {
                                                                     "deleted",          typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
                                                                     );
         is_initialization |= !create_table (operation, e); //@TODO catch issues
+
+
+        e = null;
+
+        operation = Gda.ServerOperation.prepare_create_table (connection, IDENTITIES_TABLE, e,
+                                                                    "id",               typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
+                                                                    "username",         typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "access_token",     typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "full_name",        typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "account_name",     typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
+                                                                    );
+        is_initialization |= !create_table (operation, e); //@TODO catch issues
+
     }
 
     // Returns whether the table already existed or not
@@ -205,7 +220,7 @@ public class Envoyer.Services.Database : Object {
                                        data_model_iter.get_value_for_field ("subject").get_string (),
                                        (time_t) data_model_iter.get_value_for_field ("time_received").get_int (),
                                        split_references(data_model_iter.get_value_for_field ("references").get_string ()),
-                                       data_model_iter.get_value_for_field ("id").get_string (),
+                                       data_model_iter.get_value_for_field ("message_id").get_string (),
                                        data_model_iter.get_value_for_field ("uid").get_int (),
                                        data_model_iter.get_value_for_field ("modification_sequence").get_int (),
                                        data_model_iter.get_value_for_field ("seen").get_int () != 0,
@@ -267,7 +282,7 @@ public class Envoyer.Services.Database : Object {
 
             var builder = new Gda.SqlBuilder (Gda.SqlStatementType.INSERT);
             builder.set_table (MESSAGES_TABLE);
-            builder.add_field_value_as_gvalue ("id", current_message.id);
+            builder.add_field_value_as_gvalue ("message_id", current_message.id);
             builder.add_field_value_as_gvalue ("uid", current_message.uid);
             builder.add_field_value_as_gvalue ("modification_sequence", current_message.modification_sequence);
             builder.add_field_value_as_gvalue ("subject", current_message.subject);
@@ -290,6 +305,43 @@ public class Envoyer.Services.Database : Object {
             Gda.Set last_insert_row;
             connection.statement_execute_non_select (statement, null, out last_insert_row);
         }
+    }
+
+    public void add_identity (string username, string access_token, string full_name, string account_name) {
+        var builder = new Gda.SqlBuilder (Gda.SqlStatementType.INSERT);
+        builder.set_table (IDENTITIES_TABLE);
+        builder.add_field_value_as_gvalue ("username", username);
+        builder.add_field_value_as_gvalue ("access_token", access_token);
+        builder.add_field_value_as_gvalue ("full_name", full_name);
+        builder.add_field_value_as_gvalue ("account_name", account_name);
+        var statement = builder.get_statement ();
+        Gda.Set last_insert_row;
+        connection.statement_execute_non_select (statement, null, out last_insert_row);
+    }
+
+    public Gee.Collection <Gee.HashMap<string, string>> get_identities () {
+        var builder = new Gda.SqlBuilder (Gda.SqlStatementType.SELECT);
+
+        builder.select_add_field ("*", null, null);
+        builder.select_add_target (IDENTITIES_TABLE, null);
+        var statement = builder.get_statement ();
+
+        var data_model = connection.statement_execute_select (statement, null);
+        var data_model_iter = data_model.create_iter ();
+        var list = new Gee.ArrayList <Gee.HashMap<string, string>> ();
+        data_model_iter.move_to_row (-1);
+        while (data_model_iter.move_next ()) {
+            var user_data = new Gee.HashMap<string, string>();
+
+            user_data["username"] = data_model_iter.get_value_for_field ("username").get_string ();
+            user_data["access_token"] = data_model_iter.get_value_for_field ("access_token").get_string ();
+            user_data["full_name"] = data_model_iter.get_value_for_field ("full_name").get_string ();
+            user_data["account_name"] = data_model_iter.get_value_for_field ("account_name").get_string ();
+
+            list.add (user_data);
+        }
+
+        return list;
     }
 
     public void update_messages_for_folder (Gee.Collection <Message> messages, Folder folder) {

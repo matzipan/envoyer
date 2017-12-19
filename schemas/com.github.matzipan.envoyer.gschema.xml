@@ -6,30 +6,6 @@
             <description>True if library application is maximized, false otherwise.</description>
         </key>
 
-        <key name="username" type="s">
-            <default>""</default>
-            <summary>default account username</summary>
-            <description>Username of default account.</description>
-        </key>
-
-        <key name="password" type="s">
-            <default>""</default>
-            <summary>default account password</summary>
-            <description>Password of default account.</description>
-        </key>
-
-        <key name="full-name" type="s">
-            <default>"Andrei Zisu"</default>
-            <summary>full name of user for default account</summary>
-            <description>Full name of user for default account.</description>
-        </key>
-
-        <key name="account-name" type="s">
-            <default>"Gmail"</default>
-            <summary>name of default account</summary>
-            <description>Name of default account.</description>
-        </key>
-
         <key name="position-x" type="i">
             <default>600</default>
             <summary>x axis position on screen</summary>
