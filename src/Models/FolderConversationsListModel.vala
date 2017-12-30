@@ -19,7 +19,7 @@ public class Envoyer.Models.FolderConversationsListModel : GLib.ListModel, GLib.
     // and translate into the appropriate items_changed signal using the conversation_threads_list
 
     construct {
-        folder.database_updated.connect(() => {
+        folder.updated.connect(() => {
             var old_size = conversation_threads_list.size;
             conversation_threads_list = folder.threads_list;
             items_changed (0, old_size, conversation_threads_list.size); //@TODO this removes all items and then adds them back when an item changes, make this nicer

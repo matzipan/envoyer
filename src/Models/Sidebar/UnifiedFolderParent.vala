@@ -173,9 +173,9 @@ public class Envoyer.Models.Sidebar.UnifiedFolderParent : IFolder, Basalt.Widget
         unified_child.total_count_changed.connect ((new_total_count) => {
             total_count_changed (new_total_count);
         });
-        
-        unified_child.database_updated.connect (() => {
-            database_updated ();
+
+        unified_child.updated.connect (() => {
+            updated ();
         });
     }
 }

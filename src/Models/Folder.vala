@@ -132,9 +132,9 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.Side
     }
 
     construct {
-        application.database_updated.connect ((folder_name) => {
+        application.folder_updated.connect ((folder_name) => {
             if (folder_name == name) {
-                database_updated ();
+                updated ();
             }
         });
     }

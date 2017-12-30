@@ -5,6 +5,7 @@
  * (version 2.1 or later).  See the COPYING file in this distribution.
  */
 
+using Envoyer.Globals.Application;
 using Envoyer.Models;
 
 public class Envoyer.Services.Database : Object {
@@ -162,6 +163,8 @@ public class Envoyer.Services.Database : Object {
             Gda.Set last_insert_row;
             connection.statement_execute_non_select (statement, null, out last_insert_row);
         }
+
+        //@TODO identity_updated ();
     }
 
     private Gee.Collection <Address> get_addresses_from_string (string addresses_string) {
@@ -305,6 +308,8 @@ public class Envoyer.Services.Database : Object {
             Gda.Set last_insert_row;
             connection.statement_execute_non_select (statement, null, out last_insert_row);
         }
+
+        application.folder_updated (folder.name); //@TODO there needs to be a centralized factory of objects, conversation threads so that we can nicely handle updates and signals
     }
 
     public void add_identity (string username, string access_token, string full_name, string account_name) {
@@ -317,6 +322,8 @@ public class Envoyer.Services.Database : Object {
         var statement = builder.get_statement ();
         Gda.Set last_insert_row;
         connection.statement_execute_non_select (statement, null, out last_insert_row);
+
+        //@TODO identity_added ();
     }
 
     public Gee.Collection <Gee.HashMap<string, string>> get_identities () {
@@ -378,6 +385,8 @@ public class Envoyer.Services.Database : Object {
             Gda.Set last_insert_row;
             connection.statement_execute_non_select (statement, null, out last_insert_row);
         }
+
+        application.folder_updated (folder.name); //@TODO there needs to be a centralized factory of objects, conversation threads so that we can nicely handle updates and signals
     }
 
     public uint get_highest_uid_for_folder (Folder folder) {

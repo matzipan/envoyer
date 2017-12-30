@@ -24,7 +24,7 @@ public class Envoyer.Controllers.Application : Granite.Application {
     public bool is_initialization { get; construct set; }
 
     // @TODO this is a temporary setup to get a simple MVP. This should be streamlined in a different way
-    public signal void database_updated (string folder_name);
+    public signal void folder_updated (string folder_name);
 
     public Application (bool is_initialization) {
         Object (application_id: Constants.PROJECT_FQDN, is_initialization: is_initialization);

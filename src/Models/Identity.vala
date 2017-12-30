@@ -97,8 +97,6 @@ public class Envoyer.Models.Identity : GLib.Object {
                 application.withdraw_notification ("message.new"); // @TODO this appears to not work in elementary?
                 application.send_notification ("message.new", notification);
             }
-
-            application.database_updated ("INBOX"); //@TODO there needs to be a centralized factory of objects, conversation threads so that we can nicely handle updates and signals
         }
     }
 

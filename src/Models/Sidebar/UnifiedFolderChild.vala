@@ -58,8 +58,8 @@ public class Envoyer.Models.Sidebar.UnifiedFolderChild : IFolder, Basalt.Widgets
             total_count_changed (new_total_count);
         });
 
-        _folder.database_updated.connect (() => {
-            database_updated ();
+        _folder.updated.connect (() => {
+            updated ();
         });
     }
 }
