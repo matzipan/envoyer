@@ -63,6 +63,8 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
             return true;
         }
     }
+
+    // If there's at least one starred message in the thread, return true
     public bool flagged {
         get {
             foreach (var current_message in _messages_list) {
