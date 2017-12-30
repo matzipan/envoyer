@@ -50,7 +50,19 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
     }
 
     public string subject { get { return _messages_list[0].subject; } }
-    public bool seen { get { return _messages_list[0].seen; } }
+
+    // If there's at least one unseen message in the thread, return false
+    public bool seen {
+        get {
+            foreach (var current_message in _messages_list) {
+                if (!current_message.seen) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
     public bool flagged {
         get {
             foreach (var current_message in _messages_list) {
