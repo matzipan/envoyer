@@ -99,7 +99,11 @@ public class Envoyer.Models.Folder : Envoyer.Models.IFolder, Basalt.Widgets.Side
         owned get {  //@TODO async
             var threads_list_copy = new Gee.LinkedList<Envoyer.Models.ConversationThread> (null);
 
-            threads_list_copy.add_all (identity.get_threads (this));
+            foreach (var thread in identity.get_threads (this)) {
+                if (thread.deleted && is_trash || !thread.deleted) {
+                    threads_list_copy.add (thread);
+                }
+            }
 
             threads_list_copy.sort ((first, second) => { // sort descendingly
                 if(first.time_received > second.time_received) {
