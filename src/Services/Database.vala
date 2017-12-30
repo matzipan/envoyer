@@ -160,8 +160,7 @@ public class Envoyer.Services.Database : Object {
             builder.add_field_value_as_gvalue ("unread_count", item.unread_count);
             builder.add_field_value_as_gvalue ("total_count", item.total_count);
             var statement = builder.get_statement ();
-            Gda.Set last_insert_row;
-            connection.statement_execute_non_select (statement, null, out last_insert_row);
+            connection.statement_execute_non_select (statement, null, null);
         }
 
         //@TODO identity_updated ();
@@ -305,8 +304,8 @@ public class Envoyer.Services.Database : Object {
             builder.add_field_value_as_gvalue ("deleted", (int) current_message.deleted);
             /*builder.add_field_value_as_gvalue ("has_attachment", );*/
             var statement = builder.get_statement ();
-            Gda.Set last_insert_row;
-            connection.statement_execute_non_select (statement, null, out last_insert_row);
+
+            connection.statement_execute_non_select (statement, null, null);
         }
 
         application.folder_updated (folder.name); //@TODO there needs to be a centralized factory of objects, conversation threads so that we can nicely handle updates and signals
@@ -320,8 +319,7 @@ public class Envoyer.Services.Database : Object {
         builder.add_field_value_as_gvalue ("full_name", full_name);
         builder.add_field_value_as_gvalue ("account_name", account_name);
         var statement = builder.get_statement ();
-        Gda.Set last_insert_row;
-        connection.statement_execute_non_select (statement, null, out last_insert_row);
+        connection.statement_execute_non_select (statement, null, null);
 
         //@TODO identity_added ();
     }
@@ -382,8 +380,7 @@ public class Envoyer.Services.Database : Object {
             var uid_condition = builder.add_cond (Gda.SqlOperatorType.GEQ, uid_field, uid_value, 0);
             builder.set_where (builder.add_cond (Gda.SqlOperatorType.AND, owning_identity_condition, uid_condition, 0));
             var statement = builder.get_statement ();
-            Gda.Set last_insert_row;
-            connection.statement_execute_non_select (statement, null, out last_insert_row);
+            connection.statement_execute_non_select (statement, null, null);
         }
 
         application.folder_updated (folder.name); //@TODO there needs to be a centralized factory of objects, conversation threads so that we can nicely handle updates and signals
