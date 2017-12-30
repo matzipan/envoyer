@@ -58,11 +58,23 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
                     return true;
                 }
             }
-            
+
             return false;
         }
-    } //@TODO look through the entire thread and check flagged
-    public bool deleted { get { return _messages_list[0].deleted; } }
+    }
+
+    // If there's at least one message which is not deleted in the thread, return false
+    public bool deleted {
+        get {
+            foreach (var current_message in _messages_list) {
+                if (!current_message.deleted) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
 
     public ConversationThread.from_container (Envoyer.Util.ThreadingContainer container) {
         if (container.message != null) {
