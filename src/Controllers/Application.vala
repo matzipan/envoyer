@@ -30,6 +30,10 @@ public class Envoyer.Controllers.Application : Granite.Application {
         Object (application_id: Constants.PROJECT_FQDN, is_initialization: is_initialization);
     }
 
+    construct {
+        session_up.connect (() => { main_window.show_app (); });
+    }
+
     public override void activate () {
         if (!running) {
             running = true;
@@ -39,7 +43,6 @@ public class Envoyer.Controllers.Application : Granite.Application {
 
             main_window = new Envoyer.Widgets.Main.Window (this);
             add_window (main_window);
-
 
             if (is_initialization) {
                 var dialog = new Gtk.Dialog ();
@@ -110,10 +113,10 @@ public class Envoyer.Controllers.Application : Granite.Application {
                 dialog.show_all ();
 
                 session_up.connect (() => { dialog.destroy (); });
+            } else {
+                load_session ();
             }
-        } else if (!is_initialization) {
-            main_window.show_app ();
-
+        } else {
             load_session ();
         }
     }
@@ -135,15 +138,16 @@ public class Envoyer.Controllers.Application : Granite.Application {
                                                database_identity["account_name"],
                                                is_initialization);
 
-            if (is_initialization) {
-                identity.initialized.connect (() => { session_up (); });
-            } else {
-                session_up ();
-            }
-
             identities.add (identity);
 
             break; //@TODO only hardcoding this to break because for now we only support one identity
+        }
+
+        if (is_initialization) {
+            //@TODO make work with more than one identity
+            identities[0].initialized.connect (() => { session_up (); });
+        } else {
+            session_up ();
         }
     }
 
