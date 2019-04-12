@@ -15,6 +15,8 @@
 #include <glib.h>
 #include <gee.h>
 #include "envoyer.h"
+#include "imap.h"
+
 
 EnvoyerModelsAddress* get_as_envoyer_address (mailcore::Address* address) {
     return envoyer_models_address_new (
@@ -88,6 +90,18 @@ public:
                     }
                 }
 
+                auto in_reply_to_list = gee_linked_list_new (G_TYPE_STRING, (GBoxedCopyFunc) g_strdup, g_free, NULL, NULL, NULL);
+
+                auto in_reply_to = message->header ()->inReplyTo ();
+
+                if (in_reply_to != NULL) {
+                    for(uint j = 0 ; j < in_reply_to->count (); j++) {
+                        mailcore::String* in_reply_to_item = (mailcore::String*) in_reply_to->objectAtIndex (j);
+
+                        gee_abstract_collection_add ((GeeAbstractCollection*) in_reply_to_list, in_reply_to_item->UTF8Characters ());
+                    }
+                }
+
                 message->retain(); //@TODO this should be called from Envoyer.Models.Message constructor
 
                 auto subject = "";
@@ -105,7 +119,8 @@ public:
                     (GeeCollection*) bcc_addresses,
                     subject,
                     message->header ()->receivedDate (),
-                    (GeeCollection*) references_list,
+                    (GeeList*) references_list,
+                    (GeeList*) in_reply_to_list,
                     message->header ()->messageID ()->UTF8Characters (),
                     message->uid (),
                     message->sequenceNumber (),
@@ -134,13 +149,15 @@ private:
     gboolean flags_only;
 };
 
-extern "C" void mail_core_interface_imap_fetch_messages (mailcore::IMAPAsyncSession* session,
+extern "C" void mail_core_interface_imap_fetch_messages (void* voidSession,
                                                         gchar* folder_path,
                                                         guint64 start_uid_value,
                                                         guint64 end_uid_value,
                                                         gboolean flags_only,
                                                         GAsyncReadyCallback callback,
                                                         void* user_data) {
+    auto session = (mailcore::IMAPAsyncSession*) voidSession;
+
     auto task = g_task_new (NULL, NULL, callback, user_data);
 
     auto uidRange = mailcore::IndexSet::indexSetWithRange (mailcore::RangeMake (start_uid_value, end_uid_value - start_uid_value));

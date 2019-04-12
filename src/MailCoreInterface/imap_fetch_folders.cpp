@@ -14,8 +14,9 @@
 #include <MailCore/MCIMAPFolderStatusOperation.h>
 #include <glib.h>
 #include <gee.h>
-#include "envoyer.h"
 #include <map>
+#include "envoyer.h"
+#include "imap.h"
 
 
 class MailCoreInterfaceFetchFoldersCallbackCentralizer {
@@ -95,6 +96,8 @@ private:
     MailCoreInterfaceFetchFoldersCallbackCentralizer* centralizer;
 };
 
+#include <iostream>
+
 class MailCoreInterfaceImapFetchFoldersCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
 public:
     MailCoreInterfaceImapFetchFoldersCallback (GTask* task) {
@@ -144,7 +147,9 @@ private:
     GTask* task;
 };
 
-extern "C" void mail_core_interface_imap_fetch_folders (mailcore::IMAPAsyncSession* session, GAsyncReadyCallback callback, void* user_data) {
+extern "C" void mail_core_interface_imap_fetch_folders (void* voidSession, GAsyncReadyCallback callback, void* user_data) {
+    auto session = (mailcore::IMAPAsyncSession*) voidSession;
+
     auto task = g_task_new (NULL, NULL, callback, user_data);
 
     auto fetch_operation = session->fetchAllFoldersOperation();

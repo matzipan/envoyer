@@ -11,6 +11,8 @@
 #include <MailCore/MCIMAPMessageRenderingOperation.h>
 #include <glib.h>
 #include "envoyer.h"
+#include "imap.h"
+
 
 class MailCoreInterfaceIMAPHTMLRenderingCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
 public:
@@ -32,7 +34,11 @@ private:
     GTask* task;
 };
 
-extern "C" void mail_core_interface_imap_get_html_for_message (mailcore::IMAPAsyncSession* session, gchar* folder_path, EnvoyerModelsMessage* envoyer_message, GAsyncReadyCallback callback, void* user_data) {
+extern "C" void mail_core_interface_imap_get_html_for_message (void* voidSession, gchar* folder_path, void* void_envoyer_message, GAsyncReadyCallback callback, void* user_data) {
+    auto session = (mailcore::IMAPAsyncSession*) voidSession;
+    // If I'm including the envoyer header file, it complains about the redefinition of some things. So we're avoiding this and just keeping function header agnostic of the pointer's type
+    auto envoyer_message = (EnvoyerModelsMessage*) void_envoyer_message;
+
     auto task = g_task_new (NULL, NULL, callback, user_data);
 
     auto html_rendering_operation = session->htmlRenderingOperation ((mailcore::IMAPMessage *) envoyer_models_message_get_mailcore_message (envoyer_message), new mailcore::String (folder_path));

@@ -31,7 +31,8 @@ public class Envoyer.Models.Message : GLib.Object {
 
     //@TODO add display_subject which removes Re:
     public string subject { get; construct set; }
-    public Gee.Collection <string> references { get; set; }
+    public Gee.List <string> references { get; set; }
+    public Gee.List <string> in_reply_to { get; construct set; }
     public string id { get; construct set; }
 
     public string content { owned get { return ""; /*identity.get_html_for_message (this);*/ } }
@@ -48,7 +49,8 @@ public class Envoyer.Models.Message : GLib.Object {
             Gee.Collection <Address> bcc,
             string subject,
             time_t time_received,
-            Gee.Collection <string> references,
+            Gee.List <string> references,
+            Gee.List <string> in_reply_to,
             string id,
             uint uid,
             uint modification_sequence,
@@ -67,6 +69,7 @@ public class Envoyer.Models.Message : GLib.Object {
             bcc: bcc,
             subject: subject.dup (),
             references: references,
+            in_reply_to: in_reply_to,
             id: id.dup (),
             uid: uid,
             modification_sequence: modification_sequence,

@@ -1,3 +1,4 @@
+[CCode (cheader_filename = "src/MailCoreInterface/imap.h")]
 namespace MailCoreInterface.Imap {
     void* connect (string username, string password);
     [CCode (finish_name = "mail_core_interface_imap_fetch_folders_finish")]

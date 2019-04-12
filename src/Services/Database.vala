@@ -62,6 +62,7 @@ public class Envoyer.Services.Database : Object {
                                                                     "bcc",              typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "content",          typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "references",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "in_reply_to",              typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "uid",                      typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "modification_sequence",    typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "seen",             typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
@@ -177,12 +178,12 @@ public class Envoyer.Services.Database : Object {
         return list;
     }
 
-    private Gee.Collection <string> split_references (string references_list_string) {
-        var references = references_list_string.split (",");
+    private Gee.List <string> split_strings (string concatenated_list_string) {
+        var strings = concatenated_list_string.split (",");
         var list = new Gee.ArrayList <string> ();
 
-        foreach (var reference in references) {
-            list.add (reference.chomp ().chug ());
+        foreach (var current_string in strings) {
+            list.add (current_string.chomp ().chug ());
         }
 
         return list;
@@ -221,7 +222,8 @@ public class Envoyer.Services.Database : Object {
                                        get_addresses_from_string(data_model_iter.get_value_for_field ("bcc").get_string ()),
                                        data_model_iter.get_value_for_field ("subject").get_string (),
                                        (time_t) data_model_iter.get_value_for_field ("time_received").get_int (),
-                                       split_references(data_model_iter.get_value_for_field ("references").get_string ()),
+                                       split_strings(data_model_iter.get_value_for_field ("references").get_string ()),
+                                       split_strings(data_model_iter.get_value_for_field ("in_reply_to").get_string ()),
                                        data_model_iter.get_value_for_field ("message_id").get_string (),
                                        data_model_iter.get_value_for_field ("uid").get_int (),
                                        data_model_iter.get_value_for_field ("modification_sequence").get_int (),
@@ -251,20 +253,20 @@ public class Envoyer.Services.Database : Object {
         return addresses_string_builder.str;
     }
 
-    public string join_references (Gee.Collection <string> references) {
-        var references_string_builder = new StringBuilder ();
+    public string join_strings (Gee.Collection <string> strings) {
+        var joined_string_builder = new StringBuilder ();
 
         var first = true;
-        foreach (var reference in references) {
+        foreach (var current_string in strings) {
             if (!first) {
-                references_string_builder.append(",");
+                joined_string_builder.append(",");
             }
             first = false;
 
-            references_string_builder.append (reference); //@TODO also encode "," in the address name
+            joined_string_builder.append (current_string.to_string ()); //@TODO also encode "," in the address name
         }
 
-        return references_string_builder.str;
+        return joined_string_builder.str;
     }
 
     public void set_messages_for_folder (Gee.Collection <Message> messages, Folder folder) {
@@ -297,7 +299,8 @@ public class Envoyer.Services.Database : Object {
             builder.add_field_value_as_gvalue ("cc", join_addresses (current_message.cc));
             builder.add_field_value_as_gvalue ("bcc", join_addresses (current_message.bcc));
             builder.add_field_value_as_gvalue ("content", current_message.content);
-            builder.add_field_value_as_gvalue ("references", join_references (current_message.references));
+            builder.add_field_value_as_gvalue ("references", join_strings (current_message.references));
+            builder.add_field_value_as_gvalue ("in_reply_to", join_strings (current_message.in_reply_to));
             builder.add_field_value_as_gvalue ("seen", (int) current_message.seen);
             builder.add_field_value_as_gvalue ("flagged", (int) current_message.flagged);
             builder.add_field_value_as_gvalue ("draft", (int) current_message.draft);

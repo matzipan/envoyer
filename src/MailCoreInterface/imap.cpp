@@ -8,6 +8,7 @@
 #include <MailCore/MCIMAPAsyncSession.h>
 #include <glib.h>
 #include "envoyer.h"
+#include "imap.h"
 
 mailcore::AutoreleasePool * imap_pool; //@TODO clear pool
 

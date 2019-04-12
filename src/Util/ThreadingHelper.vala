@@ -59,12 +59,6 @@
      }
      
      private Gee.Collection <Envoyer.Util.ThreadingContainer> group_messages_by_id (Gee.Collection <Envoyer.Models.Message> messages) {
-         // @TODO If both headers exist, take the first thing in the In-Reply-To header 
-         // that looks like a Message-ID, and append it to the References header.
-         // If there are multiple things in In-Reply-To that look like Message-IDs, 
-         // only use the first one of them: odds are that the later ones are 
-         // actually email addresses, not IDs.
-         
          var id_table = new Gee.HashMap <string, Envoyer.Util.ThreadingContainer> ();
 
          foreach (var current_message in messages) {
@@ -74,29 +68,48 @@
              
              Envoyer.Util.ThreadingContainer previous_references_container = null;
              foreach (var reference in current_message.references) {
-                 var container = find_or_create_container (id_table, reference);      
-                 
-                 // If they are already linked, don't change the existing links.
-                 // Do not add a link if adding that link would introduce a loop.
-                 if (previous_references_container != null &&
-                     previous_references_container.children.index_of (container) == -1 &&
-                     container.children.index_of (previous_references_container) == -1) {
-                     previous_references_container.add_child (container);
+                 var container = find_or_create_container (id_table, reference);
+
+                 if(previous_references_container != null) {
+                    add_container_as_child(previous_references_container, container);
                  }
-                 
+
                  previous_references_container = container;
              }
-             
-             if (previous_references_container != null &&
-                 previous_references_container.children.index_of (message_container) == -1 &&
-                 message_container.children.index_of (previous_references_container) == -1) {
-                 previous_references_container.add_child (message_container);
+
+             // If both References and In-Reply-To exist, take the first thing in the In-Reply-To header
+             // that looks like a Message-ID, and append it to the References header.
+             // If there are multiple things in In-Reply-To that look like Message-IDs,
+             // only use the first one of them: odds are that the later ones are
+             // actually email addresses, not IDs.
+             if(current_message.in_reply_to.size >= 1) {
+                 var reference = current_message.in_reply_to[0];
+
+                 var container = find_or_create_container (id_table, reference);
+
+                 if(previous_references_container != null) {
+                    add_container_as_child(previous_references_container, container);
+                 }
+             }
+
+             if(previous_references_container != null) {
+                add_container_as_child(previous_references_container, message_container);
              }
          }
          
          return id_table.values; 
      }
-     
+
+    private void add_container_as_child (Envoyer.Util.ThreadingContainer previous_references_container, Envoyer.Util.ThreadingContainer container) {
+         // If they are already linked, don't change the existing links.
+         // Do not add a link if adding that link would introduce a loop.
+         if (previous_references_container != null &&
+             previous_references_container.children.index_of (container) == -1 &&
+             container.children.index_of (previous_references_container) == -1) {
+             previous_references_container.add_child (container);
+         }
+    }
+
      private Envoyer.Util.ThreadingContainer find_or_create_container (Gee.HashMap <string, Envoyer.Util.ThreadingContainer> table, string key) {
          if (table.has_key (key)) {
              return table[key];
