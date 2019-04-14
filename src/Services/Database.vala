@@ -231,6 +231,9 @@ public class Envoyer.Services.Database : Object {
                                        data_model_iter.get_value_for_field ("flagged").get_int () != 0,
                                        data_model_iter.get_value_for_field ("deleted").get_int () != 0,
                                        data_model_iter.get_value_for_field ("draft").get_int () != 0);
+
+            current_message.content = data_model_iter.get_value_for_field ("content").get_string ();
+
             list.add (current_message);
         }
 

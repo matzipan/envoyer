@@ -141,6 +141,7 @@ public class Envoyer.Models.Identity : GLib.Object {
 
         foreach (var item in messages) {
             item.folder = folder;
+            item.content = yield get_html_for_message(item);
         }
 
         database.set_messages_for_folder (messages, folder);

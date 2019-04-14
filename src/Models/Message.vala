@@ -35,7 +35,7 @@ public class Envoyer.Models.Message : GLib.Object {
     public Gee.List <string> in_reply_to { get; construct set; }
     public string id { get; construct set; }
 
-    public string content { owned get { return ""; /*identity.get_html_for_message (this);*/ } }
+    public string content { get; set; }
     public bool has_attachment { get { return false; } } //@TODO
 
     public string text { get; set; default = "BLA"; }
