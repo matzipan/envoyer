@@ -52,6 +52,8 @@ set (APP_VALA_OPTIONS
 	${EXTRA_VALA_OPTIONS}
 )
 
+get_target_property (BASALT_VAPI_FILES basalt VAPI_FILES)
+
 vala_precompile (APP_VALA_C ${PROJECT_FQDN}
 	main.vala
 	Controllers/Application.vala
@@ -70,6 +72,7 @@ vala_precompile (APP_VALA_C ${PROJECT_FQDN}
 	Widgets/Main/ConversationViewer.vala
 	Widgets/Main/MessageViewer.vala
 	Widgets/Main/MessageWebView.vala
+	Widgets/Main/MessageAddressesList.vala
 	Widgets/Main/FolderConversationItem.vala
 	Widgets/Main/FolderConversationsList.vala
 	Widgets/Main/Window.vala
@@ -97,7 +100,7 @@ OPTIONS
 CUSTOM_VAPIS
 	MailCoreInterface/smtp.vapi
 	MailCoreInterface/imap.vapi
-	${CMAKE_BINARY_DIR}/lib/basalt/lib/basalt.vapi
+	${BASALT_VAPI_FILES}
 GENERATE_HEADER
 	${CMAKE_PROJECT_NAME}
 GENERATE_VAPI

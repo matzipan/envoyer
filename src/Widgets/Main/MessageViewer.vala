@@ -16,9 +16,15 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
     private Gtk.Label datetime_received_label;
     private Gtk.Label subject_label;
     private Gtk.Label from_address_label;
-    private Gtk.Label to_address_label;
-    private Gtk.Label cc_address_label;
-    private Gtk.Label bcc_address_label;
+    private Envoyer.Widgets.Main.MessageAddressesList to_addresses_list;
+    private Gtk.Grid to_addresses_grid;
+    private Gtk.Label to_addresses_label;
+    private Envoyer.Widgets.Main.MessageAddressesList cc_addresses_list;
+    private Gtk.Grid cc_addresses_grid;
+    private Gtk.Label cc_addresses_label;
+    private Envoyer.Widgets.Main.MessageAddressesList bcc_addresses_list;
+    private Gtk.Grid bcc_addresses_grid;
+    private Gtk.Label bcc_addresses_label;
     private Envoyer.Widgets.Gravatar avatar;
 
     private Message message_item;
@@ -49,15 +55,10 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
         from_address_label = build_label ();
         from_address_label.get_style_context ().add_class ("from");
         from_address_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
-        to_address_label = build_label ();
-        to_address_label.get_style_context ().add_class ("to");
-        to_address_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
-        cc_address_label = build_label ();
-        cc_address_label.get_style_context ().add_class ("cc");
-        cc_address_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
-        bcc_address_label = build_label ();
-        bcc_address_label.get_style_context ().add_class ("bcc");
-        bcc_address_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
+
+        build_addresses_field ("to", "to", out to_addresses_label, out to_addresses_list, out to_addresses_grid);
+        build_addresses_field ("cc", "cc", out cc_addresses_label, out cc_addresses_list, out cc_addresses_grid);
+        build_addresses_field ("bcc", "bcc", out bcc_addresses_label, out bcc_addresses_list, out bcc_addresses_grid);
 
         header_summary_fields = new Gtk.Grid ();
         header_summary_fields.row_spacing = 1;
@@ -68,9 +69,9 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
         header_summary_fields.orientation = Gtk.Orientation.VERTICAL;
         header_summary_fields.add (subject_label);
         header_summary_fields.add (from_address_label);
-        header_summary_fields.add (to_address_label);
-        header_summary_fields.add (cc_address_label);
-        header_summary_fields.add (bcc_address_label);
+        header_summary_fields.add (to_addresses_grid);
+        header_summary_fields.add (cc_addresses_grid);
+        header_summary_fields.add (bcc_addresses_grid);
 
         datetime_received_label = new Gtk.Label (null);
         datetime_received_label.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
@@ -106,6 +107,21 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
         add (grid);
         show_all ();
     }
+
+    private void build_addresses_field (string style_class_name, string label_text, out Gtk.Label addresses_label, out Envoyer.Widgets.Main.MessageAddressesList addresses_list, out Gtk.Grid addresses_grid) {
+        addresses_label = new Gtk.Label(label_text);
+        addresses_label.valign = Gtk.Align.START;
+
+        addresses_list = new Envoyer.Widgets.Main.MessageAddressesList();
+        addresses_list.margin_left = 3;
+        addresses_list.expand = true;
+
+        addresses_grid = new Gtk.Grid ();
+        addresses_grid.get_style_context ().add_class (style_class_name);
+        addresses_grid.get_style_context ().add_class (Gtk.STYLE_CLASS_DIM_LABEL);
+        addresses_grid.add(addresses_label);
+        addresses_grid.add(addresses_list);
+    }
     
     private void connect_signals () {
         message_webview.scroll_event.connect (propagate_scroll_event);
@@ -140,21 +156,29 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
         } else {
             subject_label.set_label (message_item.subject);
         }
-        from_address_label.set_label (message_item.from.to_string ());
-        to_address_label.set_label ("to %s".printf(build_addresses_string (message_item.to)));
-        
-        var addresses = build_addresses_string (message_item.cc);
-        if (addresses == "") {
-            cc_address_label.destroy ();
+        from_address_label.set_label (message_item.from.display_name);
+        from_address_label.tooltip_text = message_item.from.to_string ();
+
+        if(message_item.to.size == 0) {
+            to_addresses_grid.visible = false;
+            to_addresses_grid.no_show_all = true;
         } else {
-            cc_address_label.set_label ("cc %s".printf(addresses));
+            to_addresses_list.load_data(message_item.to);
         }
-        
-        addresses = build_addresses_string (message_item.bcc);
-        if (addresses == "") {
-            bcc_address_label.destroy ();
+
+        if(message_item.cc.size == 0) {
+            cc_addresses_grid.visible = false;
+            cc_addresses_grid.no_show_all = true;
         } else {
-            bcc_address_label.set_label ("bcc %s".printf(addresses));
+            cc_addresses_list.load_data(message_item.cc);
+        }
+
+        if(message_item.bcc.size == 0) {
+
+            bcc_addresses_grid.visible = false;
+            bcc_addresses_grid.no_show_all = true;
+        } else {
+            bcc_addresses_list.load_data(message_item.bcc);
         }
         
         if(!message_item.has_attachment) {
@@ -201,10 +225,10 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
             foreach (var address in addresses) {
                 if (first) {
                     first = false;
-                    addresses_string_builder.append (address.to_string ());
+                    addresses_string_builder.append (address.display_name);
                 } else {
                     addresses_string_builder.append (", ");
-                    addresses_string_builder.append (address.to_string ());
+                    addresses_string_builder.append (address.display_name);
                 }
             }
             
