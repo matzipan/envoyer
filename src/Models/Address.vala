@@ -29,8 +29,8 @@ public class Envoyer.Models.Address : GLib.Object {
         var matched_name = "";
         var matched_email = "";
         if (pattern.match(address, 0, out match_info)) {
-            matched_name = match_info.fetch(0);
-            matched_email = match_info.fetch(1);
+            matched_name = match_info.fetch(1);
+            matched_email = match_info.fetch(2);
         }
 
         // Have to store the matches in temporary variables since Vala doesn't like 2 calls to the constructor.
