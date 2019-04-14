@@ -41,10 +41,16 @@
      }
      
      public Gee.Collection <Envoyer.Models.ConversationThread> process_messages (Gee.Collection <Envoyer.Models.Message> messages) {
-         var root_set = find_root_set (group_messages_by_id (messages));
-         
-         foreach (var container in root_set) {
+         var unpruned_root_set = find_root_set (group_messages_by_id (messages)); 
+       
+         var root_set = (Gee.Collection <Envoyer.Util.ThreadingContainer>) new Gee.LinkedList <Envoyer.Util.ThreadingContainer> ();
+
+         foreach (var container in unpruned_root_set) {
              prune_empty_containers (container);
+
+            if(container.children.size != 0 || container.message != null)  {
+                root_set.add (container);
+            }
          }
          
          root_set = refine_root_set_by_subject (root_set);
