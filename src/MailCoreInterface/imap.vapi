@@ -1,6 +1,7 @@
 [CCode (cheader_filename = "src/MailCoreInterface/imap.h")]
 namespace MailCoreInterface.Imap {
     void* connect (string username, string password);
+    void  update_access_token (void* session, string access_token);
     [CCode (finish_name = "mail_core_interface_imap_fetch_folders_finish")]
     public async Gee.Collection<Envoyer.Models.Folder> fetch_folders (void* session);
     [CCode (finish_name = "mail_core_interface_imap_fetch_messages_finish")]

@@ -42,6 +42,12 @@ public class Envoyer.Models.Identity : GLib.Object {
         smtp_session = MailCoreInterface.Smtp.connect (address.email, access_token); //@TODO username is the same as email ony for Gmail, others might not work
         imap_idle_session = MailCoreInterface.Imap.connect (address.email, access_token); //@TODO username is the same as email ony for Gmail, others might not work
 
+        notify["access_token"].connect (() => {
+            MailCoreInterface.Imap.update_access_token (imap_session, access_token);
+            MailCoreInterface.Imap.update_access_token (imap_idle_session, access_token);
+            MailCoreInterface.Smtp.update_access_token (smtp_session, access_token);
+        });
+
         refresh_token_loop.begin ();
 
         if (is_initialization) {

@@ -34,6 +34,12 @@ extern "C" void* mail_core_interface_smtp_connect (gchar* username, gchar* acces
     return session;
 }
 
+extern "C" void* mail_core_interface_smtp_update_access_token (void* session, gchar* access_token) {
+    auto smtp_async_session = (mailcore::SMTPAsyncSession*) session;
+
+    smtp_async_session->setOAuth2Token (new mailcore::String (access_token));
+}
+
 mailcore::Array* /* mailcore::Address */ get_as_array_of_mailcore_addresses (GeeCollection * envoyer_addresses) {
     auto addresses_array = new mailcore::Array ();
 

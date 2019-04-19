@@ -27,3 +27,9 @@ extern "C" void* mail_core_interface_imap_connect (gchar* username, gchar* acces
     //@TODO also close the connection?
     return session;
 }
+
+extern "C" void* mail_core_interface_imap_update_access_token (void* session, gchar* access_token) {
+    auto imap_async_session = (mailcore::IMAPAsyncSession*) session;
+
+    imap_async_session->setOAuth2Token (new mailcore::String (access_token));
+}
