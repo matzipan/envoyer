@@ -102,7 +102,7 @@ public class Envoyer.Models.Identity : GLib.Object {
                 GLib.Icon icon = new ThemedIcon("internet-mail");
                 try {
                     FileIOStream iostream;
-                    var file = File.new_tmp("geary-contact-XXXXXX.png", out iostream);
+                    var file = File.new_tmp("envoyer-contact-XXXXXX.png", out iostream);
                     iostream.close();
                     avatar_file.copy(file, GLib.FileCopyFlags.OVERWRITE);
                     icon = new FileIcon(file);
