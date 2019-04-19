@@ -9,25 +9,41 @@ using Envoyer.Globals.Application;
 using Envoyer.Services;
 
 public class Envoyer.Models.Identity : GLib.Object {
-    public void* imap_session { get; construct set; }
-    public void* imap_idle_session { get; construct set; }
-    public void* smtp_session { get; construct set; }
+    public void* imap_session { get; set; }
+    public void* imap_idle_session { get; set; }
+    public void* smtp_session { get; set; }
+    public DateTime expires_at { get; construct set; }
+    public string access_token { get; construct set; }
+    public string refresh_token { get; construct set; }
     public string account_name { get; construct set; }
     public Address address { get; construct set; }
-    public bool is_initialization { get; construct set; }
     public signal void initialized ();
+    private bool sessions_started = false;
 
-    public async Identity (string username, string access_token, string full_name, string account_name, bool is_initialization) {
+    public Identity (string username, string access_token, string refresh_token, DateTime expires_at, string full_name, string account_name) {
         Object (account_name: account_name,
-                imap_session: MailCoreInterface.Imap.connect (username, access_token),
-                smtp_session: MailCoreInterface.Smtp.connect (username, access_token),
-                imap_idle_session: MailCoreInterface.Imap.connect (username, access_token),
-                address: new Address (full_name, username), //@TODO username is the same as email ony for Gmail, others might not work
-                is_initialization: is_initialization
+                access_token: access_token,
+                refresh_token: refresh_token,
+                expires_at: expires_at,
+                address: new Address (full_name, username)
         );
     }
 
-    construct {
+    public async void start_sessions (bool is_initialization) {
+        if (sessions_started) {
+            return;
+        } else {
+            sessions_started = true;
+        }
+
+        refresh_token_if_expired ();
+
+        imap_session = MailCoreInterface.Imap.connect (address.email, access_token); //@TODO username is the same as email ony for Gmail, others might not work
+        smtp_session = MailCoreInterface.Smtp.connect (address.email, access_token); //@TODO username is the same as email ony for Gmail, others might not work
+        imap_idle_session = MailCoreInterface.Imap.connect (address.email, access_token); //@TODO username is the same as email ony for Gmail, others might not work
+
+        refresh_token_loop.begin ();
+
         if (is_initialization) {
             fetch_folders.begin ((obj, result) => {
                 fetch_folders.end (result);
@@ -52,11 +68,15 @@ public class Envoyer.Models.Identity : GLib.Object {
         //@TODO status changes from the other folders
     }
 
+    private string to_string () {
+        return address.email;
+    }
+
     // @TODO check if capability exists
-    public async void idle_loop () {
+    private async void idle_loop () {
         var index_folder = get_folder_with_label ("INBOX");
 
-        while (true) {
+        while (true) {            
             var highest_uid = index_folder.highest_uid;
 
             debug ("Idle loop: listening (highest uid %u)", highest_uid);
@@ -98,6 +118,60 @@ public class Envoyer.Models.Identity : GLib.Object {
                 application.send_notification ("message.new", notification);
             }
         }
+    }
+
+    public async void nap (uint interval) {
+        GLib.Timeout.add_seconds (interval, () => {
+            nap.callback ();
+            return false;
+        }, GLib.Priority.DEFAULT);
+        yield;
+    }
+
+    private async void refresh_token_loop () {
+        while (true) {
+            // Seconds to spare for refresh represents how much time before the expiry we refresh the access token
+            var seconds_to_spare_for_refresh = 60;
+            var seconds_until_refresh = (uint) (expires_at.to_unix () - (new DateTime.now_utc ()).to_unix ()) - seconds_to_spare_for_refresh;
+
+            debug ("Refresh access token for identity %s scheduled in %u seconds", to_string (), seconds_until_refresh);
+
+            //@TODO what happens if the internet is down when refresh is attempted and then when the imap/smtp sessions come back the token is still expired
+            yield nap (seconds_until_refresh);
+
+            do_token_refresh ();
+        }
+    }
+
+    private void refresh_token_if_expired () {
+        if (expires_at.compare (new DateTime.now_utc ()) > 0) {
+            debug ("Access token is still valid for identity %s, not refreshing", to_string ());
+            return;
+        }
+
+        do_token_refresh ();
+    }
+
+    private void do_token_refresh () {
+        var session = new Soup.Session ();
+
+        var msg = new Soup.Message ("POST", "https://www.googleapis.com/oauth2/v4/token");
+        var encoded_data = Soup.Form.encode ("refresh_token",   refresh_token,
+                                             "client_id",       "577724563203-55upnrbic0a2ft8qr809for8ns74jmqj.apps.googleusercontent.com",
+                                             "client_secret",   "N_GoSZys__JPgKXrh_jIUuOh",
+                                             "grant_type",      "refresh_token");
+
+        msg.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, encoded_data.data);
+        session.send_message(msg);
+
+        var response_object = Json.from_string ((string) msg.response_body.data).get_object ();
+
+        access_token = response_object.get_string_member ("access_token");
+        expires_at = (new DateTime.now_utc ()).add_seconds (response_object.get_int_member ("expires_in"));
+
+        database.update_identity_access_token_and_expiry (this, access_token, expires_at);
+
+        debug ("Updated access token and expiry date");
     }
 
     public Gee.Collection <Folder> get_folders () {

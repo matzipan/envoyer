@@ -91,10 +91,14 @@ public class Envoyer.Controllers.Application : Granite.Application {
                         msg.set_request ("application/x-www-form-urlencoded", Soup.MemoryUse.COPY, encoded_data.data);
                         session.send_message(msg);
 
-                        var access_token = Json.from_string ((string) msg.response_body.data).get_object ().get_string_member ("access_token");
+                        var response_object = Json.from_string ((string) msg.response_body.data).get_object ();
+
+                        var access_token = response_object.get_string_member ("access_token");
+                        var refresh_token = response_object.get_string_member ("refresh_token");
+                        var expires_at = (new DateTime.now_utc ()).add_seconds (response_object.get_int_member ("expires_in"));
 
                         // @TODO find a way to not access database directly
-                        database.add_identity (username_entry.text, access_token, "hardcoded full name", "hardcoded account name");
+                        database.add_identity (username_entry.text, access_token, refresh_token, expires_at, "hardcoded full name", "hardcoded account name");
                         load_session ();
 
                         stack.set_visible_child_name ("spinner");
@@ -123,22 +127,14 @@ public class Envoyer.Controllers.Application : Granite.Application {
 
     private async void load_session () {
         //@TODO Add support for multiple identities
-        identities = new Gee.ArrayList <Identity> ();
-
         // @TODO find a way to not access database directly
-        var database_identities = database.get_identities (); // @TODO this should return Identity objects
+        identities = database.get_identities ();
 
         //@TODO initialize database here and signal to identity that it is the initial boot so that it fetches the rest of stuff
 
-        foreach (var database_identity in database_identities) {
+        foreach (var identity in identities) {
             //@TODO get is_initialization from database_identities
-            var identity = yield new Identity (database_identity["username"],
-                                               database_identity["access_token"],
-                                               database_identity["full_name"],
-                                               database_identity["account_name"],
-                                               is_initialization);
-
-            identities.add (identity);
+            identity.start_sessions (is_initialization);
 
             break; //@TODO only hardcoding this to break because for now we only support one identity
         }

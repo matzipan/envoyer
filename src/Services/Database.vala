@@ -79,6 +79,8 @@ public class Envoyer.Services.Database : Object {
                                                                     "id",               typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
                                                                     "username",         typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "access_token",     typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "refresh_token",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "expires_at",       typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "full_name",        typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "account_name",     typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
                                                                     );
@@ -317,11 +319,13 @@ public class Envoyer.Services.Database : Object {
         application.folder_updated (folder.name); //@TODO there needs to be a centralized factory of objects, conversation threads so that we can nicely handle updates and signals
     }
 
-    public void add_identity (string username, string access_token, string full_name, string account_name) {
+    public void add_identity (string username, string access_token, string refresh_token, DateTime expires_at, string full_name, string account_name) {
         var builder = new Gda.SqlBuilder (Gda.SqlStatementType.INSERT);
         builder.set_table (IDENTITIES_TABLE);
         builder.add_field_value_as_gvalue ("username", username);
         builder.add_field_value_as_gvalue ("access_token", access_token);
+        builder.add_field_value_as_gvalue ("refresh_token", refresh_token);
+        builder.add_field_value_as_gvalue ("expires_at", expires_at.to_unix ());
         builder.add_field_value_as_gvalue ("full_name", full_name);
         builder.add_field_value_as_gvalue ("account_name", account_name);
         var statement = builder.get_statement ();
@@ -330,7 +334,23 @@ public class Envoyer.Services.Database : Object {
         //@TODO identity_added ();
     }
 
-    public Gee.Collection <Gee.HashMap<string, string>> get_identities () {
+    public void update_identity_access_token_and_expiry (Envoyer.Models.Identity identity, string access_token, DateTime expires_at) {
+        var builder = new Gda.SqlBuilder (Gda.SqlStatementType.UPDATE);
+
+        builder.set_table (IDENTITIES_TABLE);
+        builder.add_field_value_as_gvalue ("access_token", access_token);
+        builder.add_field_value_as_gvalue ("expires_at", expires_at.to_unix ());
+
+        var username_field = builder.add_id ("username");
+        var username_value = builder.add_expr_value (null, identity.address.email); //@TODO is .email really good enough?
+
+        builder.set_where (builder.add_cond (Gda.SqlOperatorType.GEQ, username_field, username_value, 0));
+
+        var statement = builder.get_statement ();
+        connection.statement_execute_non_select (statement, null, null);
+    }
+
+    public Gee.List <Envoyer.Models.Identity> get_identities () {
         var builder = new Gda.SqlBuilder (Gda.SqlStatementType.SELECT);
 
         builder.select_add_field ("*", null, null);
@@ -339,17 +359,20 @@ public class Envoyer.Services.Database : Object {
 
         var data_model = connection.statement_execute_select (statement, null);
         var data_model_iter = data_model.create_iter ();
-        var list = new Gee.ArrayList <Gee.HashMap<string, string>> ();
+        var list = new Gee.ArrayList <Envoyer.Models.Identity> ();
+
         data_model_iter.move_to_row (-1);
         while (data_model_iter.move_next ()) {
-            var user_data = new Gee.HashMap<string, string>();
+            var username = data_model_iter.get_value_for_field ("username").get_string ();
+            var access_token = data_model_iter.get_value_for_field ("access_token").get_string ();
+            var refresh_token = data_model_iter.get_value_for_field ("refresh_token").get_string ();
+            var expires_at = new DateTime.from_unix_utc (data_model_iter.get_value_for_field ("expires_at").get_int ());
+            var full_name = data_model_iter.get_value_for_field ("full_name").get_string ();
+            var account_name = data_model_iter.get_value_for_field ("account_name").get_string ();
 
-            user_data["username"] = data_model_iter.get_value_for_field ("username").get_string ();
-            user_data["access_token"] = data_model_iter.get_value_for_field ("access_token").get_string ();
-            user_data["full_name"] = data_model_iter.get_value_for_field ("full_name").get_string ();
-            user_data["account_name"] = data_model_iter.get_value_for_field ("account_name").get_string ();
+            var identity = new Envoyer.Models.Identity (username, access_token, refresh_token, expires_at, full_name, account_name);
 
-            list.add (user_data);
+            list.add (identity);
         }
 
         return list;
