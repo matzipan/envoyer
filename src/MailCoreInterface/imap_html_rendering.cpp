@@ -14,9 +14,9 @@
 #include "imap.h"
 
 
-class MailCoreInterfaceIMAPHTMLRenderingCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
+class MailCoreInterfaceIMAPHTMLBodyRenderingCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
 public:
-    MailCoreInterfaceIMAPHTMLRenderingCallback (GTask* task) {
+    MailCoreInterfaceIMAPHTMLBodyRenderingCallback (GTask* task) {
             this->task = task;
     }
 
@@ -41,13 +41,13 @@ extern "C" void mail_core_interface_imap_get_html_for_message (void* voidSession
 
     auto task = g_task_new (NULL, NULL, callback, user_data);
 
-    auto html_rendering_operation = session->htmlRenderingOperation ((mailcore::IMAPMessage *) envoyer_models_message_get_mailcore_message (envoyer_message), new mailcore::String (folder_path));
+    auto html_body_rendering_operation = session->htmlBodyRenderingOperation ((mailcore::IMAPMessage *) envoyer_models_message_get_mailcore_message (envoyer_message), new mailcore::String (folder_path));
 
-    auto rendering_callback = new MailCoreInterfaceIMAPHTMLRenderingCallback(task);
-    html_rendering_operation->setImapCallback(rendering_callback);
-    ((mailcore::Operation *) html_rendering_operation)->setCallback (rendering_callback);
+    auto rendering_callback = new MailCoreInterfaceIMAPHTMLBodyRenderingCallback(task);
+    html_body_rendering_operation->setImapCallback(rendering_callback);
+    ((mailcore::Operation *) html_body_rendering_operation)->setCallback (rendering_callback);
 
-    html_rendering_operation->start();
+    html_body_rendering_operation->start();
 }
 
 extern "C" const gchar* mail_core_interface_imap_get_html_for_message_finish (GTask *task) {
