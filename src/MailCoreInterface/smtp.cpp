@@ -17,6 +17,7 @@
 #include "envoyer.h"
 
 mailcore::AutoreleasePool * smtp_pool; //@TODO clear pool
+#include "smtp.h"
 
 extern "C" void* mail_core_interface_smtp_connect (gchar* username, gchar* access_token) {
     smtp_pool = new mailcore::AutoreleasePool();
@@ -77,7 +78,11 @@ private:
     GTask* task;
 };
 
-extern "C" void mail_core_interface_smtp_send_message (mailcore::SMTPAsyncSession* session, EnvoyerModelsMessage* message, GAsyncReadyCallback callback, void* user_data) {
+extern "C" void mail_core_interface_smtp_send_message (void* session, void* void_envoyer_message, GAsyncReadyCallback callback, void* user_data) {
+    auto smtp_async_session = (mailcore::SMTPAsyncSession*) session;
+
+    auto message = (EnvoyerModelsMessage*) void_envoyer_message;
+
     auto task = g_task_new (NULL, NULL, callback, user_data);
 
     //@TODO ref and unref message
@@ -100,7 +105,7 @@ extern "C" void mail_core_interface_smtp_send_message (mailcore::SMTPAsyncSessio
 
     // @TODO setHTMLBody();
 
-    auto send_message_operation = session->sendMessageOperation(builder->data());
+    auto send_message_operation = smtp_async_session->sendMessageOperation(builder->data());
 
     auto send_callback = new MailCoreInterfaceSMTPMessageSendCallback(task);
     send_message_operation->setSmtpCallback(send_callback);
