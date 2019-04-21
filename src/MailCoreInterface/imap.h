@@ -16,6 +16,7 @@
 extern "C" {
 #endif
 void* mail_core_interface_imap_connect (gchar* username, gchar* access_token);
+void* mail_core_interface_imap_update_access_token (void* session, gchar* access_token);
 void mail_core_interface_imap_fetch_folders (void* session, GAsyncReadyCallback callback, void* user_data);
 GeeLinkedList* mail_core_interface_imap_fetch_folders_finish (GTask *task);
 void mail_core_interface_imap_fetch_messages (void* session, gchar* folder_path, guint64 start_uid_value, guint64 end_uid_value, gboolean flags_only, GAsyncReadyCallback callback, void* user_data);
