@@ -10,10 +10,8 @@
 #include "envoyer.h"
 #include "imap.h"
 
-mailcore::AutoreleasePool * imap_pool; //@TODO clear pool
 
 extern "C" void* mail_core_interface_imap_connect (gchar* username, gchar* access_token) {
-    imap_pool = new mailcore::AutoreleasePool();
 
     auto session = new mailcore::IMAPAsyncSession ();
 

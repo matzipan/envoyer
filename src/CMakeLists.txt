@@ -116,6 +116,7 @@ add_executable (${PROJECT_FQDN}
 	MailCoreInterface/imap_html_rendering.cpp
 	MailCoreInterface/imap_idle_listener.cpp
 	MailCoreInterface/smtp.cpp
+	MailCoreInterface/pool.cpp
 )
 
 install (TARGETS ${PROJECT_FQDN} RUNTIME DESTINATION bin)

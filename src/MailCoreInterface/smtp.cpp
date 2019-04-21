@@ -15,13 +15,9 @@
 #include <glib.h>
 #include <gee.h>
 #include "envoyer.h"
-
-mailcore::AutoreleasePool * smtp_pool; //@TODO clear pool
 #include "smtp.h"
 
 extern "C" void* mail_core_interface_smtp_connect (gchar* username, gchar* access_token) {
-    smtp_pool = new mailcore::AutoreleasePool();
-
     auto session = new mailcore::SMTPAsyncSession ();
 
     session->setUsername (new mailcore::String (username));
