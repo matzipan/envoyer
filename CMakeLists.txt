@@ -31,5 +31,3 @@ add_subdirectory (lib/basalt/)
 add_subdirectory (src)
 
 install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/com.github.matzipan.envoyer.desktop DESTINATION ${DATADIR}/applications/)
-file (GLOB assets "${CMAKE_CURRENT_SOURCE_DIR}/data/assets/*")
-install (FILES ${assets} DESTINATION ${DATADIR}/envoyer/)
