@@ -17,8 +17,8 @@ public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
     }
     
     private static void on_initialize_web_extensions (WebKit.WebContext context) {
-        context.set_web_extensions_directory ("./"); //@TODO use something better here ... GResource?
-        context.set_web_extensions_initialization_user_data (new GLib.Variant.uint32 (web_view_id));
+      context.set_web_extensions_directory (Environment.get_variable ("WEBKIT_WEB_EXTENSION_DIRECTORY") ?? Constants.WEBKIT_WEB_EXTENSION_DIRECTORY);
+      context.set_web_extensions_initialization_user_data (new GLib.Variant.uint32 (web_view_id));
     }
 
     private uint instance_web_view_id;

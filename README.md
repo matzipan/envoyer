@@ -43,8 +43,7 @@ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make
 ```
 
-You will have to first run `cd src` and then `./com.github.matzipan.envoyer`, otherwise the 
-WebKitGTK+ Web Extension will not get loaded (there is no dynamic mechanism yet).
+By default, the Envoyer binary will instruct WebKitGTK+ to look for web extension libraries under `${CMAKE_INSTALL_PREFIX}/lib/com.github.matzipan.envoyer/`. If Envoyer is not installed on your system or you want to test changes to the web extensions, you can use the `WEBKIT_EXTENSION_DIRECTORY` environment variable.
 
 ### Folder structure
 

@@ -9,5 +9,6 @@ namespace Constants {
    public const string APP_NAME = "@APP_NAME@";
    public const string PROJECT_FQDN = "@PROJECT_FQDN@";
    public const string PROJECT_DESCRIPTION = "@PROJECT_DESCRIPTION@";
+   public const string WEBKIT_WEB_EXTENSION_DIRECTORY = "@WEBKIT_WEB_EXTENSION_DIRECTORY@";
    public const string DBUS_OBJECTS = "@DBUS_OBJECTS@";
 }
