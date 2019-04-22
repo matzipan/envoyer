@@ -12,6 +12,7 @@ set (VERSION_INFO "Development")
 set (PREFIX ${CMAKE_INSTALL_PREFIX})
 set (APP_NAME "Envoyer")
 set (PROJECT_FQDN "com.github.matzipan.envoyer")
+set (WEBKIT_WEB_EXTENSION_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_FQDN}/")
 set (DBUS_OBJECTS "/com/github/matzipan/envoyer")
 set (PROJECT_DESCRIPTION "Mail for the Linux desktop")
 

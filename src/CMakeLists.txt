@@ -187,3 +187,5 @@ GENERATE_VAPI
 )
 
 add_library (${PROJECT_FQDN}-webextension SHARED ${WEBEXTENSION_VALA_C} ${generated_resources})
+
+install (TARGETS ${PROJECT_FQDN}-webextension LIBRARY DESTINATION ${WEBKIT_WEB_EXTENSION_DIRECTORY})
