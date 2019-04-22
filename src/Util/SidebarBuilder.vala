@@ -16,13 +16,25 @@ public class Envoyer.Util.SidebarBuilder : GLib.Object {
         var summaries_geelist = yield build_summaries_list ();
 
         foreach (IFolder.Type type in IFolder.Type.unified_folders()) {
-            var unified_folder = new UnifiedFolderParent(type);
-            store.append(unified_folder);
+            var folders_found = false;
 
             foreach (var summary in summaries_geelist) {
-                foreach(var folder in summary.folders_list) {
+                foreach (var folder in summary.folders_list) {
                     if(folder.folder_type == type) {
-                        unified_folder.children.append (new UnifiedFolderChild (folder, summary.identity));
+                        folders_found = true;
+                    }
+                }
+            }
+
+            if (folders_found) {
+                var unified_folder = new UnifiedFolderParent(type);
+                store.append(unified_folder);
+
+                foreach (var summary in summaries_geelist) {
+                    foreach(var folder in summary.folders_list) {
+                        if(folder.folder_type == type) {
+                            unified_folder.children.append (new UnifiedFolderChild (folder, summary.identity));
+                        }
                     }
                 }
             }
