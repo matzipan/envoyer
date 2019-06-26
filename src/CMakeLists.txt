@@ -75,6 +75,7 @@ vala_precompile (APP_VALA_C ${PROJECT_FQDN}
 	Widgets/Main/MessageAddressesList.vala
 	Widgets/Main/FolderConversationItem.vala
 	Widgets/Main/FolderConversationsList.vala
+	Widgets/Main/WelcomeDialog.vala
 	Widgets/Main/Window.vala
 	Widgets/Composer/Headerbar.vala
 	Widgets/Composer/Window.vala

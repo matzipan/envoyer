@@ -41,6 +41,14 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
         EnvoyerWidgetsMainConversationViewer GtkListBoxRow {
             background: #fff;
         }
+
+        dialog.welcome-dialog {
+            background: #fff;
+        }
+
+        dialog.welcome-dialog headerbar {
+            background: #fff;
+        }
     """;
 
     public Window (Envoyer.Controllers.Application app) {
