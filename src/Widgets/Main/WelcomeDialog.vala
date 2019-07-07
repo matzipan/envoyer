@@ -42,8 +42,8 @@ public class Envoyer.Widgets.WelcomeDialog : Gtk.Dialog {
         var email_address_label = new Gtk.Label ("E-mail address");
         email_address_label.margin_right = 30;
 
-        var username_entry = new Gtk.Entry ();
-        username_entry.placeholder_text = "Placeholder text";
+        var email_address_entry = new Gtk.Entry ();
+        email_address_entry.placeholder_text = "you@yourdomain.com";
 
         var submit_button = new Gtk.Button.with_label ("Authorize");
         submit_button.halign = Gtk.Align.END;
@@ -52,7 +52,7 @@ public class Envoyer.Widgets.WelcomeDialog : Gtk.Dialog {
         var initial_information_grid = new Gtk.Grid ();
         initial_information_grid.halign = Gtk.Align.CENTER;
         initial_information_grid.add(email_address_label);
-        initial_information_grid.add(username_entry);
+        initial_information_grid.add(email_address_entry);
 
         var welcome_screen = new Gtk.Grid ();
         welcome_screen.halign = Gtk.Align.CENTER;
@@ -87,7 +87,7 @@ public class Envoyer.Widgets.WelcomeDialog : Gtk.Dialog {
         submit_button.clicked.connect (() => {
             stack.set_visible_child_name ("webview");
 
-            webview.load_uri ("https://accounts.google.com/o/oauth2/v2/auth?scope=https://mail.google.com/%20email&login_hint=" + username_entry.text + "&response_type=code&redirect_uri=com.googleusercontent.apps.577724563203-55upnrbic0a2ft8qr809for8ns74jmqj:&client_id=577724563203-55upnrbic0a2ft8qr809for8ns74jmqj.apps.googleusercontent.com");
+            webview.load_uri ("https://accounts.google.com/o/oauth2/v2/auth?scope=https://mail.google.com/%20email&login_hint=" + email_address_entry.text + "&response_type=code&redirect_uri=com.googleusercontent.apps.577724563203-55upnrbic0a2ft8qr809for8ns74jmqj:&client_id=577724563203-55upnrbic0a2ft8qr809for8ns74jmqj.apps.googleusercontent.com");
         });
 
         ulong signal_connector = 0;
@@ -116,7 +116,7 @@ public class Envoyer.Widgets.WelcomeDialog : Gtk.Dialog {
                 var expires_at = (new DateTime.now_utc ()).add_seconds (response_object.get_int_member ("expires_in"));
 
                 // @TODO find a way to not access database directly
-                database.add_identity (username_entry.text, access_token, refresh_token, expires_at, "hardcoded full name", "hardcoded account name");
+                database.add_identity (email_address_entry.text, access_token, refresh_token, expires_at, "hardcoded full name", "hardcoded account name");
                 authenticated ();
 
                 stack.set_visible_child_name ("please-wait");
