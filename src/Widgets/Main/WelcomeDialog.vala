@@ -45,14 +45,37 @@ public class Envoyer.Widgets.WelcomeDialog : Gtk.Dialog {
         var email_address_entry = new Gtk.Entry ();
         email_address_entry.placeholder_text = "you@yourdomain.com";
 
+        var account_name_label = new Gtk.Label ("Account name");
+        account_name_label.margin_right = 30;
+
+        var account_name_entry = new Gtk.Entry ();
+        account_name_entry.placeholder_text = "Personal";
+
+        var full_name_label = new Gtk.Label ("Full name");
+
+        var full_name_info_image = new Gtk.Image ();
+        full_name_info_image.gicon = new ThemedIcon ("dialog-information-symbolic");
+        full_name_info_image.pixel_size = 16;
+        full_name_info_image.margin_right = 30;
+        full_name_info_image.tooltip_text = "Publicly visible. Used in the sender field of your e-mails.";
+
+        var full_name_entry = new Gtk.Entry ();
+        full_name_entry.placeholder_text = "John Doe";
+
         var submit_button = new Gtk.Button.with_label ("Authorize");
         submit_button.halign = Gtk.Align.END;
         submit_button.margin_top = 40;
 
         var initial_information_grid = new Gtk.Grid ();
         initial_information_grid.halign = Gtk.Align.CENTER;
-        initial_information_grid.add(email_address_label);
-        initial_information_grid.add(email_address_entry);
+        initial_information_grid.row_spacing = 5;
+        initial_information_grid.attach (email_address_label, 0, 0, 2);
+        initial_information_grid.attach (email_address_entry, 2, 0);
+        initial_information_grid.attach (account_name_label, 0, 1, 2);
+        initial_information_grid.attach (account_name_entry, 2, 1);
+        initial_information_grid.attach (full_name_label, 0, 2);
+        initial_information_grid.attach (full_name_info_image, 1, 2);
+        initial_information_grid.attach (full_name_entry, 2, 2);
 
         var welcome_screen = new Gtk.Grid ();
         welcome_screen.halign = Gtk.Align.CENTER;
@@ -116,7 +139,7 @@ public class Envoyer.Widgets.WelcomeDialog : Gtk.Dialog {
                 var expires_at = (new DateTime.now_utc ()).add_seconds (response_object.get_int_member ("expires_in"));
 
                 // @TODO find a way to not access database directly
-                database.add_identity (email_address_entry.text, access_token, refresh_token, expires_at, "hardcoded full name", "hardcoded account name");
+                database.add_identity (email_address_entry.text, access_token, refresh_token, expires_at, full_name_entry.text, account_name_entry.text);
                 authenticated ();
 
                 stack.set_visible_child_name ("please-wait");
