@@ -16,8 +16,8 @@ the application, GearyController, has over 2800 lines. There is severe overlap
 of concerns and plenty of undocumented assumptions, which make further
 development cumbersome. Envoyer intends to adhere to principled development.
 
-* Evolution: Envoyer was initially built to use Evolution's backend (Evolution Data
-Server/Camel), but it was quickly found to be clunky and limiting. GObject
+* Evolution: Envoyer was initially built to use Evolution's backend (Evolution
+Data Server/Camel), but it was quickly found to be clunky and limiting. GObject
 in C (Evolution) demands a lot of boilerplate code and it makes the overall
 development experience really difficult. Envoyer uses Vala, which makes it
 much more easy to write GObject code.  Furthermore, Envoyer aims to have a
@@ -30,10 +30,20 @@ application was built are no longer as important today.
 communication. Built on the Electron framework, it cannot make use of native
 toolkit goodies like theming, icons or better performance.
 
-### How to setup
+### How to build
 
-The repository includes Mailcore 2 and Basalt libraries as a git submodule. Therefore, you will need to pass
-`--recursive` to git when you clone Envoyer.
+On elementary OS, the following packages need to be installed:
+
+```
+sudo apt install cmake build-essential valac libgtk-3-dev libsoup2.4-dev libgranite-dev libgda-5.0-dev libjson-glib-dev libwebkit2gtk-4.0-dev
+```
+
+On top of this, you need to install the package dependencies for the Mailcore 2
+libraries which can be found
+[here](https://github.com/MailCore/mailcore2/blob/master/build-linux/README.md).
+
+The repository includes Mailcore 2 and Basalt libraries as a git submodule.
+Therefore, you will need to pass `--recursive` to git when you clone Envoyer.
 
 To build Envoyer, run the following commands:
 ```
@@ -43,13 +53,20 @@ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 make
 ```
 
-By default, the Envoyer binary will instruct WebKitGTK+ to look for web extension libraries under `${CMAKE_INSTALL_PREFIX}/lib/com.github.matzipan.envoyer/`. If Envoyer is not installed on your system or you want to test changes to the web extensions, you can use the `WEBKIT_EXTENSION_DIRECTORY` environment variable.
+By default, the Envoyer binary will instruct WebKitGTK+ to look for web
+extension libraries under
+`${CMAKE_INSTALL_PREFIX}/lib/com.github.matzipan.envoyer/`. If Envoyer is not
+installed on your system or you want to test changes to the web extensions, you
+can use the `WEBKIT_EXTENSION_DIRECTORY` environment variable.
 
 ### Folder structure
 
-* `src/FutureGranite` - modules that are intended to be merged into `libgranite` when finished
-* `src/WebExtensions` - implementation of `webkit2gtk-web-extension-4.0` as exemplified [here](https://github.com/rschroll/webkitdom/tree/extension)
-* `src/Widgets` - view folder, almost always backed by some models. Never accesses backend libraries, such as `mailcore`, directly.
+* `src/FutureGranite` - modules that are intended to be merged into `libgranite`
+when finished
+* `src/WebExtensions` - implementation of `webkit2gtk-web-extension-4.0` as
+exemplified [here](https://github.com/rschroll/webkitdom/tree/extension).
+* `src/Widgets` - view folder, almost always backed by some models. Never
+accesses backend libraries, such as `mailcore`, directly.
 
 ### License
 
