@@ -1,10 +1,20 @@
 /*
- * Copyright 2016 Andrei-Costin Zisu
+ * Copyright (C) 2019  Andrei-Costin Zisu
  *
- * This software is licensed under the GNU Lesser General Public License
- * (version 2.1 or later).  See the COPYING file in this distribution.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 using Envoyer.Globals.Application;
 using Envoyer.Globals.Main;
 
@@ -15,7 +25,7 @@ public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
         WebKit.WebContext.get_default ().set_process_model (WebKit.ProcessModel.MULTIPLE_SECONDARY_PROCESSES);
         WebKit.WebContext.get_default ().initialize_web_extensions.connect (on_initialize_web_extensions);
     }
-    
+
     private static void on_initialize_web_extensions (WebKit.WebContext context) {
       context.set_web_extensions_directory (Environment.get_variable ("WEBKIT_WEB_EXTENSION_DIRECTORY") ?? Constants.WEBKIT_WEB_EXTENSION_DIRECTORY);
       context.set_web_extensions_initialization_user_data (new GLib.Variant.uint32 (web_view_id));
@@ -26,7 +36,7 @@ public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
 
     public signal void link_mouse_in (string uri);
     public signal void link_mouse_out ();
-    
+
     private string _document_font;
     public string document_font {
         get {
@@ -41,7 +51,7 @@ public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
             set_settings (temp_settings);
         }
     }
-    
+
     private string _monospace_font;
     public string monospace_font {
         get {
@@ -61,7 +71,7 @@ public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
         // storing the corresponding web view id for this instance and generating a new one
         instance_web_view_id = web_view_id;
         web_view_id++;
-        
+
         setup_dbus ();
         build_ui ();
         connect_signals ();
@@ -76,7 +86,7 @@ public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
             null
         );
     }
-    
+
     private void on_extension_appeared(GLib.DBusConnection connection, string name, string owner) {
         try {
             bus = connection.get_proxy_sync(
@@ -85,21 +95,21 @@ public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
                 GLib.DBusProxyFlags.NONE,
                 null
             );
-            
+
             size_update_async ();
         } catch (IOError error) {
             warning("There was a problem connecting to web extension: %s", error.message);
             throw error;
         }
     }
-    
+
     public async void size_update_async () {
         if (bus == null) {
             return;
         }
-        
+
         var height = bus.get_height ();
-        
+
         debug ("Setting webview height to %u", height);
         set_size_request (-1, (int) height);
     }
@@ -108,7 +118,7 @@ public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
         hexpand = true;
         can_focus = false;
     }
-    
+
     public void connect_signals () {
         mouse_target_changed.connect (on_mouse_target_changed);
         size_allocate.connect (size_update_async);
@@ -120,45 +130,45 @@ public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
 
     public bool setup_context_menu (WebKit.ContextMenu context_menu, Gdk.Event event, WebKit.HitTestResult hit_test_result) {
         context_menu.remove_all ();
-        
+
         if ((hit_test_result.context & WebKit.HitTestResultContext.LINK) != 0) {
             if (hit_test_result.link_uri.has_prefix ("mailto:")) {
                 var action = new Gtk.Action ("copy email", "Copy _Email Address", null, null);
-                
+
                 action.activate.connect (() => {
                     var clipboard = Gtk.Clipboard.get (Gdk.SELECTION_CLIPBOARD);
                     clipboard.set_text (hit_test_result.link_uri.substring ("mailto:".length, -1), -1);
                     clipboard.store ();
                 });
-                
+
                 context_menu.append (new WebKit.ContextMenuItem (action));
             } else {
                 context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.COPY_LINK_TO_CLIPBOARD));
             }
         }
-        
+
         if ((hit_test_result.context & WebKit.HitTestResultContext.DOCUMENT) != 0) {
             context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.SELECT_ALL));
         }
-        
+
         if ((hit_test_result.context & WebKit.HitTestResultContext.IMAGE) != 0) {
             context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.DOWNLOAD_IMAGE_TO_DISK));
             context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.COPY_IMAGE_TO_CLIPBOARD));
         }
-        
+
         if ((hit_test_result.context & WebKit.HitTestResultContext.SELECTION) != 0) {
             context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.COPY));
-            
+
             if ((hit_test_result.context & WebKit.HitTestResultContext.EDITABLE) != 0) {
                 context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.CUT));
             }
         }
-        
+
         if ((hit_test_result.context & WebKit.HitTestResultContext.EDITABLE) != 0) {
             context_menu.append (new WebKit.ContextMenuItem.from_stock_action (WebKit.ContextMenuAction.PASTE));
         }
-       
-        return false;        
+
+        return false;
     }
 
     public override void get_preferred_width (out int minimum_width, out int natural_width) {
@@ -166,7 +176,7 @@ public class Envoyer.Widgets.Main.MessageWebView : WebKit.WebView {
         minimum_width = 400;
         natural_width = int.max (natural_width, minimum_width);
     }
-    
+
     public void load_html (string content, string? base_uri) {
         //@TODO improve the formatting, check pantheon-mail
         //@TODO add inline images

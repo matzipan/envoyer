@@ -1,10 +1,20 @@
 /*
- * Copyright 2016 Andrei-Costin Zisu
+ * Copyright (C) 2019  Andrei-Costin Zisu
  *
- * This software is licensed under the GNU Lesser General Public License
- * (version 2.1 or later).  See the COPYING file in this distribution.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 using Envoyer.Models;
 
 public class Envoyer.Widgets.Main.ConversationViewer : Gtk.Grid {
@@ -22,7 +32,7 @@ public class Envoyer.Widgets.Main.ConversationViewer : Gtk.Grid {
         //@TODO add find dialog
 
         listbox = new Gtk.ListBox ();
-        
+
         scrollbox = new Gtk.ScrolledWindow (null, null);
         scrollbox.expand = true;
         scrollbox.add (listbox);
@@ -37,7 +47,7 @@ public class Envoyer.Widgets.Main.ConversationViewer : Gtk.Grid {
         hexpand = true;
         add (view_overlay);
     }
-    
+
     private void connect_signals () {
         realize.connect(hide_overlay);
     }
@@ -55,23 +65,23 @@ public class Envoyer.Widgets.Main.ConversationViewer : Gtk.Grid {
 
         listbox.show_all ();
     }
-    
+
     private bool handle_scroll_event (Gdk.EventScroll event) {
         /*
          * I admit that this solution feels hacky, but I could not find any other working solution
-         * for propagating the scroll event upwards. 
+         * for propagating the scroll event upwards.
          */
         scrollbox.scroll_event (event);
-        
+
         return Gdk.EVENT_PROPAGATE;
     }
-    
+
     public void load_conversation_thread (ConversationThread conversation_thread) {
         this.conversation_thread = conversation_thread;
 
         load_data ();
     }
-    
+
     public void show_overlay_with_text (string text) {
         conversation_overlay.status = text;
         conversation_overlay.show_all();

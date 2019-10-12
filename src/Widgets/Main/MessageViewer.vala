@@ -1,8 +1,18 @@
 /*
- * Copyright 2016 Andrei-Costin Zisu
+ * Copyright (C) 2019  Andrei-Costin Zisu
  *
- * This software is licensed under the GNU Lesser General Public License
- * (version 2.1 or later).  See the COPYING file in this distribution.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 using Envoyer.Models;
@@ -48,7 +58,7 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
 
         avatar = new Envoyer.Widgets.Gravatar.with_default_icon (48);
         avatar.valign = Gtk.Align.START;
-        
+
         subject_label = build_label ();
         subject_label.get_style_context ().add_class ("subject");
         subject_label.xalign = 0;
@@ -95,9 +105,9 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
         message_header.add (header_summary_fields);
         message_header.add (attachment_image);
         message_header.add (datetime_received_label);
-        
+
         message_webview = new MessageWebView ();
-        
+
         grid = new Gtk.Grid ();
         grid.orientation = Gtk.Orientation.VERTICAL;
         grid.column_spacing = 3;
@@ -122,24 +132,24 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
         addresses_grid.add(addresses_label);
         addresses_grid.add(addresses_list);
     }
-    
+
     private void connect_signals () {
         message_webview.scroll_event.connect (propagate_scroll_event);
         message_webview.link_mouse_in.connect ((uri) => { link_mouse_in (uri); });
         message_webview.link_mouse_out.connect (() => { link_mouse_out (); });
     }
-    
+
     private bool propagate_scroll_event (Gdk.EventScroll event) {
         /*
-         * This propagates the event from the WebView upwards toward ConversationViewer. I admit 
-         * that this solution feels hacky, but I could not find any other working solution for 
+         * This propagates the event from the WebView upwards toward ConversationViewer. I admit
+         * that this solution feels hacky, but I could not find any other working solution for
          * propagating the scroll event upwards.
          */
         scroll_event (event);
-        
+
         return Gdk.EVENT_PROPAGATE;
     }
-    
+
     private Gtk.Label build_label () {
         var address_label = new Gtk.Label (null);
         address_label.ellipsize = Pango.EllipsizeMode.END;
@@ -180,43 +190,43 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
         } else {
             bcc_addresses_list.load_data(message_item.bcc);
         }
-        
+
         if(!message_item.has_attachment) {
             attachment_image.destroy ();
         }
-        
+
         avatar.set_address (message_item.from);
         avatar.fetch_async ();
-        
+
         setup_timestamp ();
     }
-    
+
     private void setup_timestamp () {
         update_timestamp (); //@TODO mabe write an autoupdating timestamp class
-        
-        var timeout_reference = GLib.Timeout.add_seconds(10, () => { 
+
+        var timeout_reference = GLib.Timeout.add_seconds(10, () => {
             update_timestamp();
-            
-            return true; 
+
+            return true;
         });
-        
-        unrealize.connect(() => { 
+
+        unrealize.connect(() => {
             GLib.Source.remove (timeout_reference);
         });
     }
-    
+
     private void update_timestamp () {
         var full_format = "%s %s".printf(
                                     Granite.DateTime.get_default_date_format(false, true, true),
                                     Granite.DateTime.get_default_time_format(false, true)
                                     );
-                                    
+
         datetime_received_label.tooltip_text = message_item.datetime_received.format(full_format);
-    
+
         var humanDateTime = new Envoyer.FutureGranite.HumanDateTime(message_item.datetime_received);
         datetime_received_label.set_label (humanDateTime.compared_to_now ());
     }
-    
+
     private string build_addresses_string (Gee.Collection<Envoyer.Models.Address> addresses) {
             // @TODO replace indentity email address with "me"
             var addresses_string_builder = new GLib.StringBuilder ();
@@ -231,7 +241,7 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
                     addresses_string_builder.append (address.display_name);
                 }
             }
-            
+
             return addresses_string_builder.str;
     }
 }

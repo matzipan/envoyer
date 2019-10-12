@@ -53,7 +53,7 @@ By default, the Envoyer binary will instruct WebKitGTK+ to look for web extensio
 
 ### License
 
-Copyright 2011-2016 Andrei-Costin Zisu.
+Copyright 2011-2019 Andrei-Costin Zisu.
 
-This software is licensed under the GNU Lesser General Public License (version
-    2.1 or later).  See the COPYING file in this distribution.
+This software is licensed under the GNU General Public License (version 3).
+See the LICENSE file in this distribution.
