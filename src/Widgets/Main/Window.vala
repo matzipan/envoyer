@@ -62,9 +62,9 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
     """;
 
     public Window (Envoyer.Controllers.Application app) {
-		Object (application: app);
+        Object (application: app);
 
-	    build_ui ();
+        build_ui ();
         connect_signals ();
         load_settings ();
     }
@@ -88,7 +88,7 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
 
         three_pane = new Envoyer.FutureGranite.ThreePane.with_children (sidebar, folder_conversations_list, conversation_viewer);
 
-		move (settings.position_x, settings.position_y);
+		    move (settings.position_x, settings.position_y);
         add (three_pane);
     }
 
@@ -133,7 +133,7 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
     }
 
     public void show_app () {
-		show ();
+		  show ();
     	present ();
 
     	folder_conversations_list.grab_focus ();
