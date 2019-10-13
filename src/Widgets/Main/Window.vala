@@ -59,6 +59,11 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
         dialog.welcome-dialog headerbar {
             background: #fff;
         }
+
+        /* This should probably be in basalt */
+        row:selected button.disclosure-button {
+            background: none;
+        }
     """;
 
     public Window (Envoyer.Controllers.Application app) {
