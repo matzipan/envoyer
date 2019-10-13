@@ -71,7 +71,6 @@ public class Envoyer.Controllers.Application : Granite.Application {
     }
 
     private async void load_session () {
-        //@TODO Add support for multiple identities
         // @TODO find a way to not access database directly
         identities = database.get_identities ();
 
@@ -85,7 +84,6 @@ public class Envoyer.Controllers.Application : Granite.Application {
         }
 
         if (is_initialization) {
-            //@TODO make work with more than one identity
             identities[0].initialized.connect (() => { session_up (); });
         } else {
             session_up ();
