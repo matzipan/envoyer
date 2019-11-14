@@ -132,18 +132,26 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
     }
 
     private string build_addresses_string (Gee.Collection<Envoyer.Models.Address> addresses) {
-            // @TODO replace indentity email address with "me"
             var addresses_string_builder = new GLib.StringBuilder ();
             var first = true;
 
             //@TODO if there is more than one address, just use the first word
             foreach (var address in addresses) {
+                var address_display_name = address.display_name;
+                
+                foreach (var identity in Envoyer.Globals.Application.identities) {
+                    if(identity.address.email == address.email) {
+                      address_display_name = "me";
+                      break;
+                    }
+                }
+                                
                 if (first) {
                     first = false;
-                    addresses_string_builder.append (address.display_name);
+                    addresses_string_builder.append (address_display_name);
                 } else {
                     addresses_string_builder.append (", ");
-                    addresses_string_builder.append (address.display_name);
+                    addresses_string_builder.append (address_display_name);
                 }
             }
 

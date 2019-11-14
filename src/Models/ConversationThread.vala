@@ -35,8 +35,6 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
 
             var unique_addresses = new Gee.HashMap <string, Address>();
 
-            //@TODO replace current acount with "Me"
-
             foreach (var message_instance in _messages_list) {
                 unique_addresses[message_instance.from.to_string ()] = message_instance.from;
             }

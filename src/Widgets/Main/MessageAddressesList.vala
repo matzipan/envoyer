@@ -42,7 +42,18 @@ public class Envoyer.Widgets.Main.MessageAddressesList : Egg.WrapBox {
             label.tooltip_text = address.to_string();
 
             var addresses_string_builder = new GLib.StringBuilder ();
-            addresses_string_builder.append (address.display_name);
+            
+            var address_display_name = address.display_name;
+            
+            foreach (var identity in Envoyer.Globals.Application.identities) {
+                if(identity.address.email == address.email) {
+                  address_display_name = "me";
+                  break;
+                }
+            }
+            
+            addresses_string_builder.append (address_display_name);
+            
             if (i != (addresses_length - 1)) {
                 addresses_string_builder.append (",");
             }
