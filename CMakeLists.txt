@@ -15,6 +15,7 @@ set (PROJECT_FQDN "com.github.matzipan.envoyer")
 set (WEBKIT_WEB_EXTENSION_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_FQDN}/")
 set (DBUS_OBJECTS "/com/github/matzipan/envoyer")
 set (PROJECT_DESCRIPTION "Mail for the Linux desktop")
+set (DEBUG_LOGGING 0)
 
 add_definitions (-DGETTEXT_PACKAGE=\"${GETTEXT_PACKAGE}\")
 

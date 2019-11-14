@@ -20,8 +20,36 @@
 #include "envoyer.h"
 #include "imap.h"
 
+#if CONSTANTS_DEBUG_LOGGING
+#import <libetpan/libetpan.h>
+
+void mailcore_logger(int direction, const char * incoming_string, size_t size) {
+    /* Direction is 1 for sending, 0 for receiving, -1 when it does not apply */
+
+    char *local_string = (char*) malloc(size + 1);
+    strncpy(local_string, incoming_string, size);
+    local_string[size] = 0;
+    if (direction == 1) {
+        printf("%s\n", local_string);
+    } else if (direction == 0) {
+        printf("%s\n", local_string);
+    } else {
+        printf("%s\n", local_string);
+    }
+    free(local_string);
+}
+
+extern int MCLogEnabled;
+extern int mailstream_debug;
+#endif
+
 
 extern "C" void* mail_core_interface_imap_connect (gchar* username, gchar* access_token) {
+    #if CONSTANTS_DEBUG_LOGGING
+    MCLogEnabled = 1;
+    mailstream_debug = 1;
+    mailstream_logger = mailcore_logger;
+    #endif
 
     auto session = new mailcore::IMAPAsyncSession ();
 

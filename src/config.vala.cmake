@@ -11,4 +11,5 @@ namespace Constants {
    public const string PROJECT_DESCRIPTION = "@PROJECT_DESCRIPTION@";
    public const string WEBKIT_WEB_EXTENSION_DIRECTORY = "@WEBKIT_WEB_EXTENSION_DIRECTORY@";
    public const string DBUS_OBJECTS = "@DBUS_OBJECTS@";
+   public const bool DEBUG_LOGGING = @DEBUG_LOGGING@ == 1;
 }
