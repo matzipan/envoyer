@@ -49,6 +49,7 @@ public class Envoyer.Widgets.Main.FolderConversationsList : Gtk.Grid {
         set_size_request (200, -1);
 
         listbox = new Gtk.ListBox ();
+        listbox.activate_on_single_click = false;
         listbox.set_selection_mode (Gtk.SelectionMode.MULTIPLE);
 
         var scroll_box = new Gtk.ScrolledWindow (null, null);
