@@ -47,7 +47,7 @@ public class Envoyer.Widgets.Main.MessageAddressesList : Egg.WrapBox {
             
             foreach (var identity in Envoyer.Globals.Application.identities) {
                 if(identity.address.email == address.email) {
-                  address_display_name = "me";
+                  address_display_name = _("me");
                   break;
                 }
             }
