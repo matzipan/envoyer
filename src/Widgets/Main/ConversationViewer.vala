@@ -81,6 +81,10 @@ public class Envoyer.Widgets.Main.ConversationViewer : Gtk.Grid {
 
         load_data ();
     }
+    
+    public void unload_conversation_thread () {
+        clear ();
+    }
 
     public void show_overlay_with_text (string text) {
         conversation_overlay.status = text;
