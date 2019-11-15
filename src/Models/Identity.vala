@@ -231,7 +231,8 @@ public class Envoyer.Models.Identity : GLib.Object {
 
         foreach (var item in messages) {
             item.folder = folder;
-            item.content = yield get_html_for_message(item);
+            item.html_content = yield get_html_for_message (item);
+            item.plain_text_content = yield get_plain_text_for_message (item);
         }
 
         database.set_messages_for_folder (messages, folder);
@@ -253,6 +254,10 @@ public class Envoyer.Models.Identity : GLib.Object {
 
     public async string get_html_for_message (Message message) {
         return yield MailCoreInterface.Imap.get_html_for_message (imap_session, message.folder.name, message);
+    }
+    
+    public async string get_plain_text_for_message (Message message) {
+        return yield MailCoreInterface.Imap.get_plain_text_for_message (imap_session, message.folder.name, message);
     }
 
     public void send_message (Message message) {

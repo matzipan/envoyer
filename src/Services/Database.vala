@@ -70,7 +70,8 @@ public class Envoyer.Services.Database : Object {
                                                                     "to",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "cc",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "bcc",              typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "content",          typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "html_content",         typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "plain_text_content",   typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "references",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "in_reply_to",              typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "uid",                      typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
@@ -244,7 +245,8 @@ public class Envoyer.Services.Database : Object {
                                        data_model_iter.get_value_for_field ("deleted").get_int () != 0,
                                        data_model_iter.get_value_for_field ("draft").get_int () != 0);
 
-            current_message.content = data_model_iter.get_value_for_field ("content").get_string ();
+            current_message.html_content = data_model_iter.get_value_for_field ("html_content").get_string ();
+            current_message.plain_text_content = data_model_iter.get_value_for_field ("plain_text_content").get_string ();
 
             list.add (current_message);
         }
@@ -313,7 +315,8 @@ public class Envoyer.Services.Database : Object {
             builder.add_field_value_as_gvalue ("to", join_addresses (current_message.to));
             builder.add_field_value_as_gvalue ("cc", join_addresses (current_message.cc));
             builder.add_field_value_as_gvalue ("bcc", join_addresses (current_message.bcc));
-            builder.add_field_value_as_gvalue ("content", current_message.content);
+            builder.add_field_value_as_gvalue ("html_content", current_message.html_content);
+            builder.add_field_value_as_gvalue ("plain_text_content", current_message.plain_text_content);
             builder.add_field_value_as_gvalue ("references", join_strings (current_message.references));
             builder.add_field_value_as_gvalue ("in_reply_to", join_strings (current_message.in_reply_to));
             builder.add_field_value_as_gvalue ("seen", (int) current_message.seen);

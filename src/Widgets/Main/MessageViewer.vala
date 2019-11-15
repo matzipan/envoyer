@@ -159,7 +159,7 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
     }
 
     private void load_data () {
-        message_webview.load_html (message_item.content, null);
+        message_webview.load_html (message_item.html_content, null);
 
         if (message_item.subject == "") {
             subject_label.destroy ();

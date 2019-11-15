@@ -32,8 +32,9 @@ GeeLinkedList* mail_core_interface_imap_fetch_folders_finish (GTask *task);
 void mail_core_interface_imap_fetch_messages (void* session, gchar* folder_path, guint64 start_uid_value, guint64 end_uid_value, gboolean flags_only, GAsyncReadyCallback callback, void* user_data);
 GeeLinkedList* mail_core_interface_imap_fetch_messages_finish (GTask *task);
 void mail_core_interface_imap_get_html_for_message (void* session, gchar* folder_path, void* envoyer_message, GAsyncReadyCallback callback, void* user_data);
-void mail_core_interface_imap_get_html_for_message (void* session, gchar* folder_path, void* envoyer_message, GAsyncReadyCallback callback, void* user_data);
 const gchar* mail_core_interface_imap_get_html_for_message_finish (GTask *task);
+void mail_core_interface_imap_get_plain_text_for_message (void* session, gchar* folder_path, void* envoyer_message, GAsyncReadyCallback callback, void* user_data);
+const gchar* mail_core_interface_imap_get_plain_text_for_message_finish (GTask *task);
 void mail_core_interface_imap_idle_listener (void* session, gchar* folder_path, guint64 last_known_id, GAsyncReadyCallback callback, void* user_data);
 void mail_core_interface_imap_idle_listener_finish (GTask *task);
 #ifdef __cplusplus
