@@ -79,9 +79,26 @@
              //@TODO also take into account Gmail thread ids if present
              var message_container = find_or_create_container (id_table, current_message.id);
              message_container.message = current_message;
+             
+             var references_set = new Gee.HashSet <string> ();
+             
+             foreach (var reference in current_message.references) {
+                 references_set.add (reference);
+             }
+             
+             // If both References and In-Reply-To exist, take the first thing in the In-Reply-To header
+             // that looks like a Message-ID, and append it to the References header.
+             // If there are multiple things in In-Reply-To that look like Message-IDs,
+             // only use the first one of them: odds are that the later ones are
+             // actually email addresses, not IDs.
+             if(current_message.in_reply_to.size >= 1) {
+                 var in_reply_to_reference = current_message.in_reply_to[0];
+            
+                 references_set.add (in_reply_to_reference);
+             }
 
              Envoyer.Util.ThreadingContainer previous_references_container = null;
-             foreach (var reference in current_message.references) {
+             foreach (var reference in references_set) {
                  var container = find_or_create_container (id_table, reference);
 
                  if(previous_references_container != null) {
@@ -89,21 +106,6 @@
                  }
 
                  previous_references_container = container;
-             }
-
-             // If both References and In-Reply-To exist, take the first thing in the In-Reply-To header
-             // that looks like a Message-ID, and append it to the References header.
-             // If there are multiple things in In-Reply-To that look like Message-IDs,
-             // only use the first one of them: odds are that the later ones are
-             // actually email addresses, not IDs.
-             if(current_message.in_reply_to.size >= 1) {
-                 var reference = current_message.in_reply_to[0];
-
-                 var container = find_or_create_container (id_table, reference);
-
-                 if(previous_references_container != null) {
-                    add_container_as_child(previous_references_container, container);
-                 }
              }
 
              if(previous_references_container != null) {
