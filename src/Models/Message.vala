@@ -42,7 +42,7 @@ public class Envoyer.Models.Message : GLib.Object {
     //@TODO add display_subject which removes Re:
     public string subject { get; construct set; }
     public Gee.List <string> references { get; set; }
-    public Gee.List <string> in_reply_to { get; construct set; }
+    public Gee.List <string> in_reply_to { get; set; }
     public string id { get; construct set; }
 
     public string html_content { get; set; }
@@ -109,6 +109,27 @@ public class Envoyer.Models.Message : GLib.Object {
             text: text
         );
     }
+    
+    public Message.for_replying (
+            Gee.Collection <Address> to,
+            Gee.Collection <Address> cc,
+            Gee.Collection <Address> bcc,
+            string subject,
+            Gee.List <string> references,
+            Gee.List <string> in_reply_to,
+            string text
+        ) {
+          
+        Object (
+            to: to,
+            cc: cc,
+            bcc: bcc,
+            subject: subject,
+            references: references,
+            in_reply_to: in_reply_to,
+            text: text
+        );
+    } 
 
     public Message.for_flag_updating (
             void* mailcore_message,

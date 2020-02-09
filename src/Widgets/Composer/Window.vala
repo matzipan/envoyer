@@ -100,16 +100,34 @@ public class Envoyer.Widgets.Composer.Window : Gtk.Window {
     }
 
     private void send_clicked_handler () {
-        var message = new Message.for_sending (
-            addresses_from_string (to_entry.text),
-            addresses_from_string (""), //@TODO
-            addresses_from_string (""), //@TODO
-            subject_entry.text,
-            text_view.buffer.text
-        );
+        Message message_to_send;
+        
+        if (is_reply) {
+            var in_reply_to_list = new Gee.LinkedList <string> ();
+            in_reply_to_list.add(thread_to_reply_to.last_received_message.id);
+            
+            message_to_send = new Message.for_replying (
+                addresses_from_string (to_entry.text),
+                addresses_from_string (""), //@TODO
+                addresses_from_string (""), //@TODO
+                _("Re: ").concat (thread_to_reply_to.subject),
+                thread_to_reply_to.message_ids_list,
+                in_reply_to_list,
+                text_view.buffer.text
+            );
+        } else {            
+            message_to_send = new Message.for_sending (
+                addresses_from_string (to_entry.text),
+                addresses_from_string (""), //@TODO
+                addresses_from_string (""), //@TODO
+                subject_entry.text,
+                text_view.buffer.text
+            );
+        }
 
         //@TODO Add support for multiple identities
-        identities[0].send_message (message);
+        //@TODO this should be put in a database queue and sent when internet is available
+        identities[0].send_message (message_to_send);
     }
 
     private Gee.Collection addresses_from_string (string addresses_string) {
@@ -121,6 +139,37 @@ public class Envoyer.Widgets.Composer.Window : Gtk.Window {
         }
 
         return addresses;
+    }
+    
+    private string build_string_from_addresses (Gee.Collection<Envoyer.Models.Address> addresses) {
+            var addresses_string_builder = new GLib.StringBuilder ();
+            var first = true;
+
+            foreach (var address in addresses) {
+                if (first) {
+                    first = false;
+                    addresses_string_builder.append (address.to_string ());
+                } else {
+                    addresses_string_builder.append (", ");
+                    addresses_string_builder.append (address.to_string ());
+                }
+            }
+
+            return addresses_string_builder.str;
+    }
+    
+    private string build_quoted_string (string message_to_quote) {
+      var quoted_string_builder = new GLib.StringBuilder ();
+
+      var lines_split = message_to_quote.split ("\n");
+      
+      quoted_string_builder.append("\n\n");
+      
+      foreach (var line in lines_split) {
+          quoted_string_builder.append ("> ".concat(line, "\n"));
+      }
+      
+      return quoted_string_builder.str;
     }
 
 
