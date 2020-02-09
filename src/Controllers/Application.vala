@@ -32,6 +32,7 @@ public class Envoyer.Controllers.Application : Granite.Application {
     public signal void session_up ();
     public signal void load_folder (IFolder folder);
     public bool is_initialization { get; construct set; }
+    public ConversationThread current_conversation_thread;
 
     // @TODO this is a temporary setup to get a simple MVP. This should be streamlined in a different way
     public signal void folder_updated (string folder_name);
@@ -93,5 +94,20 @@ public class Envoyer.Controllers.Application : Granite.Application {
     public void open_composer () {
         var composer_window = new Envoyer.Widgets.Composer.Window ();
         composer_window.show_all ();
+    }
+    
+    public void open_reply_composer () {
+        var composer_window = new Envoyer.Widgets.Composer.Window.for_conversation_reply (current_conversation_thread);
+        composer_window.show_all ();
+    }
+    
+    public void load_conversation_thread (ConversationThread conversation_thread) {
+        current_conversation_thread = conversation_thread;
+        conversation_viewer.load_conversation_thread (conversation_thread);
+    }
+    
+    public void unload_current_conversation_thread () {
+        current_conversation_thread = null;
+        conversation_viewer.unload_current_conversation_thread ();
     }
 }

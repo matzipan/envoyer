@@ -22,7 +22,25 @@ public class Envoyer.Widgets.Composer.Window : Gtk.Window {
     private Gtk.Entry to_entry;
     private Gtk.Entry subject_entry;
     private Gtk.TextView text_view;
+    private Gtk.Grid grid;
     private Headerbar headerbar;
+    private bool is_reply = false;
+    private ConversationThread thread_to_reply_to;
+    
+    public Window.for_conversation_reply (ConversationThread thread) {
+        this ();
+        
+        is_reply = true;
+        thread_to_reply_to = thread;
+        
+        build_ui_for_conversation_reply ();
+    }
+    
+    public Window.for_new_message () {
+        this ();
+        
+        build_ui_for_new_message ();
+    }
 
     public Window () {
         build_ui ();
@@ -31,9 +49,9 @@ public class Envoyer.Widgets.Composer.Window : Gtk.Window {
     }
 
     private void build_ui () {
-        set_default_size (500, 500);
+        set_default_size (1000, 600);
 
-        var grid = new Gtk.Grid ();
+        grid = new Gtk.Grid ();
         grid.orientation = Gtk.Orientation.VERTICAL;
         add (grid);
 
@@ -45,19 +63,36 @@ public class Envoyer.Widgets.Composer.Window : Gtk.Window {
 
         //@TODO show from dropdown if multiple identities
 
+        text_view = new Gtk.TextView ();
+        text_view.hexpand = true;
+        text_view.vexpand = true;
+        text_view.wrap_mode = Gtk.WrapMode.WORD_CHAR;
+        
+        set_focus(text_view);
+        grid.attach (text_view, 0, 2, 2, 1);
+
+        headerbar = new Headerbar ();
+        set_titlebar (headerbar);
+    }
+    
+    private void build_ui_for_new_message () {
+        headerbar.set_title (_("New message"));
+
         grid.attach (new Gtk.Label (_("Subject:")), 0, 1, 1, 1);
 
         subject_entry = new Gtk.Entry ();
         grid.attach (subject_entry, 1, 1, 1, 1);
+    }
+    
+    private void build_ui_for_conversation_reply () {
+        headerbar.set_title (_("Reply"));
 
-        text_view = new Gtk.TextView ();
-        text_view.hexpand = true;
-        text_view.vexpand = true;
-        grid.attach (text_view, 0, 2, 2, 1);
-
-        headerbar = new Headerbar ();
-        headerbar.set_title (_("New message"));
-        set_titlebar (headerbar);
+        to_entry.text = build_string_from_addresses (thread_to_reply_to.display_addresses); // @TODO this should also take into account "reply-to" fields
+        text_view.buffer.set_text (build_quoted_string (thread_to_reply_to.last_received_message.plain_text_content));
+        
+        Gtk.TextIter start_iter;
+        text_view.buffer.get_start_iter (out start_iter);
+        text_view.buffer.place_cursor (start_iter);
     }
 
     private void connect_signals () {

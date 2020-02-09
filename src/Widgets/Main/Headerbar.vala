@@ -19,6 +19,7 @@ using Envoyer.Globals.Application;
 
 public class Envoyer.Widgets.Main.Headerbar : Gtk.HeaderBar {
     private Gtk.Button compose_button;
+    private Gtk.Button reply_button;
     private Gtk.MenuButton menu_button;
 
     public Headerbar () {
@@ -43,6 +44,11 @@ public class Envoyer.Widgets.Main.Headerbar : Gtk.HeaderBar {
         menu_button = new Gtk.MenuButton ();
         menu_button.set_image (new Gtk.Image.from_icon_name ("open-menu", Gtk.IconSize.LARGE_TOOLBAR));
         pack_end (menu_button);
+        
+        //@TODO hide when no conversation loaded
+        reply_button = new Gtk.Button.from_icon_name ("mail-reply-sender", Gtk.IconSize.LARGE_TOOLBAR);
+        reply_button.tooltip_text = (_("Reply to conversation")); //@TODO + Key.REPLY.to_string ());
+        pack_end (reply_button);
 
         var menu = new Gtk.Menu ();
         menu.add (new Gtk.MenuItem.with_label (_("Accounts")));
@@ -54,9 +60,14 @@ public class Envoyer.Widgets.Main.Headerbar : Gtk.HeaderBar {
     private void compose_button_clicked () {
         application.open_composer ();
     }
+    
+    private void reply_button_clicked () {
+        application.open_reply_composer ();
+    }
 
     private void connect_signals () {
         compose_button.clicked.connect (compose_button_clicked);
+        reply_button.clicked.connect (reply_button_clicked);
     }
 
     private const string CUSTOM_STYLESHEET = """

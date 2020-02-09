@@ -82,7 +82,7 @@ public class Envoyer.Widgets.Main.ConversationViewer : Gtk.Grid {
         load_data ();
     }
     
-    public void unload_conversation_thread () {
+    public void unload_current_conversation_thread () {
         clear ();
     }
 

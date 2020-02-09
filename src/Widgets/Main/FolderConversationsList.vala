@@ -71,11 +71,11 @@ public class Envoyer.Widgets.Main.FolderConversationsList : Gtk.Grid {
 
         listbox.row_selected.connect ((row) => {
             if (row == null) {
-                conversation_viewer.unload_conversation_thread ();
+                application.unload_current_conversation_thread ();
             } else {
                 assert(row is FolderConversationItem);
-
-                conversation_viewer.load_conversation_thread (((FolderConversationItem) row).thread);
+                
+                application.load_conversation_thread (((FolderConversationItem) row).thread);
             }
         });
     }
