@@ -1,10 +1,10 @@
 # Envoyer app
 
-Envoyer intends to be the mail app for the Linux desktop of 2016. It is written
+Envoyer intends to be the mail app for the Linux desktop of today. It is written
 in Vala using the MailCore 2 library as a backend and GTK+3 as a toolkit. It is
 designed to be used with elementary OS.
 
-The application is currently in full development.
+The application is currently under development.
 
 ### Review of other mail clients
 
