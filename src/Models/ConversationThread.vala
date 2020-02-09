@@ -27,6 +27,25 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
             return messages_list_copy;
         }
     }
+    
+    public Gee.List <string> message_ids_list {
+        owned get {
+            var message_ids_list = new Gee.LinkedList <string> (null);
+
+            foreach (var message_instance in _messages_list) {
+                message_ids_list.add (message_instance.id);
+            }
+            
+            return message_ids_list;
+        }
+    }
+    
+    public Message last_received_message {
+        owned get {
+            // Assuming _messages_list is sorted descendingly by time of receipt
+            return _messages_list[0];
+        }
+    }
 
     public Gee.Collection <Address> display_addresses {
         owned get {
