@@ -105,6 +105,30 @@ extern "C" void mail_core_interface_smtp_send_message (void* session, void* void
     builder->header()->setTo(get_as_array_of_mailcore_addresses (envoyer_models_message_get_to (message)));
     builder->header()->setCc(get_as_array_of_mailcore_addresses (envoyer_models_message_get_cc (message)));
     builder->header()->setBcc(get_as_array_of_mailcore_addresses (envoyer_models_message_get_bcc (message)));
+    
+    auto references_array = new mailcore::Array ();
+
+    for (uint i = 0; i < gee_abstract_collection_get_size ((GeeAbstractCollection*) envoyer_models_message_get_references (message)); i++) {
+        auto item = (char*) gee_abstract_list_get ((GeeAbstractList*) envoyer_models_message_get_references (message), i);
+
+        references_array->addObject(
+            new mailcore::String (item)
+        );
+    }
+    
+    builder->header()->setReferences(references_array);
+    
+    auto in_reply_to_array = new mailcore::Array ();
+    
+    for (uint i = 0; i < gee_abstract_collection_get_size ((GeeAbstractCollection*) envoyer_models_message_get_in_reply_to (message)); i++) {
+        auto item = (char*) gee_abstract_list_get ((GeeAbstractList*) envoyer_models_message_get_in_reply_to (message), i);
+
+        in_reply_to_array->addObject(
+            new mailcore::String (item)
+        );
+    }
+
+    builder->header()->setInReplyTo(in_reply_to_array);
 
     builder->header()->setSubject(new mailcore::String (envoyer_models_message_get_subject (message)));
     builder->setTextBody(new mailcore::String (envoyer_models_message_get_text (message)));
