@@ -115,6 +115,7 @@ add_executable (${PROJECT_FQDN}
 	MailCoreInterface/imap_fetch_folders.cpp
 	MailCoreInterface/imap_fetch_messages.cpp
 	MailCoreInterface/imap_html_rendering.cpp
+	MailCoreInterface/imap_plain_text_rendering.cpp
 	MailCoreInterface/imap_idle_listener.cpp
 	MailCoreInterface/smtp.cpp
 	MailCoreInterface/pool.cpp
