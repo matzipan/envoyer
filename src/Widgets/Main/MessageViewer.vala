@@ -22,7 +22,8 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
     private Gtk.Grid grid;
     private Gtk.Grid message_header;
     private Gtk.Grid header_summary_fields;
-    private Gtk.Button attachment_image;
+    private Gtk.Grid attachments_list;
+    private Gtk.Image attachment_image;
     private Gtk.Label datetime_received_label;
     private Gtk.Label subject_label;
     private Gtk.Label from_address_label;
@@ -89,9 +90,9 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
         datetime_received_label.margin_top = 6;
         datetime_received_label.margin_right = 10;
 
-        attachment_image = new Gtk.Button.from_icon_name ("mail-attachment-symbolic", Gtk.IconSize.MENU);
-        attachment_image.get_style_context ().remove_class ("button");
+        attachment_image = new Gtk.Image.from_icon_name ("mail-attachment-symbolic", Gtk.IconSize.MENU);
         attachment_image.margin_top = 6;
+        attachment_image.margin_right = 3;
         attachment_image.valign = Gtk.Align.START;
         attachment_image.sensitive = false;
         attachment_image.tooltip_text = _("This message contains one or more attachments");
@@ -108,10 +109,18 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
 
         message_webview = new MessageWebView ();
 
+        attachments_list = new Gtk.Grid ();
+        attachments_list.orientation = Gtk.Orientation.VERTICAL;
+        attachments_list.margin_left = 10;
+        attachments_list.margin_right = 10;
+        attachments_list.margin_top = 6;
+        attachments_list.margin_bottom = 6;
+
         grid = new Gtk.Grid ();
         grid.orientation = Gtk.Orientation.VERTICAL;
         grid.column_spacing = 3;
         grid.add (message_header);
+        grid.add (attachments_list);
         grid.add (message_webview);
 
         add (grid);
@@ -191,8 +200,20 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
             bcc_addresses_list.load_data(message_item.bcc);
         }
 
-        if(!message_item.has_attachment) {
+        if(message_item.non_inline_attachments.size == 0) {
             attachment_image.destroy ();
+        }
+
+        foreach (var attachment in message_item.non_inline_attachments) {
+            var attachment_row = new Gtk.Grid ();
+            attachment_row.orientation = Gtk.Orientation.HORIZONTAL;
+
+            var icon = ContentType.get_icon (attachment.content_type);
+
+            attachment_row.add (new Gtk.Image.from_gicon (icon, Gtk.IconSize.DND));
+            attachment_row.add (new Gtk.Label (attachment.file_name));
+
+            attachments_list.add(attachment_row);
         }
 
         avatar.set_address (message_item.from);

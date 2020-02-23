@@ -21,6 +21,7 @@ using Envoyer.Models;
 public class Envoyer.Services.Database : Object {
     private const string FOLDERS_TABLE = "folders";
     private const string MESSAGES_TABLE = "messages";
+    private const string ATTACHMENTS_TABLE = "attachments";
     private const string IDENTITIES_TABLE = "identities";
     private const string DB_FILE_PATH = "db.db";
     // Are we going through the initialization phase? (empty tables in the database)
@@ -83,6 +84,18 @@ public class Envoyer.Services.Database : Object {
                                                                     );
         is_initialization |= !create_table (operation, e); //@TODO catch issues
 
+
+        operation = Gda.ServerOperation.prepare_create_table (connection, ATTACHMENTS_TABLE, e,
+                                                                    "id",               typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
+                                                                    "message_id",       typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "file_name",        typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "mime_type",        typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "character_set",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "content_id",       typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "content_location", typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "is_inline", typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
+                                                                    );
+        is_initialization |= !create_table (operation, e); //@TODO catch issues
 
         e = null;
 
@@ -208,45 +221,76 @@ public class Envoyer.Services.Database : Object {
     }
 
     public Gee.Collection <Message> get_messages_for_folder (Folder folder) {
-        var builder = new Gda.SqlBuilder (Gda.SqlStatementType.SELECT);
+        var messages_query_builder = new Gda.SqlBuilder (Gda.SqlStatementType.SELECT);
 
-        var owning_identity_field = builder.add_id ("owning_identity");
-        var owning_identity_value = builder.add_expr_value (null, folder.identity.address.email); //@TODO is .email really good enough?
-        var owning_identity_condition = builder.add_cond (Gda.SqlOperatorType.GEQ, owning_identity_field, owning_identity_value, 0);
-        var owning_folder_field = builder.add_id ("owning_folder");
-        var owning_folder_value = builder.add_expr_value (null, folder.name);
-        var owning_folder_condition = builder.add_cond (Gda.SqlOperatorType.GEQ, owning_folder_field, owning_folder_value, 0);
-        builder.set_where (builder.add_cond (Gda.SqlOperatorType.AND, owning_identity_condition, owning_folder_condition, 0));
+        var owning_identity_field = messages_query_builder.add_id ("owning_identity");
+        var owning_identity_value = messages_query_builder.add_expr_value (null, folder.identity.address.email); //@TODO is .email really good enough?
+        var owning_identity_condition = messages_query_builder.add_cond (Gda.SqlOperatorType.EQ, owning_identity_field, owning_identity_value, 0);
+        var owning_folder_field = messages_query_builder.add_id ("owning_folder");
+        var owning_folder_value = messages_query_builder.add_expr_value (null, folder.name);
+        var owning_folder_condition = messages_query_builder.add_cond (Gda.SqlOperatorType.EQ, owning_folder_field, owning_folder_value, 0);
+        messages_query_builder.set_where (messages_query_builder.add_cond (Gda.SqlOperatorType.AND, owning_identity_condition, owning_folder_condition, 0));
 
-        builder.select_add_field ("*", null, null);
-        builder.select_add_target (MESSAGES_TABLE, null);
-        var statement = builder.get_statement ();
+        messages_query_builder.select_add_field ("*", null, null);
+        messages_query_builder.select_add_target (MESSAGES_TABLE, null);
+        var messages_query_statement = messages_query_builder.get_statement ();
 
-        var data_model = connection.statement_execute_select (statement, null);
-        var data_model_iter = data_model.create_iter ();
+        var message_query_data_model = connection.statement_execute_select (messages_query_statement, null);
+        var messages_iterator = message_query_data_model.create_iter ();
         var list = new Gee.ArrayList <Message> ();
-        data_model_iter.move_to_row (-1);
-        while (data_model_iter.move_next ()) {
-            var current_message = new Message (null,
-                                       new Address.from_string(data_model_iter.get_value_for_field ("from").get_string ()),
-                                       new Address.from_string(data_model_iter.get_value_for_field ("sender").get_string ()),
-                                       get_addresses_from_string(data_model_iter.get_value_for_field ("to").get_string ()),
-                                       get_addresses_from_string(data_model_iter.get_value_for_field ("cc").get_string ()),
-                                       get_addresses_from_string(data_model_iter.get_value_for_field ("bcc").get_string ()),
-                                       data_model_iter.get_value_for_field ("subject").get_string (),
-                                       (time_t) data_model_iter.get_value_for_field ("time_received").get_int (),
-                                       split_strings(data_model_iter.get_value_for_field ("references").get_string ()),
-                                       split_strings(data_model_iter.get_value_for_field ("in_reply_to").get_string ()),
-                                       data_model_iter.get_value_for_field ("message_id").get_string (),
-                                       data_model_iter.get_value_for_field ("uid").get_int (),
-                                       data_model_iter.get_value_for_field ("modification_sequence").get_int (),
-                                       data_model_iter.get_value_for_field ("seen").get_int () != 0,
-                                       data_model_iter.get_value_for_field ("flagged").get_int () != 0,
-                                       data_model_iter.get_value_for_field ("deleted").get_int () != 0,
-                                       data_model_iter.get_value_for_field ("draft").get_int () != 0);
+        messages_iterator.move_to_row (-1);
+        while (messages_iterator.move_next () && messages_iterator.is_valid ()) {
+            // Querying the database for attachments everytime. A future improvement could be to batch them for all the messages in the folder. 
+            var attachments_query_builder = new Gda.SqlBuilder (Gda.SqlStatementType.SELECT);
+            
+            var message_id_field = attachments_query_builder.add_id ("message_id");
+            var message_id_value = attachments_query_builder.add_expr_value (null, messages_iterator.get_value_for_field ("id").get_int ());
+            attachments_query_builder.set_where (attachments_query_builder.add_cond (Gda.SqlOperatorType.EQ, message_id_field, message_id_value, 0));
 
-            current_message.html_content = data_model_iter.get_value_for_field ("html_content").get_string ();
-            current_message.plain_text_content = data_model_iter.get_value_for_field ("plain_text_content").get_string ();
+            attachments_query_builder.select_add_field ("*", null, null);
+            attachments_query_builder.select_add_target (ATTACHMENTS_TABLE, null);
+            var attachments_query_statement = attachments_query_builder.get_statement ();
+            
+            var attachments_query_data_model = connection.statement_execute_select (attachments_query_statement, null);
+            var attachments_iterator = attachments_query_data_model.create_iter ();
+            var attachment_list = new Gee.ArrayList <Attachment> ();
+            
+            attachments_iterator.move_to_row (-1);
+            while (attachments_iterator.move_next () && attachments_iterator.is_valid ()) {
+                var current_attachment = new Attachment (
+                        attachments_iterator.get_value_for_field ("file_name").get_string (),
+                        attachments_iterator.get_value_for_field ("mime_type").get_string (),
+                        attachments_iterator.get_value_for_field ("character_set").get_string (),
+                        attachments_iterator.get_value_for_field ("content_id").get_string (),
+                        attachments_iterator.get_value_for_field ("content_location").get_string (),
+                        attachments_iterator.get_value_for_field ("is_inline").get_int () != 0
+                    );
+                    
+                attachment_list.add (current_attachment);
+            }
+            
+            var current_message = new Message (null,
+                                       new Address.from_string(messages_iterator.get_value_for_field ("from").get_string ()),
+                                       new Address.from_string(messages_iterator.get_value_for_field ("sender").get_string ()),
+                                       get_addresses_from_string(messages_iterator.get_value_for_field ("to").get_string ()),
+                                       get_addresses_from_string(messages_iterator.get_value_for_field ("cc").get_string ()),
+                                       get_addresses_from_string(messages_iterator.get_value_for_field ("bcc").get_string ()),
+                                       messages_iterator.get_value_for_field ("subject").get_string (),
+                                       (time_t) messages_iterator.get_value_for_field ("time_received").get_int (),
+                                       split_strings(messages_iterator.get_value_for_field ("references").get_string ()),
+                                       split_strings(messages_iterator.get_value_for_field ("in_reply_to").get_string ()),
+                                       messages_iterator.get_value_for_field ("message_id").get_string (),
+                                       messages_iterator.get_value_for_field ("uid").get_int (),
+                                       messages_iterator.get_value_for_field ("modification_sequence").get_int (),
+                                       messages_iterator.get_value_for_field ("seen").get_int () != 0,
+                                       messages_iterator.get_value_for_field ("flagged").get_int () != 0,
+                                       messages_iterator.get_value_for_field ("deleted").get_int () != 0,
+                                       messages_iterator.get_value_for_field ("draft").get_int () != 0,
+                                       attachment_list
+                                       );
+
+            current_message.html_content = messages_iterator.get_value_for_field ("html_content").get_string ();
+            current_message.plain_text_content = messages_iterator.get_value_for_field ("plain_text_content").get_string ();
 
             list.add (current_message);
         }
@@ -301,32 +345,52 @@ public class Envoyer.Services.Database : Object {
 
             debug ("Saving message: %u, %s, %s", current_message.uid, current_message.id, current_message.subject);
 
-            var builder = new Gda.SqlBuilder (Gda.SqlStatementType.INSERT);
-            builder.set_table (MESSAGES_TABLE);
-            builder.add_field_value_as_gvalue ("message_id", current_message.id);
-            builder.add_field_value_as_gvalue ("uid", current_message.uid);
-            builder.add_field_value_as_gvalue ("modification_sequence", current_message.modification_sequence);
-            builder.add_field_value_as_gvalue ("subject", current_message.subject);
-            builder.add_field_value_as_gvalue ("owning_folder", current_message.folder.name);
-            builder.add_field_value_as_gvalue ("owning_identity", current_message.folder.identity.address.email); //@TODO is .email really good enough?
-            builder.add_field_value_as_gvalue ("time_received", (long) current_message.time_received);
-            builder.add_field_value_as_gvalue ("from", current_message.from.to_string ());
-            builder.add_field_value_as_gvalue ("sender", current_message.sender.to_string ());
-            builder.add_field_value_as_gvalue ("to", join_addresses (current_message.to));
-            builder.add_field_value_as_gvalue ("cc", join_addresses (current_message.cc));
-            builder.add_field_value_as_gvalue ("bcc", join_addresses (current_message.bcc));
-            builder.add_field_value_as_gvalue ("html_content", current_message.html_content);
-            builder.add_field_value_as_gvalue ("plain_text_content", current_message.plain_text_content);
-            builder.add_field_value_as_gvalue ("references", join_strings (current_message.references));
-            builder.add_field_value_as_gvalue ("in_reply_to", join_strings (current_message.in_reply_to));
-            builder.add_field_value_as_gvalue ("seen", (int) current_message.seen);
-            builder.add_field_value_as_gvalue ("flagged", (int) current_message.flagged);
-            builder.add_field_value_as_gvalue ("draft", (int) current_message.draft);
-            builder.add_field_value_as_gvalue ("deleted", (int) current_message.deleted);
-            /*builder.add_field_value_as_gvalue ("has_attachment", );*/
-            var statement = builder.get_statement ();
+            var messages_query_builder = new Gda.SqlBuilder (Gda.SqlStatementType.INSERT);
+            messages_query_builder.set_table (MESSAGES_TABLE);
+            messages_query_builder.add_field_value_as_gvalue ("message_id", current_message.id);
+            messages_query_builder.add_field_value_as_gvalue ("uid", current_message.uid);
+            messages_query_builder.add_field_value_as_gvalue ("modification_sequence", current_message.modification_sequence);
+            messages_query_builder.add_field_value_as_gvalue ("subject", current_message.subject);
+            messages_query_builder.add_field_value_as_gvalue ("owning_folder", current_message.folder.name);
+            messages_query_builder.add_field_value_as_gvalue ("owning_identity", current_message.folder.identity.address.email); //@TODO is .email really good enough?
+            messages_query_builder.add_field_value_as_gvalue ("time_received", (long) current_message.time_received);
+            messages_query_builder.add_field_value_as_gvalue ("from", current_message.from.to_string ());
+            messages_query_builder.add_field_value_as_gvalue ("sender", current_message.sender.to_string ());
+            messages_query_builder.add_field_value_as_gvalue ("to", join_addresses (current_message.to));
+            messages_query_builder.add_field_value_as_gvalue ("cc", join_addresses (current_message.cc));
+            messages_query_builder.add_field_value_as_gvalue ("bcc", join_addresses (current_message.bcc));
+            messages_query_builder.add_field_value_as_gvalue ("html_content", current_message.html_content);
+            messages_query_builder.add_field_value_as_gvalue ("plain_text_content", current_message.plain_text_content);
+            messages_query_builder.add_field_value_as_gvalue ("references", join_strings (current_message.references));
+            messages_query_builder.add_field_value_as_gvalue ("in_reply_to", join_strings (current_message.in_reply_to));
+            messages_query_builder.add_field_value_as_gvalue ("seen", (int) current_message.seen);
+            messages_query_builder.add_field_value_as_gvalue ("flagged", (int) current_message.flagged);
+            messages_query_builder.add_field_value_as_gvalue ("draft", (int) current_message.draft);
+            messages_query_builder.add_field_value_as_gvalue ("deleted", (int) current_message.deleted);
+            var messages_query_statement = messages_query_builder.get_statement ();
 
-            connection.statement_execute_non_select (statement, null, null);
+
+            Gda.Set last_inserted_rows; 
+            connection.statement_execute_non_select (messages_query_statement, null, out last_inserted_rows);
+            
+            var message_id = last_inserted_rows.get_holder_value ("+0").get_int ();
+            
+            foreach (var attachment in current_message.all_attachments) {
+               var attachments_query_builder = new Gda.SqlBuilder (Gda.SqlStatementType.INSERT);
+               attachments_query_builder.set_table (ATTACHMENTS_TABLE);
+
+               attachments_query_builder.add_field_value_as_gvalue ("message_id", message_id);
+               attachments_query_builder.add_field_value_as_gvalue ("file_name", attachment.file_name);
+               attachments_query_builder.add_field_value_as_gvalue ("mime_type", attachment.mime_type);
+               attachments_query_builder.add_field_value_as_gvalue ("character_set", attachment.character_set);
+               attachments_query_builder.add_field_value_as_gvalue ("content_id", attachment.content_id);
+               attachments_query_builder.add_field_value_as_gvalue ("content_location", attachment.content_location);
+               attachments_query_builder.add_field_value_as_gvalue ("is_inline", (int) attachment.is_inline);
+
+               var attachments_statement = attachments_query_builder.get_statement ();
+
+               connection.statement_execute_non_select (attachments_statement, null, null);
+            }
         }
 
         application.folder_updated (folder.name); //@TODO there needs to be a centralized factory of objects, conversation threads so that we can nicely handle updates and signals
@@ -357,7 +421,7 @@ public class Envoyer.Services.Database : Object {
         var username_field = builder.add_id ("username");
         var username_value = builder.add_expr_value (null, identity.address.email); //@TODO is .email really good enough?
 
-        builder.set_where (builder.add_cond (Gda.SqlOperatorType.GEQ, username_field, username_value, 0));
+        builder.set_where (builder.add_cond (Gda.SqlOperatorType.EQ, username_field, username_value, 0));
 
         var statement = builder.get_statement ();
         connection.statement_execute_non_select (statement, null, null);

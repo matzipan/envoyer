@@ -88,6 +88,82 @@ public:
                 auto cc_addresses = get_as_list_of_envoyer_addresses (message->header ()->cc ());
                 auto bcc_addresses = get_as_list_of_envoyer_addresses (message->header ()->bcc ());
 
+                auto attachments = message->attachments ();
+                
+                auto attachments_list = gee_linked_list_new (ENVOYER_MODELS_TYPE_ATTACHMENT, (GBoxedCopyFunc) g_object_ref, g_object_unref, NULL, NULL, NULL);
+
+                for(uint j = 0 ; j < attachments->count (); j++) {
+                    auto file_name = ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->filename ();
+                    const char* file_name_string = "";
+                    
+                    if (file_name) {
+                        file_name_string = file_name->UTF8Characters ();
+                    }
+                    
+                    auto mime_type = ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->mimeType ();
+                    const char* mime_type_string = "";
+                    
+                    if (mime_type) {
+                        mime_type_string = mime_type->UTF8Characters ();
+                    }
+                    
+                    auto character_set = ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->charset ();
+                    const char* character_set_string = "";
+                    
+                    if (character_set) {
+                        character_set_string = character_set->UTF8Characters ();
+                    }
+                    
+                    auto content_id = ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->contentID ();
+                    const char* content_id_string = "";
+                    
+                    if (content_id) {
+                        content_id_string = content_id->UTF8Characters ();
+                    }
+                    
+                    auto content_location = ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->contentLocation ();
+                    const char* content_location_string = "";
+                    
+                    if (content_location) {
+                        content_location_string = content_location->UTF8Characters ();
+                    }
+                    
+                    EnvoyerModelsAttachment* attachment_model = envoyer_models_attachment_new (
+                        file_name_string,
+                        mime_type_string,
+                        character_set_string,
+                        content_id_string,
+                        content_location_string,
+                        ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->isInlineAttachment ()
+                    );
+                    
+                    gee_abstract_collection_add ((GeeAbstractCollection*) attachments_list, attachment_model);
+                                        
+                    // @TODO data()->length()
+                    
+                    if (file_name) {
+                        free((void*) file_name_string);                 
+                    }
+                    
+                    if (mime_type) {
+                        free((void*) mime_type_string);                 
+                    }
+
+                    if (character_set) {
+                        free((void*) character_set_string); 
+                    }
+
+                    if (content_id) {
+                        free((void*) content_id_string);
+                    }
+
+                    if (content_location) {
+                        free((void*) content_location_string); 
+                    }            
+                }
+                
+                attachments->release();
+
                 auto references_list = gee_linked_list_new (G_TYPE_STRING, (GBoxedCopyFunc) g_strdup, g_free, NULL, NULL, NULL);
 
                 auto references = message-> header()->references ();
@@ -137,7 +213,8 @@ public:
                     (message->flags () & mailcore::MessageFlagSeen) != 0,
                     (message->flags () & mailcore::MessageFlagFlagged) != 0,
                     (message->flags () & mailcore::MessageFlagDeleted) != 0,
-                    (message->flags () & mailcore::MessageFlagDraft) != 0
+                    (message->flags () & mailcore::MessageFlagDraft) != 0,
+                    (GeeCollection*) attachments_list
                 );
 
             }

@@ -40,6 +40,18 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
         }
     }
     
+    public bool has_non_inline_attachments {
+        get {
+            foreach (var message_instance in _messages_list) {
+                if (message_instance.non_inline_attachments.size != 0) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+    
     public Message last_received_message {
         owned get {
             // Assuming _messages_list is sorted descendingly by time of receipt

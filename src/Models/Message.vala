@@ -47,7 +47,25 @@ public class Envoyer.Models.Message : GLib.Object {
 
     public string html_content { get; set; }
     public string plain_text_content { get; set; }
-    public bool has_attachment { get { return false; } } //@TODO
+    
+    public Gee.Collection <Attachment> all_attachments { get; set; }
+
+    public Gee.ArrayList <Attachment> _non_inline_attachments;
+    public Gee.Collection <Attachment> non_inline_attachments { 
+        get {
+            if(_non_inline_attachments == null) {
+                _non_inline_attachments = new Gee.ArrayList <Attachment> ();
+
+                foreach (var attachment in all_attachments) {
+                    if (! attachment.is_inline) {
+                        _non_inline_attachments.add(attachment);
+                    }
+                }
+            }
+
+            return _non_inline_attachments;
+        }
+    }
 
     public string text { get; set; default = "BLA"; }
 
@@ -68,7 +86,8 @@ public class Envoyer.Models.Message : GLib.Object {
             bool seen,
             bool flagged,
             bool deleted,
-            bool draft
+            bool draft,
+            Gee.Collection <Attachment> all_attachments
         ) {
 
         Object (
@@ -87,7 +106,8 @@ public class Envoyer.Models.Message : GLib.Object {
             seen: seen,
             flagged: flagged,
             deleted: deleted,
-            draft: draft
+            draft: draft,
+            all_attachments: all_attachments
         );
 
         this.time_received = time_received;

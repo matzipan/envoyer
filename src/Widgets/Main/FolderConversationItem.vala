@@ -23,7 +23,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
     private Gtk.Grid outer_grid;
     private Gtk.Label subject_label;
     private Gtk.Label addresses_label;
-    private Gtk.Button attachment_image;
+    private Gtk.Image attachment_image;
     private Gtk.Button star_image;
     private Gtk.Label datetime_received_label;
     private double current_size = 0;
@@ -42,8 +42,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
         subject_label.get_style_context ().add_class ("subject");
         subject_label.xalign = 0;
 
-        attachment_image = new Gtk.Button.from_icon_name ("mail-attachment-symbolic", Gtk.IconSize.MENU);
-        attachment_image.get_style_context ().remove_class ("button");
+        attachment_image = new Gtk.Image.from_icon_name ("mail-attachment-symbolic", Gtk.IconSize.MENU);
         attachment_image.sensitive = false;
         attachment_image.tooltip_text = _("This thread contains one or more attachments");
 
@@ -104,7 +103,10 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
             subject_label.get_style_context ().add_class ("unread"); //@TODO if flag is updated
         }
 
-        attachment_image.destroy (); //@TODO
+        if (!thread.has_non_inline_attachments) {
+            attachment_image.destroy ();
+        }
+
         if (!thread.flagged) {
             star_image.destroy (); //@TODO if flag is updated
         }
