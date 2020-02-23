@@ -17,11 +17,40 @@
 
 #include <MailCore/MCIMAPAsyncSession.h>
 #include <MailCore/MCOperationCallback.h>
+#include <MailCore/MCIMAPOperation.h>
 #include <MailCore/MCIMAPOperationCallback.h>
+#include <MailCore/MCHTMLRendererCallback.h>
 #include <MailCore/MCIMAPMessageRenderingOperation.h>
 #include <glib.h>
 #include "envoyer.h"
 #include "imap.h"
+
+
+class MailCoreInterfaceHTMLBodyRendererTemplateCallback : public mailcore::Object, public mailcore::HTMLRendererTemplateCallback {
+public:
+    virtual mailcore::String * templateForMainHeader(mailcore::MessageHeader * header) {
+        return MCSTR("");
+    }
+
+    virtual mailcore::String * templateForAttachment(mailcore::AbstractPart * part) {
+        return MCSTR("");
+    }
+
+    virtual mailcore::String * templateForMessage(mailcore::AbstractMessage * message) {
+        return MCSTR("<div>{{HEADER}}</div><div>{{BODY}}</div>");
+    }
+
+
+    mailcore::String * templateForEmbeddedMessage(mailcore::AbstractMessagePart * part) {
+        return MCSTR("<div>{{HEADER}}</div><div>{{BODY}}</div>");
+    }
+
+    mailcore::String * templateForAttachmentSeparator()
+    {
+        return MCSTR("");
+    }
+
+};
 
 
 class MailCoreInterfaceIMAPHTMLBodyRenderingCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
@@ -51,7 +80,9 @@ extern "C" void mail_core_interface_imap_get_html_for_message (void* voidSession
 
     auto task = g_task_new (NULL, NULL, callback, user_data);
 
-    auto html_body_rendering_operation = session->htmlBodyRenderingOperation ((mailcore::IMAPMessage *) envoyer_models_message_get_mailcore_message (envoyer_message), new mailcore::String (folder_path));
+    auto templateCallback = new MailCoreInterfaceHTMLBodyRendererTemplateCallback();
+
+    auto html_body_rendering_operation = session->htmlBodyRenderingOperation ((mailcore::IMAPMessage *) envoyer_models_message_get_mailcore_message (envoyer_message), new mailcore::String (folder_path), templateCallback);
 
     auto rendering_callback = new MailCoreInterfaceIMAPHTMLBodyRenderingCallback(task);
     html_body_rendering_operation->setImapCallback(rendering_callback);
