@@ -205,15 +205,7 @@ public class Envoyer.Widgets.Main.MessageViewer : Gtk.ListBoxRow {
         }
 
         foreach (var attachment in message_item.non_inline_attachments) {
-            var attachment_row = new Gtk.Grid ();
-            attachment_row.orientation = Gtk.Orientation.HORIZONTAL;
-
-            var icon = ContentType.get_icon (attachment.content_type);
-
-            attachment_row.add (new Gtk.Image.from_gicon (icon, Gtk.IconSize.DND));
-            attachment_row.add (new Gtk.Label (attachment.file_name));
-
-            attachments_list.add(attachment_row);
+            attachments_list.add (new Envoyer.Widgets.AttachmentItem (attachment));
         }
 
         avatar.set_address (message_item.from);

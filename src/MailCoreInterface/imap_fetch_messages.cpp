@@ -19,9 +19,11 @@
 #include <MailCore/MCOperationCallback.h>
 #include <MailCore/MCIMAPOperationCallback.h>
 #include <MailCore/MCIMAPFetchMessagesOperation.h>
+#include <MailCore/MCAttachment.h>
 #include <MailCore/MCMessageHeader.h>
 #include <MailCore/MCIMAPMessage.h>
 #include <MailCore/MCAddress.h>
+#include <MailCore/MCIMAPPart.h>
 #include <glib.h>
 #include <gee.h>
 #include "envoyer.h"
@@ -93,39 +95,47 @@ public:
                 auto attachments_list = gee_linked_list_new (ENVOYER_MODELS_TYPE_ATTACHMENT, (GBoxedCopyFunc) g_object_ref, g_object_unref, NULL, NULL, NULL);
 
                 for(uint j = 0 ; j < attachments->count (); j++) {
-                    auto file_name = ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->filename ();
+                    auto part = (mailcore::AbstractPart *) (attachments->objectAtIndex(j));
+                    auto file_name = part->filename ();
                     const char* file_name_string = "";
                     
                     if (file_name) {
                         file_name_string = file_name->UTF8Characters ();
                     }
                     
-                    auto mime_type = ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->mimeType ();
+                    auto mime_type = part->mimeType ();
                     const char* mime_type_string = "";
                     
                     if (mime_type) {
                         mime_type_string = mime_type->UTF8Characters ();
                     }
                     
-                    auto character_set = ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->charset ();
+                    auto character_set = part->charset ();
                     const char* character_set_string = "";
                     
                     if (character_set) {
                         character_set_string = character_set->UTF8Characters ();
                     }
                     
-                    auto content_id = ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->contentID ();
+                    auto content_id = part->contentID ();
                     const char* content_id_string = "";
                     
                     if (content_id) {
                         content_id_string = content_id->UTF8Characters ();
                     }
                     
-                    auto content_location = ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->contentLocation ();
+                    auto content_location = part->contentLocation ();
                     const char* content_location_string = "";
                     
                     if (content_location) {
                         content_location_string = content_location->UTF8Characters ();
+                    }
+                    
+                    const char* part_id_string = "";
+                    mailcore::Encoding encoding = mailcore::Encoding::EncodingUUEncode;
+                    if (part->className ()->isEqual (MCSTR("mailcore::IMAPPart"))) {
+                        part_id_string = ((mailcore::IMAPPart *) part)->partID ()->UTF8Characters  ();
+                        encoding = ((mailcore::IMAPPart *) part)->encoding ();
                     }
                     
                     EnvoyerModelsAttachment* attachment_model = envoyer_models_attachment_new (
@@ -134,12 +144,16 @@ public:
                         character_set_string,
                         content_id_string,
                         content_location_string,
-                        ((mailcore::AbstractPart *) attachments->objectAtIndex(j))->isInlineAttachment ()
+                        part_id_string,
+                        static_cast<gint64> (encoding),
+                        part->isInlineAttachment ()
                     );
                     
                     gee_abstract_collection_add ((GeeAbstractCollection*) attachments_list, attachment_model);
                                         
-                    // @TODO data()->length()
+                    if (part->className ()->isEqual (MCSTR("mailcore::IMAPPart"))) {
+                        free ((void*) part_id_string);
+                    }
                     
                     if (file_name) {
                         free((void*) file_name_string);                 

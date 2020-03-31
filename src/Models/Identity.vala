@@ -233,6 +233,20 @@ public class Envoyer.Models.Identity : GLib.Object {
             item.folder = folder;
             item.html_content = yield get_html_for_message (item);
             item.plain_text_content = yield get_plain_text_for_message (item);
+
+            //@TODO implement lazy attachment downloading
+            foreach (var attachment in item.non_inline_attachments) {
+                if (attachment.part_id.size () != 0) {
+                    debug ("Found non-inline attachment with part id %s, fetching now", attachment.part_id);
+                    attachment.data = yield MailCoreInterface.Imap.fetch_data_for_message_part (
+                        imap_session,
+                        folder.name,
+                        item.uid,
+                        attachment.part_id,
+                        attachment.encoding
+                    );
+                }
+            }
         }
 
         database.set_messages_for_folder (messages, folder);

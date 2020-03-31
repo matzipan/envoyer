@@ -2,6 +2,8 @@
 namespace MailCoreInterface.Imap {
     void* connect (string username, string password);
     void  update_access_token (void* session, string access_token);
+    [CCode (finish_name = "mail_core_interface_imap_fetch_data_for_message_part_finish")]
+    public async GLib.Bytes fetch_data_for_message_part (void* session, string folder, uint64 uid, string part_id, int64 encoding);
     [CCode (finish_name = "mail_core_interface_imap_fetch_folders_finish")]
     public async Gee.Collection<Envoyer.Models.Folder> fetch_folders (void* session);
     [CCode (finish_name = "mail_core_interface_imap_fetch_messages_finish")]

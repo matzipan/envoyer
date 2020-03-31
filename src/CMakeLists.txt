@@ -69,6 +69,7 @@ vala_precompile (APP_VALA_C ${PROJECT_FQDN}
 	Widgets/Main/Sidebar/UnifiedFolderParentItem.vala
 	Widgets/Main/Sidebar/UnifiedFolderChildItem.vala
 	Widgets/Main/Sidebar/Wrapper.vala
+	Widgets/Main/AttachmentItem.vala
 	Widgets/Main/ConversationViewer.vala
 	Widgets/Main/MessageViewer.vala
 	Widgets/Main/MessageWebView.vala
@@ -113,6 +114,7 @@ add_executable (${PROJECT_FQDN}
 	${APP_VALA_C}
 	${generated_resources}
 	MailCoreInterface/imap.cpp
+	MailCoreInterface/imap_fetch_data_for_message_part.cpp
 	MailCoreInterface/imap_fetch_folders.cpp
 	MailCoreInterface/imap_fetch_messages.cpp
 	MailCoreInterface/imap_html_rendering.cpp

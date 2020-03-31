@@ -19,12 +19,20 @@ public class Envoyer.Models.Attachment : GLib.Object {
     
     public string file_name { get; construct set; }
     public string mime_type { get;  construct set; }
+    public string character_set { get; construct set; }
+    public string content_id { get; construct set; }
+    public string content_location { get; construct set; }
+    public string part_id { get; construct set; }
+    public int64 encoding { get; construct set; }
+    public bool is_inline { get; construct set; }
+
+    public Bytes? data { get; set; }    //@TODO this doesn't need to be Bytes, it can just be a simple Vala buffer
+
     public string content_type {
         owned get {
             var result_uncertain = false;
 
-            //  @TODO var content_type = ContentType.guess (attachment.file_name, attachment.data, out result_uncertain);
-            var content_type = ContentType.guess (file_name, null, out result_uncertain);
+            var content_type = ContentType.guess (file_name, data.get_data (), out result_uncertain);
 
             if (result_uncertain) {
                 content_type = ContentType.from_mime_type (mime_type);
@@ -33,18 +41,15 @@ public class Envoyer.Models.Attachment : GLib.Object {
             return content_type;
         }
     }
-    public string character_set { get; construct set; }
-    public string content_id { get; construct set; }
-    public string content_location { get; construct set; }
-    public bool is_inline { get; construct set; }
-    // public uint8_t* data_buffer { get; construct set; } //@TODO properly define memory lifecycle
-    
+ 
     public Attachment (
             string file_name,
             string mime_type,
             string character_set,
             string content_id,
             string content_location,
+            string part_id,
+            int64 encoding,
             bool is_inline
         ) {
 
@@ -54,7 +59,34 @@ public class Envoyer.Models.Attachment : GLib.Object {
             character_set: character_set.dup (),
             content_id: content_id.dup (),
             content_location: content_location.dup (),
+            part_id: part_id.dup (),
+            encoding: encoding,
             is_inline: is_inline
+        );
+    }
+
+    public Attachment.with_data (
+            string file_name,
+            string mime_type,
+            string character_set,
+            string content_id,
+            string content_location,
+            string part_id,
+            int64 encoding,
+            bool is_inline,
+            GLib.Bytes data
+        ) {
+
+        Object (
+            file_name: file_name.dup (),
+            mime_type: mime_type.dup ().down (),
+            character_set: character_set.dup (),
+            content_id: content_id.dup (),
+            content_location: content_location.dup (),
+            part_id: part_id.dup (),
+            encoding: encoding,
+            is_inline: is_inline,
+            data: data
         );
     }
 }

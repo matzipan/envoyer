@@ -93,6 +93,9 @@ public class Envoyer.Services.Database : Object {
                                                                     "character_set",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "content_id",       typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "content_location", typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "part_id",          typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "encoding",         typeof (int64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+                                                                    "data",             typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
                                                                     "is_inline", typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
                                                                     );
         is_initialization |= !create_table (operation, e); //@TODO catch issues
@@ -257,13 +260,20 @@ public class Envoyer.Services.Database : Object {
             
             attachments_iterator.move_to_row (-1);
             while (attachments_iterator.move_next () && attachments_iterator.is_valid ()) {
-                var current_attachment = new Attachment (
+                var decoded_data = GLib.Base64.decode (attachments_iterator.get_value_for_field ("data").get_string ());
+                unowned uint8[] unowned_decoded_data = (uint8[]) decoded_data;
+                var data = new Bytes (unowned_decoded_data);
+
+                var current_attachment = new Attachment.with_data (
                         attachments_iterator.get_value_for_field ("file_name").get_string (),
                         attachments_iterator.get_value_for_field ("mime_type").get_string (),
                         attachments_iterator.get_value_for_field ("character_set").get_string (),
                         attachments_iterator.get_value_for_field ("content_id").get_string (),
                         attachments_iterator.get_value_for_field ("content_location").get_string (),
-                        attachments_iterator.get_value_for_field ("is_inline").get_int () != 0
+                        attachments_iterator.get_value_for_field ("part_id").get_string (),
+                        attachments_iterator.get_value_for_field ("encoding").get_int64 (),               //@TODO fix GLib-GObject-CRITICAL **: 10:41:59.141: g_value_get_int64: assertion 'G_VALUE_HOLDS_INT64 (value)' failed
+                        attachments_iterator.get_value_for_field ("is_inline").get_int () != 0,
+                        data
                     );
                     
                 attachment_list.add (current_attachment);
@@ -385,7 +395,12 @@ public class Envoyer.Services.Database : Object {
                attachments_query_builder.add_field_value_as_gvalue ("character_set", attachment.character_set);
                attachments_query_builder.add_field_value_as_gvalue ("content_id", attachment.content_id);
                attachments_query_builder.add_field_value_as_gvalue ("content_location", attachment.content_location);
+               attachments_query_builder.add_field_value_as_gvalue ("part_id", attachment.part_id);
+               attachments_query_builder.add_field_value_as_gvalue ("encoding", attachment.encoding);
                attachments_query_builder.add_field_value_as_gvalue ("is_inline", (int) attachment.is_inline);
+
+               attachments_query_builder.add_field_value_as_gvalue ("data", GLib.Base64.encode (attachment.data.get_data ()));
+
 
                var attachments_statement = attachments_query_builder.get_statement ();
 
