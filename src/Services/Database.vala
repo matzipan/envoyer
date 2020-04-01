@@ -18,6 +18,10 @@
 using Envoyer.Globals.Application;
 using Envoyer.Models;
 
+// Some things in libgda-5.0 and its Vala binding are fundamentally 
+// broken. For example, it has very poor binary handling as well as 
+// poor handling of 32/64 bit integers. I will not make any efforts to
+// fix this any further. Maybe I'll just move this whole class to Rust.
 public class Envoyer.Services.Database : Object {
     private const string FOLDERS_TABLE = "folders";
     private const string MESSAGES_TABLE = "messages";
