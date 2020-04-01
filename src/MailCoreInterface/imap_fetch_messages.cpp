@@ -206,7 +206,7 @@ public:
 
                 auto subject = "";
 
-                if(message->header ()->subject ()  != 0) {
+                if(message->header ()->subject () != 0) {
                     subject = message->header ()->subject ()->UTF8Characters ();
                 }
 
