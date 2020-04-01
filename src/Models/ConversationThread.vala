@@ -78,12 +78,14 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
 
     public time_t time_received {
         owned get {
+            // Assuming _messages_list is sorted descendingly by time of receipt
             return _messages_list[0].time_received;
         }
     }
 
     public GLib.DateTime datetime_received {
         owned get {
+            // Assuming _messages_list is sorted descendingly by time of receipt
             return _messages_list[0].datetime_received;
         }
     }
