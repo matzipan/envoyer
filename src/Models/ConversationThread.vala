@@ -90,7 +90,10 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
         }
     }
 
-    public string subject { get { return _messages_list[0].subject; } }
+    public string subject { 
+        // The subject line is given by the oldest message in the thread. Assuming _messages_list is sorted descendingly by time of receipt
+        get { return _messages_list[_messages_list.size - 1].subject; } 
+    }
 
     // If there's at least one unseen message in the thread, return false
     public bool seen {
