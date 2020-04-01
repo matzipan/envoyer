@@ -141,7 +141,8 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
 
         walk_children_containers (container);
 
-        _messages_list.sort ((first, second) => { // sort descendingly
+        // Sort the messages descendingly by time received
+        _messages_list.sort ((first, second) => {
             if(first.time_received > second.time_received) {
                 return -1;
             } else {
