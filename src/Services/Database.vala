@@ -271,7 +271,11 @@ public class Envoyer.Services.Database : Object {
                         attachments_iterator.get_value_for_field ("content_id").get_string (),
                         attachments_iterator.get_value_for_field ("content_location").get_string (),
                         attachments_iterator.get_value_for_field ("part_id").get_string (),
-                        attachments_iterator.get_value_for_field ("encoding").get_int64 (),               //@TODO fix GLib-GObject-CRITICAL **: 10:41:59.141: g_value_get_int64: assertion 'G_VALUE_HOLDS_INT64 (value)' failed
+                        // On the following line we get_int instead of int64 because libgda-5.0 has issues with int64 in vala
+                        // https://github.com/Alecaddd/sequeler/issues/83
+                        // https://bugzilla.gnome.org/show_bug.cgi?id=759792
+                        // https://gitlab.gnome.org/GNOME/libgda/issues/13 
+                        attachments_iterator.get_value_for_field ("encoding").get_int (),
                         attachments_iterator.get_value_for_field ("is_inline").get_int () != 0,
                         data
                     );
