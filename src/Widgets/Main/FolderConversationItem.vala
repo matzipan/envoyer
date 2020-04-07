@@ -17,7 +17,7 @@
 
 using Envoyer.Models;
 
-public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
+public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow {
     private Gtk.Grid top_grid;
     private Gtk.Grid bottom_grid;
     private Gtk.Grid outer_grid;
@@ -32,6 +32,9 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
     public FolderConversationItem (ConversationThread thread) {
         this.thread = thread;
         build_ui ();
+        connect_signals ();
+        load_data ();
+        show_all ();
     }
 
     private void build_ui () {
@@ -84,8 +87,8 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
         outer_grid.add (bottom_grid);
 
         add (outer_grid);
-        load_data ();
-        show_all ();
+
+        set_swipe_icon_name ("envoyer-delete-symbolic");
     }
 
     private void load_data () {
@@ -112,6 +115,13 @@ public class Envoyer.Widgets.Main.FolderConversationItem : Gtk.ListBoxRow {
         }
 
         setup_timestamp ();
+    }
+
+    private void connect_signals () {
+        action_triggered.connect (() => {
+        //@TODO bubble up signal for action at folderconversationitem level, also the hide should be there
+        hide ();
+        });
     }
 
     private void setup_timestamp () {

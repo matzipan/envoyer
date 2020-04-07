@@ -31,7 +31,7 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
     private Headerbar headerbar;
     private Envoyer.FutureGranite.ThreePane three_pane;
 
-    private const string CUSTOM_STYLESHEET = """
+    private const string STYLESHEET = """
         EnvoyerWidgetsMainFolderConversationItem {
             border-bottom: 1px solid #efefef;
         }
@@ -66,6 +66,16 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
         }
     """;
 
+    private const string FALLBACK_STYLESHEET = """
+        .envoyer-swipe-box {
+            background: linear-gradient(to right, #a8040d 0, #f00713 6px, #f00713 100%);
+        }
+
+        .envoyer-swipe-action-icon {
+            color: #fff;
+        }
+    """;
+
     public Window (Envoyer.Controllers.Application app) {
         Object (application: app);
 
@@ -81,7 +91,11 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
 	}
 
     private void build_ui () {
-        Granite.Widgets.Utils.set_theming_for_screen (this.get_screen (), CUSTOM_STYLESHEET, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+        var icon_theme = Gtk.IconTheme.get_default ();
+        icon_theme.append_search_path (Constants.PKGDATADIR + "/icons/");
+
+        Granite.Widgets.Utils.set_theming_for_screen (this.get_screen (), STYLESHEET, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+        Granite.Widgets.Utils.set_theming_for_screen (this.get_screen (), FALLBACK_STYLESHEET, Gtk.STYLE_PROVIDER_PRIORITY_FALLBACK);
 
         headerbar = new Headerbar ();
         headerbar.set_title (Constants.APP_NAME);
