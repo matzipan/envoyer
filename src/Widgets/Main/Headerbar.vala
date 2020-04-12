@@ -20,6 +20,7 @@ using Envoyer.Globals.Application;
 public class Envoyer.Widgets.Main.Headerbar : Gtk.HeaderBar {
     private Gtk.Button compose_button;
     private Gtk.Button reply_button;
+    private Gtk.Button trash_button;
     private Gtk.MenuButton menu_button;
 
     public Headerbar () {
@@ -50,6 +51,11 @@ public class Envoyer.Widgets.Main.Headerbar : Gtk.HeaderBar {
         reply_button.tooltip_text = (_("Reply to conversation")); //@TODO + Key.REPLY.to_string ());
         pack_end (reply_button);
 
+        //@TODO hide when no conversation loaded
+        trash_button = new Gtk.Button.from_icon_name ("edit-delete", Gtk.IconSize.LARGE_TOOLBAR);
+        trash_button.tooltip_text = (_("Move conversation to trash")); //@TODO + Key.DELETE.to_string ());
+        pack_end (trash_button);
+
         var menu = new Gtk.Menu ();
         menu.add (new Gtk.MenuItem.with_label (_("Accounts")));
         menu.add (new Gtk.MenuItem.with_label (_("Quit")));
@@ -65,9 +71,14 @@ public class Envoyer.Widgets.Main.Headerbar : Gtk.HeaderBar {
         application.open_reply_composer ();
     }
 
+    private void trash_button_clicked () {
+        application.move_current_conversation_to_trash ();
+    }
+
     private void connect_signals () {
         compose_button.clicked.connect (compose_button_clicked);
         reply_button.clicked.connect (reply_button_clicked);
+        trash_button.clicked.connect (trash_button_clicked);
     }
 
     private const string CUSTOM_STYLESHEET = """

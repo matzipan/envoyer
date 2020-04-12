@@ -31,8 +31,9 @@ public class Envoyer.Controllers.Application : Granite.Application {
     public bool running = false;
     public signal void session_up ();
     public signal void load_folder (IFolder folder);
+    public signal void move_to_trash (ConversationThread thread);
     public bool is_initialization { get; construct set; }
-    public ConversationThread current_conversation_thread;
+    public ConversationThread? current_conversation_thread;
 
     // @TODO this is a temporary setup to get a simple MVP. This should be streamlined in a different way
     public signal void folder_updated (string folder_name);
@@ -43,6 +44,7 @@ public class Envoyer.Controllers.Application : Granite.Application {
 
     construct {
         session_up.connect (() => { main_window.show_app (); });
+        move_to_trash.connect (move_to_trash_handler);
     }
 
     public override void activate () {
@@ -99,6 +101,19 @@ public class Envoyer.Controllers.Application : Granite.Application {
     public void open_reply_composer () {
         var composer_window = new Envoyer.Widgets.Composer.Window.for_conversation_reply (current_conversation_thread);
         composer_window.show_all ();
+    }
+    
+    public void move_to_trash_handler (ConversationThread thread) {
+        //@TODO Add support for multiple identities
+        identities[0].move_to_trash (thread);
+    }
+
+    public void move_current_conversation_to_trash () {
+        if (current_conversation_thread != null) {
+            unload_current_conversation_thread ()
+            identities[0].move_to_trash (current_conversation_thread);
+            //@TODO hide item from conversation list
+        }
     }
     
     public void load_conversation_thread (ConversationThread conversation_thread) {

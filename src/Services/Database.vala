@@ -307,6 +307,8 @@ public class Envoyer.Services.Database : Object {
                                        attachment_list
                                        );
 
+            current_message.folder = folder;
+
             current_message.html_content = messages_iterator.get_value_for_field ("html_content").get_string ();
             current_message.plain_text_content = messages_iterator.get_value_for_field ("plain_text_content").get_string ();
 

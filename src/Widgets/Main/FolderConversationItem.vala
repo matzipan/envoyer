@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using Envoyer.Globals.Application;
 using Envoyer.Models;
 
 public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow {
@@ -119,8 +120,9 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
 
     private void connect_signals () {
         action_triggered.connect (() => {
-        //@TODO bubble up signal for action at folderconversationitem level, also the hide should be there
-        hide ();
+            application.move_to_trash (thread);
+
+            hide (); //@TODO remove from folderconversationslistmodel
         });
     }
 

@@ -95,6 +95,11 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
         get { return _messages_list[_messages_list.size - 1].subject; } 
     }
 
+    public Folder folder { 
+        // We're assuming all messages in the thread are in the same folder
+        get { return _messages_list[0].folder; } 
+    }
+
     // If there's at least one unseen message in the thread, return false
     public bool seen {
         get {

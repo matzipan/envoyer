@@ -210,6 +210,16 @@ public class Envoyer.Models.Identity : GLib.Object {
         return null;
     }
 
+    public Folder? get_folder_with_type (IFolder.Type type) {
+        foreach (var folder in get_folders ()) {
+            if (folder.folder_type == type) {
+                return folder;
+            }
+        }
+
+        return null;
+    }
+
     public async Gee.Collection <Folder> fetch_folders () {
         var folders = yield MailCoreInterface.Imap.fetch_folders (imap_session);
 
@@ -278,5 +288,22 @@ public class Envoyer.Models.Identity : GLib.Object {
         message.from = address;
 
         MailCoreInterface.Smtp.send_message (smtp_session, message);
+    }
+
+    public void move_to_trash (ConversationThread thread) {
+        //@TODO this should be put in a database queue and sent when internet is available
+
+        var trash_folder = get_folder_with_type (IFolder.Type.TRASH);
+        //@TODO handle no trash folder on server
+
+        var message_uids_list = new Gee.LinkedList <uint64?> (null);
+
+        foreach (var item in thread.messages_list) {
+            //@TODO Use copy/store flags/expunge on servers that do not support move https://stackoverflow.com/a/15816045/367292
+            message_uids_list.add (item.uid);
+        }
+
+        //@TODO handle error
+        MailCoreInterface.Imap.move_messages.begin (imap_session, thread.folder.name, message_uids_list, trash_folder.name);
     }
 }
