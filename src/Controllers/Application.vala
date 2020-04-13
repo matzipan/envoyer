@@ -110,7 +110,7 @@ public class Envoyer.Controllers.Application : Granite.Application {
 
     public void move_current_conversation_to_trash () {
         if (current_conversation_thread != null) {
-            unload_current_conversation_thread ()
+            unload_current_conversation_thread ();
             identities[0].move_to_trash (current_conversation_thread);
             //@TODO hide item from conversation list
         }
