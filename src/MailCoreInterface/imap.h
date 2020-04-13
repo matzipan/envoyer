@@ -41,6 +41,8 @@ void mail_core_interface_imap_idle_listener (void* session, gchar* folder_path, 
 void mail_core_interface_imap_idle_listener_finish (GTask *task);
 void mail_core_interface_imap_fetch_data_for_message_part (void* voidSession, gchar* folder_path, guint64 uid, gchar* part_id, gint64 encoding, GAsyncReadyCallback callback, void* user_data);
 GBytes* mail_core_interface_imap_fetch_data_for_message_part_finish (GTask *task);
+void mail_core_interface_imap_get_message_uids_for_folder (void* session, gchar* folder_path, GAsyncReadyCallback callback, void* user_data);
+GeeLinkedList* mail_core_interface_imap_get_message_uids_for_folder_finish (GTask *task);
 
 
 #ifdef __cplusplus

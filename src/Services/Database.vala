@@ -547,4 +547,65 @@ public class Envoyer.Services.Database : Object {
             return data_model.get_value_at (0, 0).get_int ();
         }
     }
+
+    public Gee.Collection <uint64?> get_message_uids_for_folder (Folder folder) {
+        var builder = new Gda.SqlBuilder (Gda.SqlStatementType.SELECT);
+
+        var owning_identity_field = builder.add_id ("owning_identity");
+        var owning_identity_value = builder.add_expr_value (null, folder.identity.address.email); //@TODO is .email really good enough?
+        var owning_identity_condition = builder.add_cond (Gda.SqlOperatorType.GEQ, owning_identity_field, owning_identity_value, 0);
+        var owning_folder_field = builder.add_id ("owning_folder");
+        var owning_folder_value = builder.add_expr_value (null, folder.name);
+        var owning_folder_condition = builder.add_cond (Gda.SqlOperatorType.GEQ, owning_folder_field, owning_folder_value, 0);
+        builder.set_where (builder.add_cond (Gda.SqlOperatorType.AND, owning_identity_condition, owning_folder_condition, 0));
+
+        var uid_field = builder.add_id ("uid");
+        builder.select_order_by (uid_field, true, null);
+
+        builder.select_add_field ("uid", null, null);
+        builder.select_add_target (MESSAGES_TABLE, null);
+        var statement = builder.get_statement ();
+
+        var data_model = connection.statement_execute_select (statement, null);
+        var data_model_iter = data_model.create_iter ();
+
+        var list = new Gee.ArrayList <uint64?> ();
+
+        data_model_iter.move_to_row (-1);
+        while (data_model_iter.move_next ()) {
+            var uid = data_model_iter.get_value_for_field ("uid").get_int ();
+
+            list.add (uid);
+        }
+
+        return list;
+    }
+
+    public void delete_folder_messages_in_list (Folder folder, Gee.Collection <uint64?> message_uids) {
+        // Gda support for the "IN" operator is rubbish, so we use string queries
+        var builder = new Gda.SqlBuilder (Gda.SqlStatementType.DELETE);
+
+        builder.set_table (MESSAGES_TABLE);
+
+        var query_string_builder = new StringBuilder ();
+
+        query_string_builder.append ("DELETE FROM messages WHERE ((owning_identity >= '%s') AND (owning_folder >= '%s')) AND (uid in ('".printf(
+            folder.identity.address.email, //@TODO is .email really good enough?
+            folder.name
+        ));
+
+        var first = true;
+        foreach (var uid in message_uids) {
+            if (!first) {
+                query_string_builder.append("', '");
+            }
+            first = false;
+
+            query_string_builder.append (uid.to_string ());
+        }
+
+        query_string_builder.append ("'))");
+       
+        connection.execute_non_select_command (query_string_builder.str);
+    }
 }

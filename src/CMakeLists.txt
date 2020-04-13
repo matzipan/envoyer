@@ -60,6 +60,7 @@ vala_precompile (APP_VALA_C ${PROJECT_FQDN}
 	Services/Database.vala
 	FutureGranite/ThreePane.vala
 	FutureGranite/HumanDateTime.vala
+	Util/Range.vala
 	Util/SidebarBuilder.vala
 	Util/ThreadingHelper.vala
 	Widgets/Main/Headerbar.vala
@@ -117,6 +118,7 @@ add_executable (${PROJECT_FQDN}
 	MailCoreInterface/imap_fetch_data_for_message_part.cpp
 	MailCoreInterface/imap_fetch_folders.cpp
 	MailCoreInterface/imap_fetch_messages.cpp
+	MailCoreInterface/imap_get_message_uids.cpp
 	MailCoreInterface/imap_html_rendering.cpp
 	MailCoreInterface/imap_move_messages.cpp
 	MailCoreInterface/imap_plain_text_rendering.cpp

@@ -99,10 +99,11 @@ public class Envoyer.Models.Identity : GLib.Object {
             yield MailCoreInterface.Imap.idle_listener (imap_idle_session, index_folder.name, highest_uid);
 
             debug ("Idle loop: idle stopped, fetching messages");
-            var messages = yield fetch_messages (index_folder, highest_uid + 1, uint64.MAX);
+            debug ("Idle loop: found %u messages, finding local messages expunged on the server", messages.size);
+            yield find_and_remove_expunged_messages (index_folder);
 
-            debug ("Idle loop: found %u messages, fetching updates", messages.size);
-            yield fetch_message_updates (index_folder, 1, highest_uid); //@TODO use mod seq number to reduce the number of updates fetched
+            debug ("Idle loop: fetching updates", messages.size);
+            yield fetch_and_process_flag_updates (index_folder, 1, highest_uid);  //@TODO use mod seq number to reduce the number of updates fetched
 
             // @TODO improve this
             // @TODO implement https://gist.github.com/matzipan/d0199db1706426a8f4436d707b3288fd
@@ -264,7 +265,39 @@ public class Envoyer.Models.Identity : GLib.Object {
         return messages;
     }
 
-    public async Gee.Collection <Message> fetch_message_updates (Folder folder, uint64 start_uid_value, uint64 end_uid_value) {
+    private async void find_and_remove_expunged_messages (Folder folder) {
+        //@TODO use qresync when available
+
+        // Find local messages_that have been expunged on the server and remove them
+        var message_uid_ranges_on_the_server = yield MailCoreInterface.Imap.get_message_uids_for_folder (imap_session, folder.name);
+
+        var local_message_uids = database.get_message_uids_for_folder (folder);
+
+        var not_present_uids = new Gee.LinkedList <uint64?> ();
+
+        // Doing a really lazy search right now, can optimize in the future @TODO optimize
+        //@TODO this whole step can be avoided if we use the ranges from the server in the query directly 
+        foreach (var uid in local_message_uids) {
+            var present_on_the_server = false;
+            foreach (var range in message_uid_ranges_on_the_server) {
+                if (range.contains (uid)) {
+                    present_on_the_server = true;
+                }
+            }
+
+            if (present_on_the_server) {
+                debug("Message with UID %llu is present on the server", uid);
+            } else {
+                debug("Message with UID %llu not present on the server", uid);
+                not_present_uids.add (uid);
+            }
+        }
+
+        database.delete_folder_messages_in_list (folder, not_present_uids);
+    }
+
+    private async void fetch_and_process_flag_updates (Folder folder, uint64 start_uid_value, uint64 end_uid_value) {
+        // Get flag updates from the server
         var messages = yield MailCoreInterface.Imap.fetch_messages (imap_session, folder.name, start_uid_value, end_uid_value, true);
 
         foreach (var item in messages) {
