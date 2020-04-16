@@ -89,7 +89,7 @@ public:
                 auto to_addresses = get_as_list_of_envoyer_addresses (message->header ()->to ());
                 auto cc_addresses = get_as_list_of_envoyer_addresses (message->header ()->cc ());
                 auto bcc_addresses = get_as_list_of_envoyer_addresses (message->header ()->bcc ());
-
+                
                 auto attachments = message->attachments ();
                 
                 auto attachments_list = gee_linked_list_new (ENVOYER_MODELS_TYPE_ATTACHMENT, (GBoxedCopyFunc) g_object_ref, g_object_unref, NULL, NULL, NULL);
@@ -130,7 +130,7 @@ public:
                     if (content_location) {
                         content_location_string = content_location->UTF8Characters ();
                     }
-                    
+
                     const char* part_id_string = "";
                     mailcore::Encoding encoding = mailcore::Encoding::EncodingUUEncode;
                     if (part->className ()->isEqual (MCSTR("mailcore::IMAPPart"))) {
@@ -150,7 +150,7 @@ public:
                     );
                     
                     gee_abstract_collection_add ((GeeAbstractCollection*) attachments_list, attachment_model);
-                                        
+
                     if (part->className ()->isEqual (MCSTR("mailcore::IMAPPart"))) {
                         free ((void*) part_id_string);
                     }
@@ -238,7 +238,7 @@ public:
 
         messages->release();
         //@TODO also release when Envoyer.Models.Message is deleted.
-
+        
         g_task_return_pointer (task, list, g_object_unref);
 
         g_object_unref (task);
