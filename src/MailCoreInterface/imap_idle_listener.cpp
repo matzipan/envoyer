@@ -39,15 +39,15 @@
     }
 
 private:
-     GTask* task;
+   GTask* task;
 };
 
- extern "C" void mail_core_interface_imap_idle_listener (void* voidSession, gchar* folder_path, guint64 last_known_id, GAsyncReadyCallback callback, void* user_data) {
+ extern "C" void mail_core_interface_imap_idle_listener (void* voidSession, gchar* folder_path, guint64 last_known_uid, GAsyncReadyCallback callback, void* user_data) {
     auto session = (mailcore::IMAPAsyncSession*) voidSession;
 
     auto task = g_task_new (NULL, NULL, callback, user_data);
 
-    auto idle_operation = session->idleOperation (new mailcore::String(folder_path), last_known_id);
+    auto idle_operation = session->idleOperation (new mailcore::String(folder_path), last_known_uid);
 
     auto idle_callback = new MailCoreInterfaceIMAPIdleListenerCallback(task);
     idle_operation->setImapCallback(idle_callback);
