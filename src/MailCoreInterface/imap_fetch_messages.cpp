@@ -58,11 +58,11 @@ public:
             this->flags_only = flags_only;
     }
 
-    virtual void operationFinished(mailcore::Operation * op) {
+    virtual void operationFinished(mailcore::Operation * op) { //@TODO improve memory management free all strings
         //@TODO check IMAPOperation::error
 
-        auto messages = ((mailcore::IMAPFetchMessagesOperation *) op)->messages();
-        auto vanished_messages = ((mailcore::IMAPFetchMessagesOperation *) op)->vanishedMessages(); //@TODO
+        auto messages = ((mailcore::IMAPFetchMessagesOperation *) op)->messages ();
+        auto vanished_messages = ((mailcore::IMAPFetchMessagesOperation *) op)->vanishedMessages(); //@TODO only on qresync servers
 
         auto list = gee_linked_list_new (ENVOYER_MODELS_TYPE_MESSAGE, (GBoxedCopyFunc) g_object_ref, g_object_unref, NULL, NULL, NULL);
 
