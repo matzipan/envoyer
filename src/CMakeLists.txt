@@ -72,6 +72,7 @@ vala_precompile (APP_VALA_C ${PROJECT_FQDN}
 	Widgets/Main/Sidebar/Wrapper.vala
 	Widgets/Main/AttachmentItem.vala
 	Widgets/Main/ConversationViewer.vala
+	Widgets/Main/MessageAddressesList.vala
 	Widgets/Main/MessageViewer.vala
 	Widgets/Main/MessageWebView.vala
 	Widgets/Main/SwipeActionListBoxRow.vala
