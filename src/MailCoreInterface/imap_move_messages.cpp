@@ -65,8 +65,8 @@ extern "C" void mail_core_interface_imap_move_messages (void* voidSession, gchar
     move_messages_operation->start();
 }
 
-extern "C" const gboolean mail_core_interface_imap_move_messages_finish (GTask *task) {
+extern "C" gboolean mail_core_interface_imap_move_messages_finish (GTask *task) {
     g_return_val_if_fail (g_task_is_valid (task, NULL), NULL);
 
-    return static_cast <const gboolean> (g_task_propagate_boolean (task, NULL));
+    return static_cast <gboolean> (g_task_propagate_boolean (task, NULL));
 }
