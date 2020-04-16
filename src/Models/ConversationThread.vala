@@ -35,7 +35,7 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
             return message_ids_list;
         }
     }
-    
+
     public bool has_non_inline_attachments {
         get {
             foreach (var message_instance in _messages_list) {
