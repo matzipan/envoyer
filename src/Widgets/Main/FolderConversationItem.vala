@@ -106,7 +106,10 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
 
         datetime_received_label.tooltip_text = thread.datetime_received.format(full_format);
 
-        addresses_label.label = build_addresses_string (thread.display_addresses);
+        var addresses_string = build_addresses_string (thread.display_addresses);
+        addresses_label.label = addresses_string;
+        addresses_label.tooltip_text = addresses_string;
+
         if (!thread.seen) {
             get_style_context ().add_class ("unread"); //@TODO if flag is updated
         } else {
