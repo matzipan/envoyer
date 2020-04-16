@@ -40,8 +40,8 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
             border-bottom: 1px solid #efefef;
         }
 
-        EnvoyerWidgetsMainConversationViewer .subject, EnvoyerWidgetsMainFolderConversationItem .subject.unread {
-            font-weight: bold;
+        .unread .subject, .unread_dot {
+            color: #0777D4;
         }
 
         EnvoyerWidgetsMainConversationViewer GtkListBox, EnvoyerWidgetsMainSidebarWrapper GtkListBox {

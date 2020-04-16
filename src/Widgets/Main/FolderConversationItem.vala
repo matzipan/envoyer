@@ -27,6 +27,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
     private Gtk.Image attachment_image;
     private Gtk.Button star_image;
     private Gtk.Label datetime_received_label;
+    private Envoyer.Widgets.Main.UnreadDot unread_dot;
     private double current_size = 0;
     public ConversationThread thread { get; private set; }
 
@@ -39,6 +40,8 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
     }
 
     private void build_ui () {
+        unread_dot = new Envoyer.Widgets.Main.UnreadDot ();
+
         subject_label = new Gtk.Label ("");
         subject_label.hexpand = true;
         subject_label.halign = Gtk.Align.START;
@@ -53,6 +56,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
         top_grid = new Gtk.Grid ();
         top_grid.orientation = Gtk.Orientation.HORIZONTAL;
         top_grid.column_spacing = 3;
+        top_grid.add (unread_dot);
         top_grid.add (subject_label);
         top_grid.add (attachment_image);
 
@@ -104,7 +108,9 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
 
         addresses_label.label = build_addresses_string (thread.display_addresses);
         if (!thread.seen) {
-            subject_label.get_style_context ().add_class ("unread"); //@TODO if flag is updated
+            get_style_context ().add_class ("unread"); //@TODO if flag is updated
+        } else {
+            unread_dot.destroy ();
         }
 
         if (!thread.has_non_inline_attachments) {
