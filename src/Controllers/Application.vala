@@ -102,7 +102,7 @@ public class Envoyer.Controllers.Application : Granite.Application {
         var composer_window = new Envoyer.Widgets.Composer.Window.for_conversation_reply (current_conversation_thread);
         composer_window.show_all ();
     }
-    
+
     public void move_to_trash_handler (ConversationThread thread) {
         //@TODO Add support for multiple identities
         identities[0].move_to_trash (thread);
