@@ -56,8 +56,8 @@ private:
     idle_operation->start();
  }
 
- extern "C" void mail_core_interface_imap_idle_listener_finish (GTask *task) {
-     g_assert(g_task_is_valid (task, NULL));
+extern "C" gboolean mail_core_interface_imap_idle_listener_finish (GTask *task) {
+    g_return_val_if_fail (g_task_is_valid (task, NULL), NULL);
 
-     return;
- }
+    return static_cast <gboolean> (g_task_propagate_boolean (task, NULL));
+}

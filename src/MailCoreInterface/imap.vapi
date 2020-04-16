@@ -17,5 +17,5 @@ namespace MailCoreInterface.Imap {
     [CCode (finish_name = "mail_core_interface_imap_get_plain_text_for_message_finish")]
     public async string get_plain_text_for_message (void* session, string folder, Envoyer.Models.Message message);
     [CCode (finish_name = "mail_core_interface_imap_idle_listener_finish")]
-    public async void idle_listener (void* session, string folder, uint64 id);
+    public async bool idle_listener (void* session, string folder, uint64 last_known_uid);
 }
