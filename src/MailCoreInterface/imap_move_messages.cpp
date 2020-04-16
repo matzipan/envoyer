@@ -23,7 +23,6 @@
 #include <glib.h>
 #include "envoyer.h"
 #include "imap.h"
-#include <errno.h>
 
 
 class MailCoreInterfaceMoveMessagesCallback : public mailcore::OperationCallback, public mailcore::IMAPOperationCallback {
