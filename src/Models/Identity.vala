@@ -93,7 +93,7 @@ public class Envoyer.Models.Identity : GLib.Object {
 
     // @TODO check if capability exists
     private async void idle_loop () {
-        var index_folder = get_folder_with_label ("INBOX");
+        var index_folder = get_folder_with_type (IFolder.Type.INBOX);
 
         while (true) {
             var highest_uid = index_folder.highest_uid;
