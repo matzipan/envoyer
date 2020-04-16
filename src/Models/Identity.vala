@@ -93,22 +93,23 @@ public class Envoyer.Models.Identity : GLib.Object {
 
     // @TODO check if capability exists
     private async void idle_loop () {
-        var index_folder = get_folder_with_type (IFolder.Type.INBOX);
+        var inbox_folder = get_folder_with_type (IFolder.Type.INBOX);
 
+        //@TODO how to get message expunges from idle?
         while (true) {
-            var highest_uid = index_folder.highest_uid;
+            var highest_uid = inbox_folder.highest_uid;
 
             debug ("Idle loop: listening (highest uid %u)", highest_uid);
-            yield MailCoreInterface.Imap.idle_listener (imap_idle_session, index_folder.name, highest_uid);
+            yield MailCoreInterface.Imap.idle_listener (imap_idle_session, inbox_folder.name, highest_uid);
 
             debug ("Idle loop: idle stopped, fetching messages");
-            var messages = yield fetch_messages (index_folder, highest_uid + 1, uint64.MAX);
+            var messages = yield fetch_messages (inbox_folder, highest_uid + 1, uint64.MAX);
 
             debug ("Idle loop: found %u messages, finding local messages expunged on the server", messages.size);
-            yield find_and_remove_expunged_messages (index_folder);
+            yield find_and_remove_expunged_messages (inbox_folder);
 
             debug ("Idle loop: fetching updates", messages.size);
-            yield fetch_and_process_flag_updates (index_folder, 1, highest_uid);  //@TODO use mod seq number to reduce the number of updates fetched
+            yield fetch_and_process_flag_updates (inbox_folder, 1, highest_uid);  //@TODO use mod seq number to reduce the number of updates fetched
 
             // @TODO improve this
             // @TODO implement https://gist.github.com/matzipan/d0199db1706426a8f4436d707b3288fd
