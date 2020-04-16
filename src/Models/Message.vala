@@ -67,7 +67,7 @@ public class Envoyer.Models.Message : GLib.Object {
         }
     }
 
-    public string text { get; set; default = "BLA"; }
+    public string text { get; set; default = ""; }
 
     public Message (
             void* mailcore_message,
