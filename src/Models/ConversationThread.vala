@@ -19,12 +19,8 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
     private Gee.ArrayList <Message> _messages_list = new Gee.ArrayList <Message> ();
 
     public Gee.Collection <Message> messages_list {
-        owned get {  //@TODO async
-            var messages_list_copy = new Gee.LinkedList <Message> (null);
-
-            messages_list_copy.add_all (_messages_list);
-
-            return messages_list_copy;
+        get {
+            return (Gee.Collection) _messages_list;
         }
     }
     
