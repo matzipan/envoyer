@@ -305,8 +305,6 @@ public class Envoyer.Models.Identity : GLib.Object {
         }
 
         database.update_messages_for_folder (messages, folder);
-
-        return messages;
     }
 
     public async string get_html_for_message (Message message) {
