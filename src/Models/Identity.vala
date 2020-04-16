@@ -102,6 +102,8 @@ public class Envoyer.Models.Identity : GLib.Object {
             yield MailCoreInterface.Imap.idle_listener (imap_idle_session, index_folder.name, highest_uid);
 
             debug ("Idle loop: idle stopped, fetching messages");
+            var messages = yield fetch_messages (index_folder, highest_uid + 1, uint64.MAX);
+
             debug ("Idle loop: found %u messages, finding local messages expunged on the server", messages.size);
             yield find_and_remove_expunged_messages (index_folder);
 
