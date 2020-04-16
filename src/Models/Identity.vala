@@ -108,7 +108,7 @@ public class Envoyer.Models.Identity : GLib.Object {
             debug ("Idle loop: found %u messages, finding local messages expunged on the server", messages.size);
             yield find_and_remove_expunged_messages (inbox_folder);
 
-            debug ("Idle loop: fetching updates", messages.size);
+            debug ("Idle loop: fetching updates");
             yield fetch_and_process_flag_updates (inbox_folder, 1, highest_uid);  //@TODO use mod seq number to reduce the number of updates fetched
 
             // @TODO improve this
