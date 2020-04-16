@@ -65,7 +65,10 @@ public class Envoyer.Models.Identity : GLib.Object {
                 fetch_folders.end (result);
                 /*folder_list_changed ();*/
 
-                fetch_messages.begin (get_folder_with_label ("INBOX"), 1, uint64.MAX, (obj, res) => {
+                fetch_messages.begin (get_folder_with_type (IFolder.Type.INBOX),
+                    1,
+                    uint64.MAX,
+                    (obj, res) => {
                     fetch_messages.end (res);
 
                     idle_loop.begin ();
