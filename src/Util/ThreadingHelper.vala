@@ -18,7 +18,12 @@
  public class Envoyer.Util.ThreadingContainer {
      public Envoyer.Models.Message message = null;
      public Envoyer.Util.ThreadingContainer parent = null;
+     public string id { get; set; }
      public Gee.LinkedList <Envoyer.Util.ThreadingContainer> children = new Gee.LinkedList <Envoyer.Util.ThreadingContainer> ();
+
+     public ThreadingContainer (string id) {
+        this.id = id;
+     }
 
      // This returns a copied list which is not susceptible to changes when the original list has items removed from it
      public Gee.LinkedList <Envoyer.Util.ThreadingContainer> children_copied {
@@ -130,7 +135,7 @@
          if (table.has_key (key)) {
              return table[key];
          } else {
-             var message_container = new Envoyer.Util.ThreadingContainer ();
+             var message_container = new Envoyer.Util.ThreadingContainer (key);
              table[key] =  message_container;
 
              return message_container;
