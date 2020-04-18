@@ -57,23 +57,12 @@ public class Envoyer.Widgets.Main.ConversationViewer : Gtk.Grid {
 
         foreach (var item in conversation_thread.messages_list) {
             var viewer = new MessageViewer(item);
-            viewer.scroll_event.connect(handle_scroll_event);
             viewer.link_mouse_in.connect (show_overlay_with_text);
             viewer.link_mouse_out.connect (hide_overlay);
             listbox.add(viewer);
         }
 
         listbox.show_all ();
-    }
-
-    private bool handle_scroll_event (Gdk.EventScroll event) {
-        /*
-         * I admit that this solution feels hacky, but I could not find any other working solution
-         * for propagating the scroll event upwards.
-         */
-        scrollbox.scroll_event (event);
-
-        return Gdk.EVENT_PROPAGATE;
     }
 
     public void load_conversation_thread (ConversationThread conversation_thread) {
