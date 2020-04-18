@@ -40,8 +40,29 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
             border-bottom: 1px solid #efefef;
         }
 
-        .unread .subject, .unread_dot {
+        .folder_conversation_item {
+            padding-right: 5px;
+            padding-left: 14px;
+        }
+
+        .folder_conversation_item.unread {
+            padding-left: 0;
+        }
+
+        .folder_conversation_item.unread .subject {
+            margin-left: 0;
+        }
+
+        .folder_conversation_item.unread .addresses {
+            margin-left: 14px;
+        }
+
+        .folder_conversation_item.unread .subject, .folder_conversation_item.unread .unread_dot {
             color: #0777D4;
+        }
+
+        .folder_conversation_item.unread:selected .subject, .folder_conversation_item.unread:selected .unread_dot {
+            color: #fff;
         }
 
         EnvoyerWidgetsMainConversationViewer GtkListBox, EnvoyerWidgetsMainSidebarWrapper GtkListBox {

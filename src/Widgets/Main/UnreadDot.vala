@@ -19,29 +19,14 @@ public class Envoyer.Widgets.Main.UnreadDot : Gtk.DrawingArea {
     private const int dot_radius = 4;
     private const int width = 10;
     private const int height = 16;
-    private const int margin_top = 1;
-
-    private string class_string = "unread_dot";
-
-    private Gtk.StyleContext style_context {
-        owned get {
-            var style_path = get_path ();
-            style_path.append_type (typeof (Gtk.Widget));
-        
-            var widget_style_context = new Gtk.StyleContext ();
-            widget_style_context.set_path (style_path);
-            widget_style_context.add_class (class_string);
-
-            return widget_style_context;
-        }
-    }
 
     construct {
         set_size_request (width, height);
+        get_style_context ().add_class ("unread_dot");
     }
 
     public override bool draw (Cairo.Context cr) {
-        Gdk.cairo_set_source_rgba (cr, style_context.get_color (Gtk.StateFlags.NORMAL));
+        Gdk.cairo_set_source_rgba (cr, get_style_context ().get_color (get_state_flags ()));
 
         var center_x = (width - dot_radius * 2) / 2 + dot_radius;
         var center_y = (height - dot_radius * 2) / 2 + dot_radius + margin_top;

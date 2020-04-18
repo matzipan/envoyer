@@ -40,6 +40,8 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
     }
 
     private void build_ui () {
+        get_style_context ().add_class ("folder_conversation_item");
+
         unread_dot = new Envoyer.Widgets.Main.UnreadDot ();
 
         subject_label = new Gtk.Label ("");
