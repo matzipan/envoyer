@@ -9,7 +9,7 @@ set (APP_PKG_DEPS
 	libxml-2.0
 	granite>=0.3
 	gthread-2.0
-	gtk+-3.0>=3.9.10
+	gtk+-3.0>=3.22.30
 	webkit2gtk-4.0>=2.10.9
 	libgda-5.0
 	json-glib-1.0
