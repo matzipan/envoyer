@@ -164,11 +164,11 @@
              } else if (container.message == null) {
                  // If it is a dummy message with children.
 
+                 // The RFC says: 
                  // Do not promote the children if doing so would make them
                  // children of the root, unless there is only one child.
-
-                 // Since we're iterating through parent's items, container will
-                 // never be a root item. So unlike other JWZ algorithm
+                 // But since we're iterating through parent's items, container
+                 // will never be a root item. So unlike other JWZ algorithm
                  // implementations, no further checks are needed.
                  foreach (var promoted_child in container.children_copied) {
                      parent.add_child (promoted_child);
