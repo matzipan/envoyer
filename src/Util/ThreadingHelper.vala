@@ -155,7 +155,7 @@
      }
 
      private void prune_empty_containers (Envoyer.Util.ThreadingContainer parent) {
-         foreach (var container in parent.children) {
+         foreach (var container in parent.children_copied) {
              prune_empty_containers(container);
 
              if (container.message == null && container.children.size == 0) {
