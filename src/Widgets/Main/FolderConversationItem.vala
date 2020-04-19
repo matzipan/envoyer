@@ -27,7 +27,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
     private Gtk.Image attachment_image;
     private Gtk.Button star_image;
     private Gtk.Label datetime_received_label;
-    private Envoyer.Widgets.Main.UnreadDot unread_dot;
+    private Envoyer.Widgets.Main.UnseenDot unseen_dot;
     private double current_size = 0;
     public ConversationThread thread { get; private set; }
 
@@ -42,7 +42,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
     private void build_ui () {
         get_style_context ().add_class ("folder_conversation_item");
 
-        unread_dot = new Envoyer.Widgets.Main.UnreadDot ();
+        unseen_dot = new Envoyer.Widgets.Main.UnseenDot ();
 
         subject_label = new Gtk.Label ("");
         subject_label.hexpand = true;
@@ -58,7 +58,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
         top_grid = new Gtk.Grid ();
         top_grid.orientation = Gtk.Orientation.HORIZONTAL;
         top_grid.column_spacing = 3;
-        top_grid.add (unread_dot);
+        top_grid.add (unseen_dot);
         top_grid.add (subject_label);
         top_grid.add (attachment_image);
 
@@ -112,11 +112,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
         addresses_label.label = addresses_string;
         addresses_label.tooltip_text = addresses_string;
 
-        if (!thread.seen) {
-            get_style_context ().add_class ("unread"); //@TODO if flag is updated
-        } else {
-            unread_dot.destroy ();
-        }
+        set_seen_state (); 
 
         if (!thread.has_non_inline_attachments) {
             attachment_image.destroy ();
@@ -135,6 +131,16 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
 
             hide (); //@TODO remove from folderconversationslistmodel
         });
+
+    }
+
+    private void set_seen_state () {
+        if (!thread.seen) {
+            get_style_context ().add_class ("unseen");
+            unseen_dot.show ();
+        } else {
+            unseen_dot.hide ();
+        }
     }
 
     private void setup_timestamp () {

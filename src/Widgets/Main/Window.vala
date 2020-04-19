@@ -45,23 +45,23 @@ public class Envoyer.Widgets.Main.Window : Gtk.ApplicationWindow {
             padding-left: 14px;
         }
 
-        .folder_conversation_item.unread {
+        .folder_conversation_item.unseen {
             padding-left: 0;
         }
 
-        .folder_conversation_item.unread .subject {
+        .folder_conversation_item.unseen .subject {
             margin-left: 0;
         }
 
-        .folder_conversation_item.unread .addresses {
+        .folder_conversation_item.unseen .addresses {
             margin-left: 14px;
         }
 
-        .folder_conversation_item.unread .subject, .folder_conversation_item.unread .unread_dot {
+        .folder_conversation_item.unseen .subject, .folder_conversation_item.unseen .unseen_dot {
             color: #0777D4;
         }
 
-        .folder_conversation_item.unread:selected .subject, .folder_conversation_item.unread:selected .unread_dot {
+        .folder_conversation_item.unseen:selected .subject, .folder_conversation_item.unseen:selected .unseen_dot {
             color: #fff;
         }
 

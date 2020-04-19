@@ -76,7 +76,7 @@ vala_precompile (APP_VALA_C ${PROJECT_FQDN}
 	Widgets/Main/MessageViewer.vala
 	Widgets/Main/MessageWebView.vala
 	Widgets/Main/SwipeActionListBoxRow.vala
-	Widgets/Main/UnreadDot.vala
+	Widgets/Main/UnseenDot.vala
 	Widgets/Main/FolderConversationItem.vala
 	Widgets/Main/FolderConversationsList.vala
 	Widgets/Main/WelcomeDialog.vala

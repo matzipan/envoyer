@@ -15,14 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-public class Envoyer.Widgets.Main.UnreadDot : Gtk.DrawingArea {
+public class Envoyer.Widgets.Main.UnseenDot : Gtk.DrawingArea {
     private const int dot_radius = 4;
     private const int width = 10;
     private const int height = 16;
 
     construct {
         set_size_request (width, height);
-        get_style_context ().add_class ("unread_dot");
+        get_style_context ().add_class ("unseen_dot");
     }
 
     public override bool draw (Cairo.Context cr) {
