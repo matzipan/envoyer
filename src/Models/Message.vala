@@ -23,9 +23,7 @@ public class Envoyer.Models.Message : GLib.Object {
     public Address from { get; set; }
     public Address sender { get; set; }
     public uint uid { get; construct set; }
-    public bool seen { get; construct set; }
-    public bool flagged { get; construct set; }
-    public bool deleted { get; construct set; }
+    public bool seen { get; set; }
     public bool draft { get; construct set; }
     public uint modification_sequence { get; construct set; }
     public Gee.Collection<Address> to { get; set; }

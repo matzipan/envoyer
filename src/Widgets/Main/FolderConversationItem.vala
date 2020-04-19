@@ -133,6 +133,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
             hide (); //@TODO remove from folderconversationslistmodel
         });
 
+        thread.notify["seen"].connect (process_seen_state); 
     }
 
     private void process_seen_state () {

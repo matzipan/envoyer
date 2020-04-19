@@ -156,6 +156,7 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
             return 1;
         });
 
+        connect_signals ();
     }
 
     private static void walk_children_containers (Gee.Collection<Message> list, Envoyer.Util.ThreadingContainer container) {
@@ -166,8 +167,16 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
         }
     }
 
-            _messages_list.add (child_container.message);
+    private void connect_signals () {
+        foreach (var current_message in messages_list) {
+            current_message.notify["seen"].connect (propagate_seen_notification);
         }
+    }
+
+    private void propagate_seen_notification () {
+        var class_ref = (ObjectClass) typeof (ConversationThread).class_ref ();
+        var pspec = class_ref.find_property ("seen");
+		notify["seen"] (pspec);
     }
 
     public bool is_important() {
