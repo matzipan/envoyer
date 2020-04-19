@@ -252,9 +252,9 @@ public class Envoyer.Models.Identity : GLib.Object {
             item.plain_text_content = yield get_plain_text_for_message (item);
 
             //@TODO implement lazy attachment downloading
-            foreach (var attachment in item.non_inline_attachments) {
+            foreach (var attachment in item.all_attachments) {
                 if (attachment.part_id.size () != 0) {
-                    debug ("Found non-inline attachment with part id %s, fetching now", attachment.part_id);
+                    debug ("Found attachment with part id %s, fetching now", attachment.part_id);
                     attachment.data = yield MailCoreInterface.Imap.fetch_data_for_message_part (
                         imap_session,
                         folder.name,
@@ -319,6 +319,10 @@ public class Envoyer.Models.Identity : GLib.Object {
     
     public async string get_plain_text_for_message (Message message) {
         return yield MailCoreInterface.Imap.get_plain_text_for_message (imap_session, message.folder.name, message);
+    }
+
+    public async bool store_flags_for_message (Message message) {
+        return yield MailCoreInterface.Imap.store_flags_for_message (imap_session, message.folder.name, message);
     }
 
     public void send_message (Message message) {
