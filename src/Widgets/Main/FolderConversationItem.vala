@@ -43,6 +43,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
         get_style_context ().add_class ("folder_conversation_item");
 
         unseen_dot = new Envoyer.Widgets.Main.UnseenDot ();
+        unseen_dot.no_show_all = true;
 
         subject_label = new Gtk.Label ("");
         subject_label.hexpand = true;
@@ -139,6 +140,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
             get_style_context ().add_class ("unseen");
             unseen_dot.show ();
         } else {
+            get_style_context ().remove_class ("unseen");
             unseen_dot.hide ();
         }
     }
