@@ -113,7 +113,7 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
         addresses_label.label = addresses_string;
         addresses_label.tooltip_text = addresses_string;
 
-        set_seen_state (); 
+        process_seen_state (); 
 
         if (!thread.has_non_inline_attachments) {
             attachment_image.destroy ();
@@ -135,7 +135,8 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
 
     }
 
-    private void set_seen_state () {
+    private void process_seen_state () {
+        debug ("Processing seen state for thread %s", thread.subject);
         if (!thread.seen) {
             get_style_context ().add_class ("unseen");
             unseen_dot.show ();
