@@ -1,0 +1,10 @@
+@define-color colorPrimary #F7AC37;
+@define-color textColorPrimary rgba(30,30,30,0.7);
+
+dialog.welcome-dialog {
+    background: #fff;
+}
+
+dialog.welcome-dialog headerbar {
+    background: #fff;
+}

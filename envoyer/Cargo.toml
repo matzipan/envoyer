@@ -1,0 +1,26 @@
+[package]
+name = "envoyer"
+version = "0.1.0"
+authors = ["Andrei Zisu <matzipan@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+diesel = { version = "1.4.4", features = ["sqlite", "chrono", "r2d2"] }
+gtk = { version = "0.8.1", features=["v3_16"] }
+gio = { version = "0.8.1", features=["v2_44"]}
+gdk = "0.12.1"
+glib = "0.9.3" 
+log = "0.4.11"
+chrono = "0.4"
+url = "2.1.1"
+imap = "2.3.0"
+native-tls = "0.2.4"
+isahc = "0.7.6"
+serde = "1.0.116"
+serde_qs = "0.7.0"
+serde_derive = "1.0.113"
+serde_json = "1.0.57"
+futures = "0.3"
+webkit2gtk = "0.9.2"
