@@ -1,11 +1,31 @@
+use crate::schema::{folders, identities, messages};
 use chrono;
 
-#[derive(Queryable)]
+#[derive(Identifiable, Queryable, Associations)]
+#[belongs_to(Identity)]
+pub struct Folder {
+    pub id: i32,
+    pub folder_name: String,
+    pub identity_id: i32,
+    pub flags: i32,
+}
+
+#[derive(Insertable, Associations)]
+#[belongs_to(Identity)]
+#[table_name = "folders"]
+pub struct NewFolder {
+    pub folder_name: String,
+    pub identity_id: i32,
+    pub flags: i32,
+}
+
+#[derive(Identifiable, Queryable, Associations)]
+#[belongs_to(Folder)]
 pub struct Message {
     pub id: i32,
     pub message_id: String,
     pub subject: String,
-    pub owning_folder: String,
+    pub folder_id: i32,
     pub time_received: i32,
     pub from: String,
     pub sender: String,
@@ -24,14 +44,13 @@ pub struct Message {
     pub deleted: bool,
 }
 
-use crate::schema::messages;
-
-#[derive(Insertable)]
+#[derive(Insertable, Associations)]
+#[belongs_to(Folder)]
 #[table_name = "messages"]
 pub struct NewMessage<'a> {
     pub message_id: &'a String,
     pub subject: &'a String,
-    pub owning_folder: &'a String,
+    pub folder_id: &'a i32,
     pub time_received: &'a i32,
     pub from: &'a String,
     pub sender: &'a String,
@@ -49,8 +68,6 @@ pub struct NewMessage<'a> {
     pub draft: &'a bool,
     pub deleted: &'a bool,
 }
-
-use crate::schema::identities;
 
 #[derive(Debug, AsExpression, FromSqlRow)]
 #[sql_type = "diesel::sql_types::Text"]
@@ -86,7 +103,8 @@ where
     }
 }
 
-#[derive(Queryable)]
+#[derive(Identifiable, Queryable)]
+#[table_name = "identities"]
 pub struct Identity {
     pub id: i32,
     pub email_address: String,

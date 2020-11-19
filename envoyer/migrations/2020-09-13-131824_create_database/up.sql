@@ -12,12 +12,10 @@ CREATE TABLE attachments (
     is_inline INTEGER NOT NULL
 );
 CREATE TABLE folders (
-    folder_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     folder_name TEXT NOT NULL,
-    owning_identity TEXT NOT NULL,
-    flags INTEGER NOT NULL,
-    unread_count INTEGER NOT NULL,
-    total_count INTEGER NOT NULL
+    identity_id INTEGER NOT NULL,
+    flags INTEGER NOT NULL
 );
 CREATE TABLE identities (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -32,7 +30,7 @@ CREATE TABLE messages (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     message_id TEXT NOT NULL,
     subject TEXT NOT NULL,
-    owning_folder TEXT NOT NULL,
+    folder_id INTEGER NOT NULL,
     time_received INTEGER NOT NULL,
     "from" TEXT NOT NULL,
     sender TEXT NOT NULL,

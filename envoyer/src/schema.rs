@@ -15,13 +15,11 @@ table! {
 }
 
 table! {
-    folders (folder_id) {
-        folder_id -> Integer,
+    folders (id) {
+        id -> Integer,
         folder_name -> Text,
-        owning_identity -> Text,
+        identity_id -> Integer,
         flags -> Integer,
-        unread_count -> Integer,
-        total_count -> Integer,
     }
 }
 
@@ -29,7 +27,6 @@ table! {
     identities (id) {
         id -> Integer,
         email_address -> Text,
-        gmail_access_token -> Text,
         gmail_refresh_token -> Text,
         identity_type -> Text,
         expires_at -> Timestamp,
@@ -43,7 +40,7 @@ table! {
         id -> Integer,
         message_id -> Text,
         subject -> Text,
-        owning_folder -> Text,
+        folder_id -> Integer,
         time_received -> Integer,
         from -> Text,
         sender -> Text,
