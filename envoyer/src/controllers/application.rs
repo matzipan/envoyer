@@ -165,7 +165,6 @@ impl Application {
 
                     let new_identity = models::NewIdentity {
                         email_address: &email_address,
-                        gmail_access_token: &access_token,
                         gmail_refresh_token: &refresh_token,
                         identity_type: identity_type,
                         expires_at: &expires_at.naive_utc(),

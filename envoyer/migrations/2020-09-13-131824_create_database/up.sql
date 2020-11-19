@@ -22,7 +22,6 @@ CREATE TABLE folders (
 CREATE TABLE identities (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     email_address TEXT NOT NULL,
-    gmail_access_token TEXT NOT NULL,
     gmail_refresh_token TEXT NOT NULL,
     identity_type TEXT NOT NULL,
     expires_at TIMESTAMP NOT NULL,

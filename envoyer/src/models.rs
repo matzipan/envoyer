@@ -90,7 +90,6 @@ where
 pub struct Identity {
     pub id: i32,
     pub email_address: String,
-    pub gmail_access_token: String,
     pub gmail_refresh_token: String,
     pub identity_type: IdentityType,
     pub expires_at: chrono::NaiveDateTime,
@@ -102,7 +101,6 @@ pub struct Identity {
 #[table_name = "identities"]
 pub struct NewIdentity<'a> {
     pub email_address: &'a String,
-    pub gmail_access_token: &'a String,
     pub gmail_refresh_token: &'a String,
     pub identity_type: IdentityType,
     pub expires_at: &'a chrono::NaiveDateTime,
