@@ -17,7 +17,7 @@ chrono = "0.4"
 url = "2.1.1"
 imap = "2.3.0"
 native-tls = "0.2.4"
-isahc = "0.7.6"
+isahc = { version = "0.9.11", features = ["json"]}
 serde = "1.0.116"
 serde_qs = "0.7.0"
 serde_derive = "1.0.113"
