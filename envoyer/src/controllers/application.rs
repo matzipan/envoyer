@@ -3,21 +3,18 @@ extern crate futures;
 extern crate gio;
 extern crate glib;
 extern crate gtk;
-extern crate serde;
-
-use diesel::prelude::*;
-
-use crate::models;
-use crate::schema;
 
 use chrono::prelude::*;
+use diesel::prelude::*;
 use futures::prelude::*;
 use gio::prelude::*;
 
 use log::info;
 
-use serde::Deserialize;
 use crate::google_oauth;
+use crate::identity;
+use crate::models;
+use crate::schema;
 
 use crate::ui;
 
