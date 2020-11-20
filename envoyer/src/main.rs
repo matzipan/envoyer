@@ -8,6 +8,7 @@ extern crate gtk;
 
 mod controllers;
 mod google_oauth;
+mod identity;
 mod models;
 mod schema;
 mod ui;
