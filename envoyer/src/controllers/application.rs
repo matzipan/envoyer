@@ -19,7 +19,19 @@ use crate::schema;
 use crate::ui;
 
 pub enum ApplicationMessage {
-    SetupIdentity {
+    RequestGoogleRefreshTokens {
+        email_address: String,
+        full_name: String,
+        account_name: String,
+        authorization_code: String,
+    },
+    GoogleAuthorizationCodeReceived {
+        email_address: String,
+        full_name: String,
+        account_name: String,
+        authorization_code: String,
+    },
+    SaveIdentity {
         email_address: String,
         full_name: String,
         account_name: String,
@@ -28,12 +40,7 @@ pub enum ApplicationMessage {
         gmail_refresh_token: String,
         expires_at: DateTime<Utc>,
     },
-    GoogleAuthorizationCodeReceived {
-        email_address: String,
-        full_name: String,
-        account_name: String,
-        authorization_code: String,
-    },
+    LoadIdentities {},
     SetupDone {},
 }
 
@@ -96,7 +103,7 @@ impl Application {
         let application_message_sender = application.application_message_sender.clone();
         application_message_receiver.attach(None, move |msg| {
             match msg {
-                ApplicationMessage::SetupIdentity {
+                ApplicationMessage::SaveIdentity {
                     email_address,
                     full_name,
                     account_name,
@@ -123,23 +130,36 @@ impl Application {
                         .expect("Error saving new identity");
 
                     application_message_sender
-                        .send(ApplicationMessage::SetupDone {})
-                        .expect("Unable to send application message")
+                        .send(ApplicationMessage::LoadIdentities {})
+                        .expect("Unable to send application message");
                 }
                 ApplicationMessage::GoogleAuthorizationCodeReceived {
                     email_address,
                     full_name,
                     account_name,
                     authorization_code,
+                } => application_message_sender
+                    .send(ApplicationMessage::RequestGoogleRefreshTokens {
+                        email_address,
+                        full_name,
+                        account_name,
+                        authorization_code,
+                    })
+                    .expect("Unable to send application message"),
+                ApplicationMessage::RequestGoogleRefreshTokens {
+                    email_address,
+                    full_name,
+                    account_name,
+                    authorization_code,
                 } => {
-                    info!("GoogleAuthorizationCodeReceived for {}", email_address);
+                    info!("RequestGoogleRefreshTokens for {}", email_address);
 
                     let application_message_sender = application_message_sender.clone();
                     context_clone.spawn(google_oauth::request_tokens(authorization_code).map(move |result| {
                         match result {
                             Err(error) => eprintln!("Got error: {}", error),
                             Ok(response_token) => application_message_sender
-                                .send(ApplicationMessage::SetupIdentity {
+                                .send(ApplicationMessage::SaveIdentity {
                                     email_address: email_address,
                                     full_name: full_name,
                                     identity_type: models::IdentityType::Gmail,
@@ -152,7 +172,28 @@ impl Application {
                         }
                     }));
                 }
+                ApplicationMessage::LoadIdentities {} => {
+                    info!("LoadIdentities");
+                    let connection = database_connection_pool.get().expect("Unable to acquire a database connection");
+                    let bare_identities = schema::identities::table
+                        .load::<models::BareIdentity>(&connection)
+                        .expect("Unable to get the number of identities");
+
+                    for bare_identity in bare_identities {
+                        let database_connection_pool_clone = database_connection_pool.clone();
+
+                        context_clone.block_on(async {
+                            let bla = identity::Identity::new(bare_identity, database_connection_pool_clone).await;
+                            bla.get_messages().await;
+                        });
+                    }
+                    application_message_sender
+                        .send(ApplicationMessage::SetupDone {})
+                        .expect("Unable to send application message");
+                }
                 ApplicationMessage::SetupDone {} => {
+                    info!("SetupDone");
+
                     welcome_dialog.hide();
                     main_window.show();
                 }
