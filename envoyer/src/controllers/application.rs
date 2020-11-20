@@ -108,7 +108,7 @@ impl Application {
                     full_name,
                     account_name,
                     identity_type,
-                    gmail_access_token,
+                    gmail_access_token: _,
                     gmail_refresh_token,
                     expires_at,
                 } => {
