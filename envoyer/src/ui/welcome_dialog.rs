@@ -17,10 +17,8 @@ use std::rc::Rc;
 
 use crate::controllers::ApplicationMessage;
 use crate::ui;
+use crate::google_oauth;
 
-const REDIRECT_URI: &str = "com.googleusercontent.apps.577724563203-55upnrbic0a2ft8qr809for8ns74jmqj:";
-const CLIENT_ID: &str = "577724563203-55upnrbic0a2ft8qr809for8ns74jmqj.apps.googleusercontent.com";
-const OAUTH_SCOPE: &str = "https://mail.google.com/";
 
 struct FormData {
     pub email_address: Option<String>,
@@ -202,10 +200,10 @@ impl WelcomeDialog {
                 webview.load_uri(&format!(
                     "https://accounts.google.com/o/oauth2/v2/auth?scope={scope}&login_hint={email_address}&response_type=code&\
                     redirect_uri={redirect_uri}&client_id={client_id}",
-                    scope = OAUTH_SCOPE,
+                    scope = google_oauth::OAUTH_SCOPE,
                     email_address = email_address_clone,
-                    redirect_uri = REDIRECT_URI,
-                    client_id = CLIENT_ID
+                    redirect_uri = google_oauth::REDIRECT_URI,
+                    client_id = google_oauth::CLIENT_ID
                 ));
             }));
 
@@ -216,7 +214,7 @@ impl WelcomeDialog {
                 if event == webkit2gtk::LoadEvent::Started {
                     let webview_uri = String::from(webview.get_uri().expect("Unable to fetch URI from WebView"));
 
-                    if webview_uri.starts_with(REDIRECT_URI) {
+                    if webview_uri.starts_with(google_oauth::REDIRECT_URI) {
                         stack.set_visible_child_name("please-wait");
                         spinner.start();
 
