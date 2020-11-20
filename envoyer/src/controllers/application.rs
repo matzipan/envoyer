@@ -26,8 +26,8 @@ pub enum ApplicationMessage {
         full_name: String,
         account_name: String,
         identity_type: models::IdentityType,
-        access_token: String,
-        refresh_token: String,
+        gmail_access_token: String,
+        gmail_refresh_token: String,
         expires_at: DateTime<Utc>,
     },
     GoogleAuthorizationCodeReceived {
@@ -199,15 +199,15 @@ impl Application {
                     full_name,
                     account_name,
                     identity_type,
-                    access_token,
-                    refresh_token,
+                    gmail_access_token,
+                    gmail_refresh_token,
                     expires_at,
                 } => {
                     info!("CreateIdentity for {}", email_address);
 
                     let new_identity = models::NewIdentity {
                         email_address: &email_address,
-                        gmail_refresh_token: &refresh_token,
+                        gmail_refresh_token: &gmail_refresh_token,
                         identity_type: identity_type,
                         expires_at: &expires_at.naive_utc(),
                         full_name: &full_name,
@@ -242,8 +242,8 @@ impl Application {
                                     full_name: full_name,
                                     identity_type: models::IdentityType::Gmail,
                                     account_name: account_name,
-                                    access_token: response_token.access_token,
-                                    refresh_token: response_token.refresh_token,
+                                    gmail_access_token: response_token.access_token,
+                                    gmail_refresh_token: response_token.refresh_token,
                                     expires_at: response_token.expires_at,
                                 })
                                 .expect("Unable to send application message"),
