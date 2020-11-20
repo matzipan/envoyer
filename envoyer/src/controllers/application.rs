@@ -19,6 +19,7 @@ use crate::schema;
 use crate::ui;
 
 pub enum ApplicationMessage {
+    Setup {},
     RequestGoogleRefreshTokens {
         email_address: String,
         full_name: String,
@@ -103,6 +104,9 @@ impl Application {
         let application_message_sender = application.application_message_sender.clone();
         application_message_receiver.attach(None, move |msg| {
             match msg {
+                ApplicationMessage::Setup {} => {
+                    welcome_dialog.show();
+                }
                 ApplicationMessage::SaveIdentity {
                     email_address,
                     full_name,
@@ -210,7 +214,9 @@ impl Application {
 
     fn on_activate(self) {
         if self.is_setup_needed() {
-            self.welcome_dialog.show();
+            self.application_message_sender
+                .send(ApplicationMessage::Setup {})
+                .expect("Unable to send application message");
         } else {
             self.application_message_sender
                 .send(ApplicationMessage::LoadIdentities {})
