@@ -212,7 +212,9 @@ impl Application {
         if self.is_setup_needed() {
             self.welcome_dialog.show();
         } else {
-            self.main_window.show();
+            self.application_message_sender
+                .send(ApplicationMessage::LoadIdentities {})
+                .expect("Unable to send application message");
         }
     }
 
