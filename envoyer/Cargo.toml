@@ -15,8 +15,7 @@ glib = "0.9.3"
 log = "0.4.11"
 chrono = "0.4"
 url = "2.1.1"
-imap = "2.3.0"
-native-tls = "0.2.4"
+melib = { path = "../../meli/melib", default-features = false, features = ["unicode_algorithms",  "imap_backend", "debug-tracing"] }
 isahc = { version = "0.9.11", features = ["json"]}
 serde = "1.0.116"
 serde_qs = "0.7.0"
