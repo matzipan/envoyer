@@ -2,7 +2,7 @@ use crate::schema::{folders, identities, messages};
 use chrono;
 
 #[derive(Identifiable, Queryable, Associations)]
-#[belongs_to(Identity)]
+#[belongs_to(BareIdentity, foreign_key = "identity_id")]
 pub struct Folder {
     pub id: i32,
     pub folder_name: String,
@@ -11,7 +11,7 @@ pub struct Folder {
 }
 
 #[derive(Insertable, Associations)]
-#[belongs_to(Identity)]
+#[belongs_to(BareIdentity, foreign_key = "identity_id")]
 #[table_name = "folders"]
 pub struct NewFolder {
     pub folder_name: String,
@@ -105,7 +105,7 @@ where
 
 #[derive(Identifiable, Queryable)]
 #[table_name = "identities"]
-pub struct Identity {
+pub struct BareIdentity {
     pub id: i32,
     pub email_address: String,
     pub gmail_refresh_token: String,
@@ -117,7 +117,7 @@ pub struct Identity {
 
 #[derive(Insertable)]
 #[table_name = "identities"]
-pub struct NewIdentity<'a> {
+pub struct NewBareIdentity<'a> {
     pub email_address: &'a String,
     pub gmail_refresh_token: &'a String,
     pub identity_type: IdentityType,

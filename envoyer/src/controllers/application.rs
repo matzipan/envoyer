@@ -205,7 +205,7 @@ impl Application {
                 } => {
                     info!("CreateIdentity for {}", email_address);
 
-                    let new_identity = models::NewIdentity {
+                    let new_bare_identity = models::NewBareIdentity {
                         email_address: &email_address,
                         gmail_refresh_token: &gmail_refresh_token,
                         identity_type: identity_type,
@@ -216,7 +216,7 @@ impl Application {
 
                     let connection = database_connection_pool.get().expect("Unable to acquire a database connection");
                     diesel::insert_into(schema::identities::table)
-                        .values(&new_identity)
+                        .values(&new_bare_identity)
                         .execute(&connection)
                         .expect("Error saving new identity");
 
