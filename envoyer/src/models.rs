@@ -47,26 +47,26 @@ pub struct Message {
 #[derive(Insertable, Associations)]
 #[belongs_to(Folder)]
 #[table_name = "messages"]
-pub struct NewMessage<'a> {
-    pub message_id: &'a String,
-    pub subject: &'a String,
-    pub folder_id: &'a i32,
-    pub time_received: &'a chrono::NaiveDateTime,
-    pub from: &'a String,
-    pub sender: &'a String,
-    pub to: &'a String,
-    pub cc: &'a String,
-    pub bcc: &'a String,
-    pub html_content: &'a String,
-    pub plain_text_content: &'a String,
-    pub references: &'a String,
-    pub in_reply_to: &'a String,
-    pub uid: &'a i32,
-    pub modification_sequence: &'a i32,
-    pub seen: &'a bool,
-    pub flagged: &'a bool,
-    pub draft: &'a bool,
-    pub deleted: &'a bool,
+pub struct NewMessage {
+    pub message_id: String,
+    pub subject: String,
+    pub folder_id: i32,
+    pub time_received: chrono::NaiveDateTime,
+    pub from: String,
+    pub sender: String,
+    pub to: String,
+    pub cc: String,
+    pub bcc: String,
+    pub html_content: String,
+    pub plain_text_content: String,
+    pub references: String,
+    pub in_reply_to: String,
+    pub uid: i32,
+    pub modification_sequence: i32,
+    pub seen: bool,
+    pub flagged: bool,
+    pub draft: bool,
+    pub deleted: bool,
 }
 
 #[derive(Debug, AsExpression, FromSqlRow)]
