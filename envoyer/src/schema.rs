@@ -41,7 +41,7 @@ table! {
         message_id -> Text,
         subject -> Text,
         folder_id -> Integer,
-        time_received -> Integer,
+        time_received -> Timestamp,
         from -> Text,
         sender -> Text,
         to -> Text,

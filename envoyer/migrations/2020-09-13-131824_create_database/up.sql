@@ -31,7 +31,7 @@ CREATE TABLE messages (
     message_id TEXT NOT NULL,
     subject TEXT NOT NULL,
     folder_id INTEGER NOT NULL,
-    time_received INTEGER NOT NULL,
+    time_received TIMESTAMP NOT NULL,
     "from" TEXT NOT NULL,
     sender TEXT NOT NULL,
     "to" TEXT NOT NULL,
