@@ -1,7 +1,7 @@
 use crate::schema::{folders, identities, messages};
 use chrono;
 
-#[derive(Identifiable, Queryable, Associations)]
+#[derive(Identifiable, Queryable, Associations, Debug)]
 #[belongs_to(BareIdentity, foreign_key = "identity_id")]
 pub struct Folder {
     pub id: i32,
@@ -10,7 +10,7 @@ pub struct Folder {
     pub flags: i32,
 }
 
-#[derive(Insertable, Associations)]
+#[derive(Insertable, Associations, Debug)]
 #[belongs_to(BareIdentity, foreign_key = "identity_id")]
 #[table_name = "folders"]
 pub struct NewFolder {
@@ -19,7 +19,7 @@ pub struct NewFolder {
     pub flags: i32,
 }
 
-#[derive(Identifiable, Queryable, Associations)]
+#[derive(Identifiable, Queryable, Associations, Debug)]
 #[belongs_to(Folder)]
 pub struct Message {
     pub id: i32,
@@ -42,7 +42,7 @@ pub struct Message {
     pub content: String,
 }
 
-#[derive(Insertable, Associations)]
+#[derive(Insertable, Associations, Debug)]
 #[belongs_to(Folder)]
 #[table_name = "messages"]
 pub struct NewMessage {
@@ -126,7 +126,7 @@ where
     }
 }
 
-#[derive(Identifiable, Queryable)]
+#[derive(Identifiable, Queryable, Debug)]
 #[table_name = "identities"]
 pub struct BareIdentity {
     pub id: i32,
@@ -138,7 +138,7 @@ pub struct BareIdentity {
     pub account_name: String,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "identities"]
 pub struct NewBareIdentity<'a> {
     pub email_address: &'a String,
