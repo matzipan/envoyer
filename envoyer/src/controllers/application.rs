@@ -41,7 +41,9 @@ pub enum ApplicationMessage {
         gmail_refresh_token: String,
         expires_at: DateTime<Utc>,
     },
-    LoadIdentities {},
+    LoadIdentities {
+        initialize: bool,
+    },
     SetupDone {},
 }
 
@@ -134,7 +136,7 @@ impl Application {
                         .expect("Error saving new identity");
 
                     application_message_sender
-                        .send(ApplicationMessage::LoadIdentities {})
+                        .send(ApplicationMessage::LoadIdentities { initialize: true })
                         .expect("Unable to send application message");
                 }
                 ApplicationMessage::GoogleAuthorizationCodeReceived {
@@ -176,8 +178,8 @@ impl Application {
                         }
                     }));
                 }
-                ApplicationMessage::LoadIdentities {} => {
-                    info!("LoadIdentities");
+                ApplicationMessage::LoadIdentities { initialize } => {
+                    info!("LoadIdentities with initialize {}", initialize);
                     let connection = database_connection_pool.get().expect("Unable to acquire a database connection");
                     let bare_identities = schema::identities::table
                         .load::<models::BareIdentity>(&connection)
@@ -219,7 +221,7 @@ impl Application {
                 .expect("Unable to send application message");
         } else {
             self.application_message_sender
-                .send(ApplicationMessage::LoadIdentities {})
+                .send(ApplicationMessage::LoadIdentities { initialize: false })
                 .expect("Unable to send application message");
         }
     }
