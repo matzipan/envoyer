@@ -183,7 +183,7 @@ impl Application {
                     let connection = database_connection_pool.get().expect("Unable to acquire a database connection");
                     let bare_identities = schema::identities::table
                         .load::<models::BareIdentity>(&connection)
-                        .expect("Unable to get the number of identities");
+                        .expect("Unable to get identities from database");
 
                     for bare_identity in bare_identities {
                         let database_connection_pool_clone = database_connection_pool.clone();
