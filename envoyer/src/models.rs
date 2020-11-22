@@ -39,8 +39,7 @@ pub struct Message {
     pub flagged: bool,
     pub draft: bool,
     pub deleted: bool,
-    pub html_content: String,
-    pub plain_text_content: String,
+    pub content: String,
 }
 
 #[derive(Insertable, Associations)]
@@ -63,8 +62,7 @@ pub struct NewMessage {
     pub flagged: bool,
     pub draft: bool,
     pub deleted: bool,
-    pub html_content: String,
-    pub plain_text_content: String,
+    pub content: String,
 }
 
 #[derive(Debug, AsExpression, FromSqlRow)]
