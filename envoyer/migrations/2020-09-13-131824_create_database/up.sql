@@ -33,7 +33,6 @@ CREATE TABLE messages (
     folder_id INTEGER NOT NULL,
     time_received TIMESTAMP NOT NULL,
     "from" TEXT NOT NULL,
-    sender TEXT NOT NULL,
     "to" TEXT NOT NULL,
     cc TEXT NOT NULL,
     bcc TEXT NOT NULL,

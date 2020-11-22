@@ -43,7 +43,6 @@ table! {
         folder_id -> Integer,
         time_received -> Timestamp,
         from -> Text,
-        sender -> Text,
         to -> Text,
         cc -> Text,
         bcc -> Text,
