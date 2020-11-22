@@ -24,16 +24,14 @@ pub struct NewFolder {
 pub struct Message {
     pub id: i32,
     pub message_id: String,
-    pub subject: String,
     pub folder_id: i32,
+    pub subject: String,
     pub time_received: chrono::NaiveDateTime,
     pub from: String,
     pub sender: String,
     pub to: String,
     pub cc: String,
     pub bcc: String,
-    pub html_content: String,
-    pub plain_text_content: String,
     pub references: String,
     pub in_reply_to: String,
     pub uid: i32,
@@ -42,6 +40,8 @@ pub struct Message {
     pub flagged: bool,
     pub draft: bool,
     pub deleted: bool,
+    pub html_content: String,
+    pub plain_text_content: String,
 }
 
 #[derive(Insertable, Associations)]
@@ -49,16 +49,14 @@ pub struct Message {
 #[table_name = "messages"]
 pub struct NewMessage {
     pub message_id: String,
-    pub subject: String,
     pub folder_id: i32,
+    pub subject: String,
     pub time_received: chrono::NaiveDateTime,
     pub from: String,
     pub sender: String,
     pub to: String,
     pub cc: String,
     pub bcc: String,
-    pub html_content: String,
-    pub plain_text_content: String,
     pub references: String,
     pub in_reply_to: String,
     pub uid: i32,
@@ -67,6 +65,8 @@ pub struct NewMessage {
     pub flagged: bool,
     pub draft: bool,
     pub deleted: bool,
+    pub html_content: String,
+    pub plain_text_content: String,
 }
 
 #[derive(Debug, AsExpression, FromSqlRow)]
