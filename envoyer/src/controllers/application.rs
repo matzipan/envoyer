@@ -190,7 +190,10 @@ impl Application {
 
                         context_clone.block_on(async {
                             let bla = identity::Identity::new(bare_identity, database_connection_pool_clone).await;
-                            bla.get_messages().await;
+
+                            if initialize {
+                                bla.initialize().await;
+                            }
                         });
                     }
                     application_message_sender

@@ -65,6 +65,33 @@ pub struct NewMessage {
     pub content: String,
 }
 
+impl From<melib::email::Mail> for NewMessage {
+    fn from(mail: melib::email::Mail) -> Self {
+        NewMessage {
+            message_id: String::from_utf8(mail.message_id().0.clone()).unwrap(),
+            folder_id: 0,
+            subject: String::from(mail.subject()),
+            // We go straight for try_into().unwrap() because we know the timestamp won't take 64 bits any time soon
+            time_received: chrono::NaiveDateTime::from_timestamp(mail.datetime() as i64, 0), //@TODO
+            from: mail.field_from_to_string(),
+            to: mail.field_to_to_string(),
+            cc: mail.field_cc_to_string(),
+            bcc: mail.field_bcc_to_string(),
+            references: mail.field_references_to_string(),
+            in_reply_to: mail
+                .in_reply_to()
+                .map_or("".to_string(), |x| String::from_utf8(x.0.clone()).unwrap()),
+            uid: 0,                   //@TODO
+            modification_sequence: 0, //@TODO
+            seen: mail.is_seen(),
+            flagged: mail.flags().contains(melib::email::Flag::FLAGGED),
+            draft: mail.flags().contains(melib::email::Flag::DRAFT),
+            deleted: mail.flags().contains(melib::email::Flag::TRASHED),
+            content: mail.body().text(),
+        }
+    }
+}
+
 #[derive(Debug, AsExpression, FromSqlRow)]
 #[sql_type = "diesel::sql_types::Text"]
 pub enum IdentityType {
