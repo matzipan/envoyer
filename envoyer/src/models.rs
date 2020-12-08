@@ -1,7 +1,7 @@
 use crate::schema::{folders, identities, messages};
 use chrono;
 
-#[derive(Identifiable, Queryable, Associations, Debug)]
+#[derive(Identifiable, Queryable, Associations, Debug, Clone)]
 #[belongs_to(BareIdentity, foreign_key = "identity_id")]
 pub struct Folder {
     pub id: i32,
@@ -19,7 +19,7 @@ pub struct NewFolder {
     pub flags: i32,
 }
 
-#[derive(Identifiable, Queryable, Associations, Debug)]
+#[derive(Identifiable, Queryable, Associations, Debug, Clone)]
 #[belongs_to(Folder)]
 pub struct Message {
     pub id: i32,
@@ -92,7 +92,7 @@ impl From<melib::email::Mail> for NewMessage {
     }
 }
 
-#[derive(Debug, AsExpression, FromSqlRow)]
+#[derive(Debug, AsExpression, FromSqlRow, Clone)]
 #[sql_type = "diesel::sql_types::Text"]
 pub enum IdentityType {
     Gmail,
@@ -126,7 +126,7 @@ where
     }
 }
 
-#[derive(Identifiable, Queryable, Debug)]
+#[derive(Identifiable, Queryable, Debug, Clone)]
 #[table_name = "identities"]
 pub struct BareIdentity {
     pub id: i32,
