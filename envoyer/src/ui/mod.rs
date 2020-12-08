@@ -1,5 +1,5 @@
-mod window;
 mod welcome_dialog;
+mod window;
 
-pub use window::Window as Window;
-pub use welcome_dialog::WelcomeDialog as WelcomeDialog;
+pub use welcome_dialog::WelcomeDialog;
+pub use window::Window;

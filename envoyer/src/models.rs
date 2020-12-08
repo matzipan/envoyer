@@ -42,6 +42,53 @@ pub struct Message {
     pub deleted: bool,
 }
 
+use smallvec::SmallVec;
+
+impl From<Message> for melib::email::Envelope {
+    fn from(message: Message) -> Self {
+        let mut envelope = Self {
+            hash: message.id as u64, //@TODO
+            date: String::new(),
+            timestamp: message.time_received.timestamp() as u64, //@TODO
+            from: SmallVec::new(),
+            to: SmallVec::new(),
+            cc: SmallVec::new(), //@TODO
+            bcc: Vec::new(),     //@TODO
+            subject: Some(message.subject),
+            message_id: melib::parser::address::msg_id(message.message_id.as_bytes()).unwrap().1, //@TODO
+            in_reply_to: None,                                                                    //@TODO
+            references: None,                                                                     //@TODO
+            other_headers: Default::default(),                                                    //@TODO
+            thread: melib::thread::ThreadNodeHash::null(),
+            has_attachments: false,               //@TODO
+            flags: melib::email::Flag::default(), //@TODO
+            labels: SmallVec::new(),              //@TODO
+        };
+
+        // from: melib::parser::address::rfc2822address_list(&message.from.as_bytes()).unwrap().1,
+        // to: melib::parser::address::rfc2822address_list(&message.to.as_bytes()).unwrap().1,
+
+        // cc: melib::parser::address::rfc2822address_list(&message.cc.as_bytes()).unwrap().1,
+        // bcc: melib::parser::address::rfc2822address_list(&message.bcc.as_bytes())
+        //     .unwrap()
+        //     .1
+        //     .to_vec(),
+        // in_reply_to: Some(melib::parser::address::msg_id(message.in_reply_to.as_bytes()).unwrap().1),
+
+        {
+            let parse_result = melib::parser::address::msg_id_list(message.references.as_bytes());
+            if let Ok((_, value)) = parse_result {
+                for v in value {
+                    envelope.push_references(v);
+                }
+            }
+        }
+        envelope.set_references(message.references.as_bytes());
+
+        envelope
+    }
+}
+
 #[derive(Insertable, Associations, Debug)]
 #[belongs_to(Folder)]
 #[table_name = "messages"]

@@ -17,6 +17,7 @@ use crate::google_oauth;
 use crate::models;
 use crate::schema;
 
+#[derive(Clone)]
 pub struct Identity {
     bare_identity: models::BareIdentity,
     backend: Arc<RwLock<Box<dyn melib::backends::MailBackend>>>,
@@ -59,6 +60,82 @@ impl Identity {
             backend: Arc::new(RwLock::new(backend)),
             database_connection_pool: database_connection_pool,
         };
+    }
+
+    pub fn fetch_threads(
+        self,
+    ) -> (
+        smallvec::SmallVec<[melib::thread::ThreadHash; 1024]>,
+        melib::thread::Threads,
+        Arc<RwLock<HashMap<u64, melib::email::Envelope>>>,
+    ) {
+        let connection = self
+            .database_connection_pool
+            .get()
+            .expect("Unable to acquire a database connection");
+
+        let messages = schema::messages::table
+            .load::<models::Message>(&connection)
+            //@TODO filter for identity and folder
+            .expect("Unable to get identities from database");
+
+        let envelopes = Arc::new(RwLock::new(
+            messages
+                .into_iter()
+                .map(|m| <melib::email::Envelope as From<models::Message>>::from(m))
+                .map(|e| (e.hash(), e))
+                .collect::<HashMap<melib::email::EnvelopeHash, melib::email::Envelope>>(),
+        ));
+
+        let mut threads = melib::thread::Threads::new(envelopes.read().unwrap().len());
+        threads.amend(&envelopes);
+
+        let mut roots = threads.roots();
+
+        threads.group_inner_sort_by(&mut roots, (Default::default(), Default::default()), &envelopes);
+
+        (roots, threads, envelopes)
+        // let iter = roots.into_iter();
+        // for thread in iter {
+        //     let thread_node = &threads.thread_nodes()[&threads.thread_ref(thread).root()];
+        //     let root_envelope_hash = if let Some(h) = thread_node.message().or_else(|| {
+        //         if thread_node.children().is_empty() {
+        //             return None;
+        //         }
+        //         let mut iter_ptr = thread_node.children()[0];
+        //         while threads.thread_nodes()[&iter_ptr].message().is_none() {
+        //             if threads.thread_nodes()[&iter_ptr].children().is_empty() {
+        //                 return None;
+        //             }
+        //             iter_ptr = threads.thread_nodes()[&iter_ptr].children()[0];
+        //         }
+        //         threads.thread_nodes()[&iter_ptr].message()
+        //     }) {
+        //         h
+        //     } else {
+        //         continue;
+        //     };
+
+        //     print_threadnodes(threads.thread_ref(thread).root(), threads.thread_nodes(), &envelopes);
+        //     // info!(
+        //     //     "{} {}",
+        //     //     // envelopes.read().unwrap()[&threads.thread_nodes()[&thread].message().unwrap()].subject()
+        //     //     thread_node.children().len() + 1,
+        //     //     envelopes.read().unwrap()[&root_envelope_hash].subject()
+        //     // );
+        // }
+        // let roots = roots
+        //     .into_iter()
+        //     .filter_map(|r| threads.groups[&r].root().map(|r| r.root))
+        //     .collect::<_>();
+        // let mut iter = threads.threads_group_iter(roots).peekable();
+
+        // for (_, h, _) in iter {
+        //     info!(
+        //         "{}",
+        //         envelopes.read().unwrap()[&threads.thread_nodes()[&h].message().unwrap()].subject()
+        //     );
+        // }
     }
 
     pub async fn initialize(&self) {

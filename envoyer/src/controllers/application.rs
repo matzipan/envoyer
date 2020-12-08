@@ -18,6 +18,8 @@ use crate::schema;
 
 use crate::ui;
 
+use std::sync::{Arc, Mutex};
+
 pub enum ApplicationMessage {
     Setup {},
     RequestGoogleRefreshTokens {
@@ -53,6 +55,7 @@ pub struct Application {
     application_message_sender: glib::Sender<ApplicationMessage>,
     context: glib::MainContext,
     database_connection_pool: diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::sqlite::SqliteConnection>>,
+    identities: Arc<Mutex<Vec<identity::Identity>>>, //@TODO should probably be arc<identity>
 }
 
 impl Application {
@@ -86,8 +89,10 @@ impl Application {
 
         info!("Connected to the database");
 
+        let identities = Arc::new(Mutex::new(Vec::<identity::Identity>::new()));
+
         let application = Self {
-            main_window: ui::Window::new(gtk_application),
+            main_window: ui::Window::new(gtk_application, identities.clone()),
             // Ideally this dialog would be created only if account setup is
             // needed, but to simplify reference passing right now, we're
             // always creating it.
@@ -95,12 +100,14 @@ impl Application {
             application_message_sender: application_message_sender,
             context: context,
             database_connection_pool: database_connection_pool,
+            identities: identities,
         };
 
         application.context.push_thread_default();
 
         let database_connection_pool = application.database_connection_pool.clone();
         let context_clone = application.context.clone();
+        let identities_clone = application.identities.clone();
         let welcome_dialog = application.welcome_dialog.clone(); //@TODO these should be rc not clones
         let main_window = application.main_window.clone(); //@TODO these should be rc not clones
         let application_message_sender = application.application_message_sender.clone();
@@ -189,11 +196,13 @@ impl Application {
                         let database_connection_pool_clone = database_connection_pool.clone();
 
                         context_clone.block_on(async {
-                            let bla = identity::Identity::new(bare_identity, database_connection_pool_clone).await;
+                            let identity = identity::Identity::new(bare_identity, database_connection_pool_clone).await;
 
                             if initialize {
-                                bla.initialize().await;
+                                identity.initialize().await;
                             }
+
+                            identities_clone.lock().expect("Unable to access identities").push(identity);
                         });
                     }
                     application_message_sender
@@ -205,6 +214,7 @@ impl Application {
 
                     welcome_dialog.hide();
                     main_window.show();
+                    main_window.load();
                 }
             }
             // Returning false here would close the receiver and have senders

@@ -482,10 +482,12 @@ dependencies = [
  "isahc",
  "log",
  "melib",
+ "once_cell",
  "serde",
  "serde_derive",
  "serde_json",
  "serde_qs",
+ "smallvec",
  "url",
  "webkit2gtk",
 ]
