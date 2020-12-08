@@ -45,7 +45,7 @@ impl WelcomeDialog {
         let dialog = Self {
             sender: sender,
             gtk_dialog: gtk::Dialog::new(),
-            submit_button: gtk::Button::new_with_label("Authorize"),
+            submit_button: gtk::Button::with_label("Authorize"),
             stack: gtk::Stack::new(),
             webview: webkit2gtk::WebView::new(),
             email_address_entry: gtk::Entry::new(),
@@ -164,26 +164,9 @@ impl WelcomeDialog {
 
         self.submit_button
             .connect_clicked(clone!(@weak stack, @weak email_address_entry, @weak account_name_entry, @weak full_name_entry, @weak webview => move |_| {
-                let email_address = match email_address_entry.get_text() {
-                    // The none is returned when the C pointers of gtk are
-                    // null. Not likely, we can just ignore.
-                    None => "".to_string(),
-                    Some(text) => text.to_string(),
-                };
-
-                let full_name = match full_name_entry.get_text() {
-                    // The none is returned when the C pointers of gtk are
-                    // null. Not likely, we can just ignore.
-                    None => "".to_string(),
-                    Some(text) => text.to_string(),
-                };
-
-                let account_name = match account_name_entry.get_text() {
-                    // The none is returned when the C pointers of gtk are
-                    // null. Not likely, we can just ignore.
-                    None => "".to_string(),
-                    Some(text) => text.to_string(),
-                };
+                let email_address = email_address_entry.get_text().to_string();
+                let full_name = full_name_entry.get_text().to_string();
+                let account_name = account_name_entry.get_text().to_string();
 
                 //@TODO check the values
 
