@@ -24,13 +24,14 @@ pub struct NewFolder {
 pub struct Message {
     pub id: i32,
     pub message_id: String,
-    pub folder_id: i32,
     pub subject: String,
+    pub folder_id: i32,
     pub time_received: chrono::NaiveDateTime,
     pub from: String,
     pub to: String,
     pub cc: String,
     pub bcc: String,
+    pub content: String,
     pub references: String,
     pub in_reply_to: String,
     pub uid: i32,
@@ -39,7 +40,6 @@ pub struct Message {
     pub flagged: bool,
     pub draft: bool,
     pub deleted: bool,
-    pub content: String,
 }
 
 #[derive(Insertable, Associations, Debug)]
