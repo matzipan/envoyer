@@ -212,6 +212,10 @@ impl Application {
                 ApplicationMessage::SetupDone {} => {
                     info!("SetupDone");
 
+                    for identity in &*identities_clone.lock().expect("Unable to access identities") {
+                        identity.start_session();
+                    }
+
                     welcome_dialog.hide();
                     main_window.show();
                     main_window.load();

@@ -195,6 +195,10 @@ impl Identity {
         info!("Finished identity initialization for {}", self.bare_identity.email_address);
     }
 
+    pub fn start_session(&self) {
+        self.start_listening_for_updates();
+    }
+
     pub async fn store_folders(&self, mailboxes: &HashMap<u64, Box<dyn melib::backends::BackendMailbox + Send + Sync>>) {
         for mailbox in mailboxes.values() {
             let new_folder = models::NewFolder {
@@ -251,6 +255,16 @@ impl Identity {
 
             return;
         })
+    }
+
+    fn start_listening_for_updates(&self) {
+        let mailboxes_job = self.backend.read().unwrap().mailboxes().unwrap();
+        let updates_job = self.backend.read().unwrap().watch().unwrap();
+
+        let online_job = self.backend.read().unwrap().is_online().unwrap();
+        let context = glib::MainContext::default();
+
+        context.spawn(online_job.then(|_| mailboxes_job).then(|_| updates_job).map(move |_| ()));
     }
 
     pub fn start_token_renewal_thread(&self) {
