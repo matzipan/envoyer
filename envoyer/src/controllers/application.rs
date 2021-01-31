@@ -187,27 +187,36 @@ impl Application {
                 }
                 ApplicationMessage::LoadIdentities { initialize } => {
                     info!("LoadIdentities with initialize {}", initialize);
-                    let connection = database_connection_pool.get().expect("Unable to acquire a database connection");
-                    let bare_identities = schema::identities::table
-                        .load::<models::BareIdentity>(&connection)
-                        .expect("Unable to get identities from database");
 
-                    for bare_identity in bare_identities {
-                        let database_connection_pool_clone = database_connection_pool.clone();
+                    let application_message_sender_clone = application_message_sender.clone();
+                    let database_connection_pool_clone = database_connection_pool.clone();
+                    let identities_clone = identities_clone.clone();
 
-                        context_clone.block_on(async {
+                    context_clone.spawn(async move {
+                        let connection = database_connection_pool_clone
+                            .get()
+                            .expect("Unable to acquire a database connection");
+
+                        let bare_identities = schema::identities::table
+                            .load::<models::BareIdentity>(&connection)
+                            .expect("Unable to get identities from database");
+
+                        for bare_identity in bare_identities {
+                            let database_connection_pool_clone = database_connection_pool_clone.clone();
+
                             let identity = identity::Identity::new(bare_identity, database_connection_pool_clone).await;
 
                             if initialize {
-                                identity.initialize().await;
+                                identity.initialize().await.map_err(|x| error!("{}", x));
                             }
 
                             identities_clone.lock().expect("Unable to access identities").push(identity);
-                        });
-                    }
-                    application_message_sender
-                        .send(ApplicationMessage::SetupDone {})
-                        .expect("Unable to send application message");
+                        }
+
+                        application_message_sender_clone
+                            .send(ApplicationMessage::SetupDone {})
+                            .expect("Unable to send application message");
+                    });
                 }
                 ApplicationMessage::SetupDone {} => {
                     info!("SetupDone");
