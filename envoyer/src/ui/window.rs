@@ -19,10 +19,7 @@ pub struct Window {
     pub identities: Arc<Mutex<Vec<identity::Identity>>>,
 }
 
-use gio::prelude::*;
-use glib::prelude::*;
 use glib::translate::*;
-use gtk::prelude::*;
 
 use std::cell::RefCell;
 
@@ -187,45 +184,42 @@ impl Window {
     }
 
     pub fn load(&self) {
-        let (roots, threads, envelopes) = self.identities.lock().expect("Unable to acquire identities lock")[0]
-            .clone()
-            .fetch_threads();
+        // let (roots, threads, envelopes) = self.identities.lock().expect("Unable to acquire identities lock")[0]
+        //     .clone()
+        //     .fetch_threads();
 
-        let iter = roots.into_iter();
-        for thread in iter {
-            let thread_node = &threads.thread_nodes()[&threads.thread_ref(thread).root()];
-            let root_envelope_hash = if let Some(h) = thread_node.message().or_else(|| {
-                if thread_node.children().is_empty() {
-                    return None;
-                }
-                let mut iter_ptr = thread_node.children()[0];
-                while threads.thread_nodes()[&iter_ptr].message().is_none() {
-                    if threads.thread_nodes()[&iter_ptr].children().is_empty() {
-                        return None;
-                    }
-                    iter_ptr = threads.thread_nodes()[&iter_ptr].children()[0];
-                }
-                threads.thread_nodes()[&iter_ptr].message()
-            }) {
-                h
-            } else {
-                continue;
-            };
+        // let iter = roots.into_iter();
+        // for thread in iter {
+        //     let thread_node = &threads.thread_nodes()[&threads.thread_ref(thread).root()];
+        //     let root_envelope_hash = if let Some(h) = thread_node.message().or_else(|| {
+        //         if thread_node.children().is_empty() {
+        //             return None;
+        //         }
+        //         let mut iter_ptr = thread_node.children()[0];
+        //         while threads.thread_nodes()[&iter_ptr].message().is_none() {
+        //             if threads.thread_nodes()[&iter_ptr].children().is_empty() {
+        //                 return None;
+        //             }
+        //             iter_ptr = threads.thread_nodes()[&iter_ptr].children()[0];
+        //         }
+        //         threads.thread_nodes()[&iter_ptr].message()
+        //     }) {
+        //         h
+        //     } else {
+        //         continue;
+        //     };
 
-            let row_data = FolderConversationRowData::new(&"Subject placeholder");
-            unsafe {
-                (*row_data.as_ptr()).get_impl().subject.replace(Some(
-                    threads.thread_nodes()[&threads.thread_ref(thread).root()]
-                        .message()
-                        .as_ref()
-                        .map(|m| envelopes.read().unwrap()[m].subject().to_string())
-                        .unwrap_or_else(|| "None".to_string()),
-                ));
-            }
+        //     let row_data = FolderConversationRowData::new(&"Subject placeholder");
+        //     unsafe {
+        //         (*row_data.as_ptr()).get_impl().subject.replace(Some(
+        //             threads.thread_nodes()[&threads.thread_ref(thread).root()]
+        //                 .message()
+        //                 .as_ref()
+        //                 .map(|m| envelopes.read().unwrap()[m].subject().to_string())
+        //                 .unwrap_or_else(|| "None".to_string()),
+        //         ));
+        //     }
 
-            self.threads_model.append(&row_data);
-        }
-
-        // print_threadnodes(threads.thread_ref(thread).root(), threads.thread_nodes(), &envelopes);
+        //     self.threads_model.append(&row_data)
     }
 }

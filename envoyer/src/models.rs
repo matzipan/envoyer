@@ -6,7 +6,9 @@ use chrono;
 pub struct Folder {
     pub id: i32,
     pub folder_name: String,
+    pub folder_path: String,
     pub identity_id: i32,
+    pub uid_validity: Option<i64>,
     pub flags: i32,
 }
 
@@ -15,6 +17,7 @@ pub struct Folder {
 #[table_name = "folders"]
 pub struct NewFolder {
     pub folder_name: String,
+    pub folder_path: String,
     pub identity_id: i32,
     pub flags: i32,
 }
@@ -89,6 +92,15 @@ impl From<Message> for melib::email::Envelope {
     }
 }
 
+#[derive(AsChangeset, Debug)]
+#[table_name = "messages"]
+pub struct MessageFlags {
+    pub seen: bool,
+    pub flagged: bool,
+    pub draft: bool,
+    pub deleted: bool,
+}
+
 #[derive(Insertable, Associations, Debug)]
 #[belongs_to(Folder)]
 #[table_name = "messages"]
@@ -103,8 +115,8 @@ pub struct NewMessage {
     pub bcc: String,
     pub references: String,
     pub in_reply_to: String,
-    pub uid: i32,
-    pub modification_sequence: i32,
+    pub uid: i64,
+    pub modification_sequence: i64,
     pub seen: bool,
     pub flagged: bool,
     pub draft: bool,
@@ -112,29 +124,34 @@ pub struct NewMessage {
     pub content: String,
 }
 
-impl From<melib::email::Mail> for NewMessage {
-    fn from(mail: melib::email::Mail) -> Self {
+impl From<melib::email::Envelope> for NewMessage {
+    fn from(envelope: melib::email::Envelope) -> Self {
+        let flags = envelope.flags();
+
         NewMessage {
-            message_id: String::from_utf8(mail.message_id().0.clone()).unwrap(),
+            message_id: String::from_utf8(envelope.message_id().0.clone()).unwrap(),
             folder_id: 0,
-            subject: String::from(mail.subject()),
+            subject: String::from(envelope.subject()),
             // We go straight for try_into().unwrap() because we know the timestamp won't take 64 bits any time soon
-            time_received: chrono::NaiveDateTime::from_timestamp(mail.datetime() as i64, 0), //@TODO
-            from: mail.field_from_to_string(),
-            to: mail.field_to_to_string(),
-            cc: mail.field_cc_to_string(),
-            bcc: mail.field_bcc_to_string(),
-            references: mail.field_references_to_string(),
-            in_reply_to: mail
+            time_received: chrono::NaiveDateTime::from_timestamp(envelope.datetime() as i64, 0), //@TODO
+            from: envelope.field_from_to_string(),
+            to: envelope.field_to_to_string(),
+            cc: envelope.field_cc_to_string(),
+            bcc: envelope.field_bcc_to_string(),
+            references: envelope.field_references_to_string(),
+            in_reply_to: envelope
                 .in_reply_to()
                 .map_or("".to_string(), |x| String::from_utf8(x.0.clone()).unwrap()),
             uid: 0,                   //@TODO
             modification_sequence: 0, //@TODO
-            seen: mail.is_seen(),
-            flagged: mail.flags().contains(melib::email::Flag::FLAGGED),
-            draft: mail.flags().contains(melib::email::Flag::DRAFT),
-            deleted: mail.flags().contains(melib::email::Flag::TRASHED),
-            content: mail.body().text(),
+            seen: flags.contains(melib::email::Flag::SEEN),
+            flagged: flags.contains(melib::email::Flag::FLAGGED),
+            draft: flags.contains(melib::email::Flag::DRAFT),
+            deleted: flags.contains(melib::email::Flag::TRASHED),
+            // REPLIED flag?
+
+            // content: envelope.body().text(),
+            content: "".to_string(),
         }
     }
 }

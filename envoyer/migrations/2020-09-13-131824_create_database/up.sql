@@ -14,7 +14,9 @@ CREATE TABLE attachments (
 CREATE TABLE folders (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     folder_name TEXT NOT NULL,
+    folder_path TEXT NOT NULL,
     identity_id INTEGER NOT NULL,
+    uid_validity INTEGER,
     flags INTEGER NOT NULL
 );
 CREATE TABLE identities (

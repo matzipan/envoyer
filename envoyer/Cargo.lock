@@ -494,6 +494,7 @@ version = "0.1.0"
 dependencies = [
  "async-stream 0.3.0",
  "chrono",
+ "data-encoding",
  "diesel",
  "futures",
  "gdk",
@@ -1105,6 +1106,7 @@ checksum = "7ffc5c5338469d4d3ea17d269fa8ea3512ad247247c30bd2df69e68309ed0a08"
 [[package]]
 name = "melib"
 version = "0.6.2"
+source = "git+https://github.com/matzipan/meli-envoyer?branch=envoyer-integration#8a67b125683b3172b5b4e74c7d7c18f100fed5b4"
 dependencies = [
  "async-stream 0.2.1",
  "bincode",
@@ -2070,6 +2072,6 @@ checksum = "d089681aa106a86fade1b0128fb5daf07d5867a509ab036d99988dec80429a57"
 
 [[package]]
 name = "xdg-utils"
-version = "0.3.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6c275db8f4249f393a5c4de777ebeba37a5859bc2209a30fb66dc566dddd3ce"
+checksum = "db9fefe62d5969721e2cfc529e6a760901cc0da422b6d67e7bfd18e69490dba6"

@@ -1,27 +1,141 @@
 use diesel::prelude::*;
 use futures::prelude::*;
 
-use log::info;
+use log::{debug, error, info};
 
-use melib::backends::{ImapType, SpecialUsageMailbox};
+use melib::backends::{BackendMailbox, SpecialUsageMailbox};
 use melib::{AccountSettings, BackendEventConsumer};
 
 use std::boxed::Box;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::pin::Pin;
 use std::sync::{Arc, RwLock};
 
 use async_stream;
 
 use crate::google_oauth;
+use crate::imap;
 use crate::models;
 use crate::schema;
 
+pub type ResultFuture<T> = Result<Pin<Box<dyn Future<Output = Result<T, String>> + Send + 'static>>, String>;
+
+pub struct Store {
+    database_connection_pool: diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
+}
+
+pub enum SyncType {
+    Fresh,
+    Update,
+}
+
+impl Store {
+    //@TODO spawn database interactions to a different thread and then join await? maybe async_thread library works for this
+    pub fn store_folder_for_mailbox(
+        &self,
+        bare_identity: &models::BareIdentity,
+        mailbox: &melib::backends::imap::ImapMailbox,
+    ) -> Result<(), String> {
+        let new_folder = models::NewFolder {
+            folder_name: mailbox.name().to_string(),
+            folder_path: mailbox.path().to_string(),
+            //@TODO uid_validity, after this uid_validity might not have to be Option anymore
+            identity_id: bare_identity.id,
+            flags: 0, //@TODO flags
+        };
+
+        let connection = self
+            .database_connection_pool
+            .get()
+            .expect("Unable to acquire a database connection");
+
+        debug!(
+            "Storing folder {} for identity {}",
+            &new_folder.folder_path, &bare_identity.email_address
+        );
+
+        diesel::insert_into(schema::folders::table)
+            .values(&new_folder)
+            .execute(&connection)
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    pub fn remove_folder(&self, bare_identity: &models::BareIdentity, folder: &models::Folder) -> Result<(), String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        debug!(
+            "Removing folder {} for identity {}",
+            &folder.folder_name, &bare_identity.email_address
+        );
+
+        diesel::delete(folder).execute(&connection).map_err(|e| e.to_string())?;
+
+        //@TODO remove messages belonging to the folder
+
+        Ok(())
+    }
+
+    pub fn get_folders(&self, bare_identity: &models::BareIdentity) -> Result<Vec<models::Folder>, String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        schema::folders::table
+            .filter(schema::folders::identity_id.eq(bare_identity.id))
+            .load::<models::Folder>(&connection)
+            .map_err(|e| e.to_string())
+    }
+
+    pub fn get_max_uid_and_uid_validity_for_folder(
+        &self,
+        folder: &models::Folder,
+    ) -> Result<Option<(melib::backends::imap::UID, melib::backends::imap::UID)>, String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        match schema::messages::table
+            .select(diesel::dsl::max(schema::messages::uid))
+            .filter(schema::messages::folder_id.eq(folder.id))
+            .first::<Option<i64>>(&connection)
+        {
+            Ok(Some(x)) => {
+                let max_uid = x;
+
+                // max_uid is u32 according th the IMAP RFC but we're storing it as i64 since SQLite doesn't have unsigned
+                // data_types. Therefore, we're safe to do this transformation and not worry about any errors.
+                let max_uid = melib::backends::imap::UID::try_from(max_uid).unwrap();
+
+                let uid_validity = 0; //@TODO
+
+                Ok(Some((max_uid, uid_validity)))
+            }
+            Ok(None) => Ok(None),
+            Err(diesel::NotFound) => Ok(None),
+            Err(e) => Err(e.to_string()),
+        }
+    }
+
+    pub fn store_message_for_folder(&self, new_message: &mut models::NewMessage, folder: &models::Folder) -> Result<(), String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        new_message.folder_id = folder.id;
+
+        let non_mut_new_message: &models::NewMessage = new_message;
+
+        diesel::insert_into(schema::messages::table)
+            .values(non_mut_new_message)
+            .execute(&connection)
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+}
+
 #[derive(Clone)]
 pub struct Identity {
-    bare_identity: models::BareIdentity,
-    backend: Arc<RwLock<Box<dyn melib::backends::MailBackend>>>,
-    database_connection_pool: diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
+    bare_identity: Arc<models::BareIdentity>,
+    backend: Arc<RwLock<Box<imap::ImapBackend>>>,
+    store: Arc<Store>,
 }
 
 impl Identity {
@@ -34,240 +148,260 @@ impl Identity {
             .await
             .unwrap();
 
-        let settings = AccountSettings {
-            extra: [
-                ("server_hostname".to_string(), "imap.gmail.com".to_string()),
-                ("server_username".to_string(), bare_identity.email_address.clone()),
-                ("server_password".to_string(), "blablalal".to_string()), //@TODO
-                ("access_token".to_string(), access_token_response.access_token),
-                ("server_port".to_string(), "993".to_string()),
-                ("danger_accept_invalid_certs".to_string(), "true".to_string()),
-            ]
-            .iter()
-            .cloned()
-            .collect(),
-            ..Default::default()
-        };
-        let backend = ImapType::new(
-            &settings,
-            Box::new(|_| true),
-            BackendEventConsumer::new(std::sync::Arc::new(|_, _| ())),
+        let imap_backend = imap::ImapBackend::new(
+            "imap.gmail.com".to_string(),
+            993,
+            bare_identity.email_address.clone(),
+            format!(
+                "user={}\x01auth=Bearer {}\x01\x01",
+                &bare_identity.email_address, &access_token_response.access_token
+            ),
+            true,
+            true,
+            false,
+            true,
+            BackendEventConsumer::new(Arc::new(|_, _| {})),
         )
         .unwrap();
+
         info!("Identity for {} created", bare_identity.email_address);
         return Identity {
-            bare_identity: bare_identity,
-            backend: Arc::new(RwLock::new(backend)),
-            database_connection_pool: database_connection_pool,
+            bare_identity: Arc::new(bare_identity),
+            backend: Arc::new(RwLock::new(imap_backend)),
+            store: Arc::new(Store { database_connection_pool }),
         };
     }
 
-    pub fn fetch_threads(
-        self,
-    ) -> (
-        smallvec::SmallVec<[melib::thread::ThreadHash; 1024]>,
-        melib::thread::Threads,
-        Arc<RwLock<HashMap<u64, melib::email::Envelope>>>,
-    ) {
-        let connection = self
-            .database_connection_pool
-            .get()
-            .expect("Unable to acquire a database connection");
-
-        let messages = schema::messages::table
-            .load::<models::Message>(&connection)
-            //@TODO filter for identity and folder
-            .expect("Unable to get identities from database");
-
-        let envelopes = Arc::new(RwLock::new(
-            messages
-                .into_iter()
-                .map(|m| <melib::email::Envelope as From<models::Message>>::from(m))
-                .map(|e| (e.hash(), e))
-                .collect::<HashMap<melib::email::EnvelopeHash, melib::email::Envelope>>(),
-        ));
-
-        let mut threads = melib::thread::Threads::new(envelopes.read().unwrap().len());
-        threads.amend(&envelopes);
-
-        let mut roots = threads.roots();
-
-        threads.group_inner_sort_by(&mut roots, (Default::default(), Default::default()), &envelopes);
-
-        (roots, threads, envelopes)
-        // let iter = roots.into_iter();
-        // for thread in iter {
-        //     let thread_node = &threads.thread_nodes()[&threads.thread_ref(thread).root()];
-        //     let root_envelope_hash = if let Some(h) = thread_node.message().or_else(|| {
-        //         if thread_node.children().is_empty() {
-        //             return None;
-        //         }
-        //         let mut iter_ptr = thread_node.children()[0];
-        //         while threads.thread_nodes()[&iter_ptr].message().is_none() {
-        //             if threads.thread_nodes()[&iter_ptr].children().is_empty() {
-        //                 return None;
-        //             }
-        //             iter_ptr = threads.thread_nodes()[&iter_ptr].children()[0];
-        //         }
-        //         threads.thread_nodes()[&iter_ptr].message()
-        //     }) {
-        //         h
-        //     } else {
-        //         continue;
-        //     };
-
-        //     print_threadnodes(threads.thread_ref(thread).root(), threads.thread_nodes(), &envelopes);
-        //     // info!(
-        //     //     "{} {}",
-        //     //     // envelopes.read().unwrap()[&threads.thread_nodes()[&thread].message().unwrap()].subject()
-        //     //     thread_node.children().len() + 1,
-        //     //     envelopes.read().unwrap()[&root_envelope_hash].subject()
-        //     // );
-        // }
-        // let roots = roots
-        //     .into_iter()
-        //     .filter_map(|r| threads.groups[&r].root().map(|r| r.root))
-        //     .collect::<_>();
-        // let mut iter = threads.threads_group_iter(roots).peekable();
-
-        // for (_, h, _) in iter {
-        //     info!(
-        //         "{}",
-        //         envelopes.read().unwrap()[&threads.thread_nodes()[&h].message().unwrap()].subject()
-        //     );
-        // }
-    }
-
-    pub async fn initialize(&self) {
+    pub async fn initialize(&self) -> Result<(), String> {
         info!("Initializing identity with address {}", self.bare_identity.email_address);
 
-        let mut folders = self.fetch_folders().await;
-        self.store_folders(&folders).await;
+        //@TODO how does LSUB come into play/ only filter for subscribed?
+        self.sync_folders()?.await?;
 
-        let mut inbox: Option<melib::Mailbox> = None;
-
-        for mailbox in folders.values_mut() {
-            let mailbox_usage = if mailbox.special_usage() != SpecialUsageMailbox::Normal {
-                Some(mailbox.special_usage())
-            } else {
-                let tmp = SpecialUsageMailbox::detect_usage(mailbox.name());
-                if tmp != Some(SpecialUsageMailbox::Normal) && tmp != None {
-                    let _ = mailbox.set_special_usage(tmp.unwrap());
-                }
-                tmp
-            };
-            if mailbox_usage == Some(SpecialUsageMailbox::Inbox) {
-                inbox = Some((*mailbox).clone());
-            }
-        }
-
-        let inbox_mailbox = inbox.expect("Inbox mailbox could not be found");
-
-        let connection = self
-            .database_connection_pool
-            .get()
-            .expect("Unable to acquire a database connection");
-
-        //@TODO better to use hash
-        let inbox_folder = schema::folders::table
-            .filter(schema::folders::folder_name.eq(inbox_mailbox.name().to_string()))
-            .first::<models::Folder>(&connection)
-            .expect("Unable to get messages for folder");
-
-        let mut x = self.get_messages(&inbox_mailbox).await;
-
-        while let Some(bla) = x.next().await {
-            match bla {
-                Ok(x) => {
-                    let mut new_message = models::NewMessage::from(x);
-
-                    new_message.folder_id = inbox_folder.id;
-
-                    diesel::insert_into(schema::messages::table)
-                        .values(&new_message)
-                        .execute(&connection)
-                        .expect("Error saving new folder");
-                }
-                Err(_) => info!("Error"),
-            };
+        for folder in self.store.get_folders(&self.bare_identity)? {
+            self.sync_messages_for_folder(&folder, SyncType::Fresh)?.await?;
         }
 
         info!("Finished identity initialization for {}", self.bare_identity.email_address);
+        Ok(())
     }
 
     pub fn start_session(&self) {
-        self.start_listening_for_updates();
+        // @TODO self.start_listening_for_updates();
+
+        let sync_folder_job = self.sync_folders().expect("BLA");
+        let sync_messages_for_index_job = self
+            .sync_messages_for_folder(
+                self.store
+                    .get_folders(&self.bare_identity)
+                    .unwrap()
+                    .iter()
+                    .find(|&x| x.folder_name == "INBOX")
+                    .unwrap(),
+                SyncType::Update,
+            )
+            .expect("BLA");
+        // @TODO sync other folders than inbox
+
+        let context = glib::MainContext::default();
+        context.spawn(async move {
+            sync_folder_job.await;
+            sync_messages_for_index_job.await;
+        });
     }
 
-    pub async fn store_folders(&self, mailboxes: &HashMap<u64, Box<dyn melib::backends::BackendMailbox + Send + Sync>>) {
-        for mailbox in mailboxes.values() {
-            let new_folder = models::NewFolder {
-                folder_name: mailbox.name().to_string(),
-                identity_id: self.bare_identity.id,
-                flags: 0, //@TODO flags
-            };
+    fn fetch_folders(&self) -> ResultFuture<HashMap<u64, Box<melib::backends::imap::ImapMailbox>>> {
+        let mailboxes_job = self
+            .backend
+            .read()
+            .map_err(|e| e.to_string())?
+            .mailboxes()
+            .map_err(|e| e.to_string())?;
 
-            let connection = self
-                .database_connection_pool
-                .get()
-                .expect("Unable to acquire a database connection");
+        let online_job = self
+            .backend
+            .read()
+            .map_err(|e| e.to_string())?
+            .is_online()
+            .map_err(|e| e.to_string())?;
 
-            diesel::insert_into(schema::folders::table)
-                .values(&new_folder)
-                .execute(&connection)
-                .expect("Error saving new folder");
+        Ok(Box::pin(async move {
+            online_job.await.map_err(|e| e.to_string())?;
+            mailboxes_job.await.map_err(|e| e.to_string()).map(|mut mailboxes| {
+                for mailbox in mailboxes.values_mut() {
+                    //@TODO
+                    let mailbox_usage = if mailbox.special_usage() != SpecialUsageMailbox::Normal {
+                        Some(mailbox.special_usage())
+                    } else {
+                        let tmp = SpecialUsageMailbox::detect_usage(mailbox.name());
+                        if tmp != Some(SpecialUsageMailbox::Normal) && tmp != None {
+                            let _ = mailbox.set_special_usage(tmp.unwrap());
+                        }
+                        tmp
+                    };
+                }
 
-            info!("{:?}", &mailbox);
-        }
+                mailboxes
+            })
+        }))
     }
 
-    pub async fn fetch_folders(&self) -> HashMap<u64, Box<dyn melib::backends::BackendMailbox + Send + Sync>> {
-        let mailboxes_job = self.backend.read().unwrap().mailboxes().unwrap();
-        // if let Ok(mailboxes_job) = backend.mailboxes() {
-        let online_job = self.backend.read().unwrap().is_online().unwrap();
-        // if let Ok(online_job) = backend.is_online() {
-        online_job.then(|_| mailboxes_job).await.unwrap()
+    fn sync_folders(&self) -> ResultFuture<()> {
+        let fetch_folders_job = self.fetch_folders();
+        let store_clone = self.store.clone();
+        let bare_identity_clone = self.bare_identity.clone();
 
-        //@TODO transform into NewFolder
-    }
+        Ok(Box::pin(async move {
+            let mailboxes = fetch_folders_job?.await?; //@TODO rename to fetch mailboxes
 
-    pub async fn get_messages(
-        &self,
-        folder: &Box<dyn melib::backends::BackendMailbox + Send + Sync>,
-    ) -> Pin<Box<dyn Stream<Item = Result<melib::email::Mail, melib::error::MeliError>>>> {
-        // if let Ok(mut mailbox_job) = backend.fetch(inbox.hash()) {
-        let mut mailbox_job = self.backend.write().unwrap().fetch(folder.hash()).unwrap();
+            // This is used to detect local folders removed from the server
+            let mut leftover_folders_store: HashMap<_, _> = store_clone
+                .get_folders(&bare_identity_clone)?
+                .into_iter()
+                .map(|folder| (folder.folder_path.clone(), folder))
+                .collect();
 
-        let backend_clone = self.backend.clone();
+            for (_, mailbox_value) in mailboxes.iter() {
+                let mailbox_path = mailbox_value.path().to_string();
 
-        Box::pin(async_stream::stream! {
-            let backend_clone = backend_clone.clone();
-
-            while let Some(envelope_chunk) = mailbox_job.next().await {
-                let envelope_chunk = envelope_chunk.unwrap();
-
-                for envelope in envelope_chunk {
-                    let operation = backend_clone.read().unwrap().operation(envelope.hash()).unwrap();
-                    // yield String::from_utf8(operation.as_bytes().unwrap().await.unwrap());
-                    yield melib::email::Mail::new(operation.as_bytes().unwrap().await.unwrap(), None);
+                match leftover_folders_store.get(&mailbox_path) {
+                    Some(_) => {
+                        debug!(
+                            "Found folder {} locally for identity {}. Removing from leftover set",
+                            &mailbox_path, &bare_identity_clone.email_address
+                        );
+                        leftover_folders_store.remove(&mailbox_path);
+                    }
+                    None => {
+                        debug!(
+                            "Did not find folder {} locally for identity {}. Inserting in database",
+                            &mailbox_path, &bare_identity_clone.email_address
+                        );
+                        store_clone.store_folder_for_mailbox(&bare_identity_clone, &mailbox_value)?;
+                    }
                 }
             }
 
-            return;
-        })
+            for (folder_path, folder_value) in leftover_folders_store.iter() {
+                debug!(
+                    "Detected that folder {} for identity {} is not on the server. Removing from database",
+                    &folder_path, &bare_identity_clone.email_address
+                );
+                store_clone.remove_folder(&bare_identity_clone, &folder_value)?;
+            }
+
+            //@TODO trigger application event to reload folders
+
+            Ok(())
+        }))
     }
 
-    fn start_listening_for_updates(&self) {
-        let mailboxes_job = self.backend.read().unwrap().mailboxes().unwrap();
-        let updates_job = self.backend.read().unwrap().watch().unwrap();
+    // fn fetch_messages_for_folder(
+    //     &self,
+    //     folder: &models::Folder,
+    // ) -> Result<Pin<Box<dyn Stream<Item = Result<melib::email::Mail, melib::error::MeliError>>>>, String> {
+    //     // if let Ok(mut mailbox_job) = backend.fetch(inbox.hash()) {
 
-        let online_job = self.backend.read().unwrap().is_online().unwrap();
-        let context = glib::MainContext::default();
+    //     let mut mailbox_job = self
+    //         .backend
+    //         .read()
+    //         .unwrap()
+    //         .sync(folder.folder_path.clone(), imap::SyncType::Fresh)
+    //         .unwrap();
 
-        context.spawn(online_job.then(|_| mailboxes_job).then(|_| updates_job).map(move |_| ()));
+    //     let backend_clone = self.backend.clone();
+
+    //     Err("".to_string())
+
+    //     // Ok(Box::pin(async_stream::stream! {
+    //     //     let backend_clone = backend_clone.clone();
+
+    //     //     // while let Some(envelope_chunk) = mailbox_job.next().await {
+    //     //     //     let envelope_chunk = envelope_chunk.unwrap();
+
+    //     //     //     for envelope in envelope_chunk {
+    //     //     //         let operation = backend_clone.read().unwrap().operation(envelope.hash()).unwrap();
+    //     //     //         // yield String::from_utf8(operation.as_bytes().unwrap().await.unwrap());
+    //     //     //         yield melib::email::Mail::new(operation.as_bytes().unwrap().await.unwrap(), None);
+    //     //     //     }
+    //     //     // }
+
+    //     //     return;
+    //     // }))
+    // }
+
+    fn sync_messages_for_folder(&self, folder: &models::Folder, sync_type: SyncType) -> ResultFuture<()> {
+        let store_clone = self.store.clone();
+        let bare_identity_clone = self.bare_identity.clone();
+        let folder_clone = folder.clone();
+        let store_clone = self.store.clone();
+
+        let sync_type = match sync_type {
+            SyncType::Fresh => imap::SyncType::Fresh,
+            SyncType::Update => {
+                if let Some((max_uid, uid_validity)) = self.store.get_max_uid_and_uid_validity_for_folder(folder)? {
+                    imap::SyncType::Update {
+                        max_uid: max_uid,
+                        uid_validity: uid_validity,
+                    }
+                } else {
+                    imap::SyncType::Fresh
+                }
+            }
+        };
+
+        let sync_job = self.backend.read().unwrap().sync(folder.folder_path.clone(), sync_type).unwrap();
+
+        let online_job = self
+            .backend
+            .read()
+            .map_err(|e| e.to_string())?
+            .is_online()
+            .map_err(|e| e.to_string())?;
+
+        Ok(Box::pin(async move {
+            debug!("Syncing messages for folder {}, checking if online", folder_clone.folder_name);
+
+            online_job.await.map_err(|e| e.to_string())?;
+
+            debug!("Online, syncing");
+            let (new_uid_validity, mut new_messages, mut flag_updates) = sync_job.await.map_err(|e| e.to_string())?;
+
+            // @TODO asyncstream while let Some(bla) = x.next().await { }
+
+            if let Some(current_uid_validity) = store_clone.get_max_uid_and_uid_validity_for_folder(&folder_clone)? {
+                if new_uid_validity == current_uid_validity.1 {
+                    for new_message in new_messages.iter_mut() {
+                        store_clone.store_message_for_folder(new_message, &folder_clone)?;
+                    }
+
+                    if let Some(flag_updates) = flag_updates {
+                        //@TODO
+                        for flag_update in flag_updates.iter() {
+                            debug!("{}", flag_update.uid);
+                        }
+                    }
+                    //@TODO 2) find out which old messages got expunged; and
+                } else {
+                    //@TODO delete all mail
+                    //@todo store
+                    //@TODO set new uid_validity on folder
+                }
+            } else {
+                return Err("Unable to fetch the current max uid and uid validity for the sync".to_string());
+            }
+
+            Ok(())
+        }))
     }
 
-    pub fn start_token_renewal_thread(&self) {
-        let context = glib::MainContext::default();
-    }
+    // fn start_listening_for_updates(&self) {
+    //     let mailboxes_job = self.backend.read().unwrap().mailboxes().unwrap();
+    //     let watch_job = self.backend.read().unwrap().watch().unwrap();
+
+    //     let online_job = self.backend.read().unwrap().is_online().unwrap();
+    //     let context = glib::MainContext::default();
+
+    //     context.spawn(online_job.and_then(|_| mailboxes_job).and_then(|_| watch_job).map(move |_| ()));
+    // }
 }

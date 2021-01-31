@@ -18,7 +18,9 @@ table! {
     folders (id) {
         id -> Integer,
         folder_name -> Text,
+        folder_path -> Text,
         identity_id -> Integer,
+        uid_validity -> Nullable<BigInt>,
         flags -> Integer,
     }
 }
@@ -49,8 +51,8 @@ table! {
         content -> Text,
         references -> Text,
         in_reply_to -> Text,
-        uid -> Integer,
-        modification_sequence -> Integer,
+        uid -> BigInt,
+        modification_sequence -> BigInt,
         seen -> Bool,
         flagged -> Bool,
         draft -> Bool,
