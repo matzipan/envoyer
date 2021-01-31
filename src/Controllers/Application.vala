@@ -117,11 +117,15 @@ public class Envoyer.Controllers.Application : Granite.Application {
     }
     
     public void load_conversation_thread (ConversationThread conversation_thread) {
+        //@TODO this should be a signal
         current_conversation_thread = conversation_thread;
         conversation_viewer.load_conversation_thread (conversation_thread);
+        identities[0].set_as_seen (current_conversation_thread);
+        conversation_thread.seen = true; //@todo this is just a temporary hack until we get the operations queue
     }
     
     public void unload_current_conversation_thread () {
+        //@TODO this should be a signal
         current_conversation_thread = null;
         conversation_viewer.unload_current_conversation_thread ();
     }

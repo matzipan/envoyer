@@ -137,11 +137,14 @@ public class Envoyer.Widgets.Main.FolderConversationItem : SwipeActionListBoxRow
     }
 
     private void process_seen_state () {
-        debug ("Processing seen state for thread %s", thread.subject);
         if (!thread.seen) {
+            debug ("Processing as unseen thread %s", thread.subject);
+
             get_style_context ().add_class ("unseen");
             unseen_dot.show ();
         } else {
+            debug ("Processing as seen thread %s", thread.subject);
+
             get_style_context ().remove_class ("unseen");
             unseen_dot.hide ();
         }

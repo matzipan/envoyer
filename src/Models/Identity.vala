@@ -321,8 +321,10 @@ public class Envoyer.Models.Identity : GLib.Object {
         return yield MailCoreInterface.Imap.get_plain_text_for_message (imap_session, message.folder.name, message);
     }
 
-    public async bool store_flags_for_message (Message message) {
-        return yield MailCoreInterface.Imap.store_flags_for_message (imap_session, message.folder.name, message);
+    public void set_as_seen (ConversationThread thread) {
+        debug ("Settting thread %s as seen", thread.subject);
+        //@TODO which flags?
+        MailCoreInterface.Imap.store_flags_for_messages.begin (imap_session, thread.folder.name, thread.message_uids_list);
     }
 
     public void send_message (Message message) {
@@ -337,14 +339,9 @@ public class Envoyer.Models.Identity : GLib.Object {
         var trash_folder = get_folder_with_type (IFolder.Type.TRASH);
         //@TODO handle no trash folder on server
 
-        var message_uids_list = new Gee.LinkedList <uint64?> (null);
-
-        foreach (var item in thread.messages_list) {
-            //@TODO Use copy/store flags/expunge on servers that do not support move https://stackoverflow.com/a/15816045/367292
-            message_uids_list.add (item.uid);
-        }
+        //@TODO Use copy/store flags/expunge on servers that do not support move https://stackoverflow.com/a/15816045/367292
 
         //@TODO handle error
-        MailCoreInterface.Imap.move_messages.begin (imap_session, thread.folder.name, message_uids_list, trash_folder.name);
+        MailCoreInterface.Imap.move_messages.begin (imap_session, thread.folder.name, thread.message_uids_list, trash_folder.name);
     }
 }

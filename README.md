@@ -35,7 +35,7 @@ toolkit goodies like theming, icons or better performance.
 On elementary OS, the following packages need to be installed:
 
 ```
-sudo apt install cmake build-essential valac libgtk-3-dev libsoup2.4-dev libgranite-dev libgda-5.0-dev libjson-glib-dev libwebkit2gtk-4.0-dev
+sudo apt install cmake build-essential valac libgtk-3-dev libsoup2.4-dev libgranite-dev libgda-5.0-dev libjson-glib-dev libwebkit2gtk-4.0-dev libgirepository1.0-dev
 ```
 
 On top of this, you need to install the package dependencies for the Mailcore 2

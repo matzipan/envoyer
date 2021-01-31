@@ -33,6 +33,18 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
         }
     }
 
+    public Gee.List <uint64?> message_uids_list {
+        owned get {
+            var message_ids_list = new Gee.LinkedList <uint64?> (null);
+
+            foreach (var message_instance in messages_list) {
+                message_ids_list.add (message_instance.uid);
+            }
+            
+            return message_ids_list;
+        }
+    }
+
     public bool has_non_inline_attachments {
         get {
             foreach (var message_instance in messages_list) {
@@ -60,7 +72,8 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
             var unique_addresses = new Gee.HashMap <string, Address>();
 
             foreach (var message_instance in messages_list) {
-                unique_addresses[message_instance.from.to_string ()] = message_instance.from;
+                //@TODO this is case-sensitive
+                unique_addresses[message_instance.from.email] = message_instance.from;
             }
 
             addresses.add_all (unique_addresses.values);
@@ -103,6 +116,12 @@ public class Envoyer.Models.ConversationThread : GLib.Object {
             }
 
             return true;
+        }
+
+        set {
+            foreach (var current_message in messages_list) {
+                current_message.seen = value;
+            }
         }
     }
 

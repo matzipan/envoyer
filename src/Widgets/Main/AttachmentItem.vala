@@ -30,10 +30,10 @@ public class Envoyer.Widgets.AttachmentItem : Gtk.EventBox {
 
         build_ui ();
         connect_signals ();
-        load_data ();
     }
  
     private void build_ui () {
+        //  no_show_all ();
         icon_image = new Gtk.Image ();
         name_label = new Gtk.Label ("");
 
@@ -43,6 +43,9 @@ public class Envoyer.Widgets.AttachmentItem : Gtk.EventBox {
 
         grid.add (icon_image);
         grid.add (name_label);
+
+        load_data ();
+        show_all ();
     }
  
     private void load_data () {
@@ -50,6 +53,14 @@ public class Envoyer.Widgets.AttachmentItem : Gtk.EventBox {
 
         icon_image.set_from_gicon (icon, Gtk.IconSize.DND);
         name_label.set_text (model.file_name);
+
+        if(model.file_name.has_suffix (".ics")) {
+            var component = new ICal.Component.from_string ((string) model.data.get_data ());
+            message(component.get_dtstart ().as_ical_string ());
+            message(component.get_dtend ().as_ical_string ());
+
+            message(component.get_description());
+        }
     }
 
     private void connect_signals () {

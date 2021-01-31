@@ -47,75 +47,90 @@ public class Envoyer.Services.Database : Object {
             }
         }
 
-        connection = Gda.Connection.open_from_string (null, "SQLite://DB_DIR=.;DB_NAME=%s".printf (DB_FILE_PATH), null, Gda.ConnectionOptions.NONE);
+        Gda.init ();
 
-        Error e = null;
+        try {
+        connection = Gda.Connection.open_from_string (null, "SQLite://DB_DIR=.;DB_NAME=%s".printf (DB_FILE_PATH), null, Gda.ConnectionOptions.THREAD_ISOLATED);
+            if(connection.is_opened()) {
+                critical ("OPENED");
 
-        var operation = Gda.ServerOperation.prepare_create_table (connection, FOLDERS_TABLE, e,
-                                                                    "folder_id",        typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
-                                                                    "folder_name",      typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "owning_identity",  typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "flags",            typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "unread_count",     typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "total_count",      typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
-                                                                    );
-        is_initialization |= !create_table (operation, e); //@TODO catch isseus
+            } else {
+                critical("NOT OPENED");
+            }
+        }
+        catch(GLib.Error e) {
+            critical ("ERROR HAPPENED");
+        }
 
-        e = null;
+        //  Error e = null;
 
-        operation = Gda.ServerOperation.prepare_create_table (connection, MESSAGES_TABLE, e,
-                                                                    "id",               typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
-                                                                    "message_id",       typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "subject",          typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "owning_folder",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "owning_identity",  typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "time_received",    typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "from",             typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "sender",           typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "to",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "cc",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "bcc",              typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "html_content",         typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "plain_text_content",   typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "references",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "in_reply_to",              typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "uid",                      typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "modification_sequence",    typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "seen",             typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "flagged",          typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "draft",            typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "deleted",          typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
-                                                                    );
-        is_initialization |= !create_table (operation, e); //@TODO catch issues
+        //  var operation = Gda.ServerOperation.prepare_create_table (connection, FOLDERS_TABLE, e,
+        //                                                              "folder_id",        typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
+        //                                                              "folder_name",      typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "owning_identity",  typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "flags",            typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "unread_count",     typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "total_count",      typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
+        //                                                              );
+        //  is_initialization |= !create_table (operation, e); //@TODO catch isseus
+
+        //  e = null;
+
+        //  operation = Gda.ServerOperation.prepare_create_table (connection, MESSAGES_TABLE, e,
+        //                                                              "id",               typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
+        //                                                              "message_id",       typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "subject",          typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "owning_folder",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "owning_identity",  typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "time_received",    typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "from",             typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "sender",           typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "to",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "cc",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "bcc",              typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "html_content",         typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "plain_text_content",   typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "references",               typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "in_reply_to",              typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "uid",                      typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "modification_sequence",    typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "seen",             typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "flagged",          typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "draft",            typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "deleted",          typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
+        //                                                              );
+        //  is_initialization |= !create_table (operation, e); //@TODO catch issues
+
+        //  //@TODO CREATE INDEX update_query ON messages (owning_identity, uid);
 
 
-        operation = Gda.ServerOperation.prepare_create_table (connection, ATTACHMENTS_TABLE, e,
-                                                                    "id",               typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
-                                                                    "message_id",       typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "file_name",        typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "mime_type",        typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "character_set",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "content_id",       typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "content_location", typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "part_id",          typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "encoding",         typeof (int64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "data",             typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "is_inline", typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
-                                                                    );
-        is_initialization |= !create_table (operation, e); //@TODO catch issues
+        //  operation = Gda.ServerOperation.prepare_create_table (connection, ATTACHMENTS_TABLE, e,
+        //                                                              "id",               typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
+        //                                                              "message_id",       typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "file_name",        typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "mime_type",        typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "character_set",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "content_id",       typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "content_location", typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "part_id",          typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "encoding",         typeof (int64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "data",             typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "is_inline", typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
+        //                                                              );
+        //  is_initialization |= !create_table (operation, e); //@TODO catch issues
 
-        e = null;
+        //  e = null;
 
-        operation = Gda.ServerOperation.prepare_create_table (connection, IDENTITIES_TABLE, e,
-                                                                    "id",               typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
-                                                                    "username",         typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "access_token",     typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "refresh_token",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "expires_at",       typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "full_name",        typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
-                                                                    "account_name",     typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
-                                                                    );
-        is_initialization |= !create_table (operation, e); //@TODO catch issues
+        //  operation = Gda.ServerOperation.prepare_create_table (connection, IDENTITIES_TABLE, e,
+        //                                                              "id",               typeof (uint64), Gda.ServerOperationCreateTableFlag.PKEY_AUTOINC_FLAG,
+        //                                                              "username",         typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "access_token",     typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "refresh_token",    typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "expires_at",       typeof (uint64), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "full_name",        typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG,
+        //                                                              "account_name",     typeof (string), Gda.ServerOperationCreateTableFlag.NOTHING_FLAG
+        //                                                              );
+        //  is_initialization |= !create_table (operation, e); //@TODO catch issues
 
     }
 
@@ -480,11 +495,17 @@ public class Envoyer.Services.Database : Object {
         return list;
     }
 
-    public void update_messages_for_folder (Gee.Collection <Message> messages, Folder folder) {
+    public async void update_messages_for_folder (Gee.Collection <Message> messages, Folder folder) {
+        var update_start = get_real_time ();
+
         var hashed_messages = new Gee.HashSet <string> ();
         foreach (var existing_message in get_messages_for_folder (folder)) {
             hashed_messages.add(existing_message.id);
         }
+
+        
+        //  var batch = new Gda.Batch ();
+
 
         foreach (var current_message in messages) {
             //@TODO add to if -> || message does nto belong to this identity
@@ -493,7 +514,13 @@ public class Envoyer.Services.Database : Object {
                 continue;
             }
 
-            debug ("Updating message: %u, %s", current_message.uid, current_message.id);
+            debug ("Updating message: %u, %s, seen %i, flagged %i, draft %i, deleted %i",
+                current_message.uid,
+                current_message.id,
+                (int) current_message.seen,
+                (int) current_message.flagged,
+                (int) current_message.draft,
+                (int) current_message.deleted);
 
             var builder = new Gda.SqlBuilder (Gda.SqlStatementType.UPDATE);
             builder.set_table (MESSAGES_TABLE);
@@ -505,16 +532,84 @@ public class Envoyer.Services.Database : Object {
             builder.add_field_value_as_gvalue ("deleted", (int) current_message.deleted);
             var owning_identity_field = builder.add_id ("owning_identity");
             var owning_identity_value = builder.add_expr_value (null, folder.identity.address.email); //@TODO is .email really good enough?
-            var owning_identity_condition = builder.add_cond (Gda.SqlOperatorType.GEQ, owning_identity_field, owning_identity_value, 0);
+            var owning_identity_condition = builder.add_cond (Gda.SqlOperatorType.EQ, owning_identity_field, owning_identity_value, 0);
             var uid_field = builder.add_id ("uid");
             var uid_value = builder.add_expr_value (null, current_message.uid); //@TODO is .email really good enough?
-            var uid_condition = builder.add_cond (Gda.SqlOperatorType.GEQ, uid_field, uid_value, 0);
+            var uid_condition = builder.add_cond (Gda.SqlOperatorType.EQ, uid_field, uid_value, 0);
             builder.set_where (builder.add_cond (Gda.SqlOperatorType.AND, owning_identity_condition, uid_condition, 0));
             var statement = builder.get_statement ();
-            connection.statement_execute_non_select (statement, null, null);
+//UPDATE messages SET modification_sequence=256, owning_folder='INBOX', seen=1, flagged=0, draft=0, deleted=0 WHERE ((owning_identity >= 'matzipan@gmail.com')) AND ((uid >= 130532))
+
+            var return_set = (Gda.Set) yield async_statement_execute (statement);
+            debug("impacted rows %d", return_set.get_holder ("IMPACTED_ROWS").get_value().get_int());
+            //  batch.add_statement (statement);
+            //  public uint async_statement_execute (Statement stmt, Set? @params, StatementModelUsage model_usage, Type[]? col_types, bool need_last_insert_row) throws Error 
         }
 
+        //  var before_execute = get_real_time ();
+
+        //  connection.batch_execute (batch, null, Gda.StatementModelUsage.CURSOR);
+        
+        /*
+        
+        var query_string_builder = new StringBuilder ();
+
+        foreach (var current_message in messages) {
+            //@TODO add to if -> || message does nto belong to this identity
+            if (!hashed_messages.contains (current_message.id)) {
+                warning ("Unable to find message to update its flags: %u, %s", current_message.uid, current_message.id);
+                continue;
+            }
+
+            //@TODO avoid sql injection
+            debug ("Updating message: %u, %s, seen %i, flagged %i, draft %i, deleted %i",
+                current_message.uid,
+                current_message.id,
+                (int) current_message.seen,
+                (int) current_message.flagged,
+                (int) current_message.draft,
+                (int) current_message.deleted);
+
+            query_string_builder.append ("UPDATE messages SET modification_sequence=%u, owning_folder='%s', seen=%i, flagged=%i, draft=%i, deleted=%i WHERE (owning_identity = '%s') AND (uid = %u); ".printf(
+                current_message.modification_sequence,
+                current_message.folder.name,
+                (int) current_message.seen,
+                (int) current_message.flagged,
+                (int) current_message.draft,
+                (int) current_message.deleted,
+                folder.identity.address.email, //@TODO is .email really good enough?,
+                current_message.uid
+            ));
+        }
+
+        debug (query_string_builder.str);
+        var before_execute = get_real_time ();
+
+        var return_value = connection.execute_non_select_command (query_string_builder.str);
+
+        if (return_value < 0) {
+            debug ("An error occured when saving the updates");
+        } else {
+            debug ("%i rows were updated", return_value);
+        }*/
+
+        message("Time for update %lli", get_real_time () - update_start);
+
         application.folder_updated (folder.name); //@TODO there needs to be a centralized factory of objects, conversation threads so that we can nicely handle updates and signals
+    }
+
+    public async Object async_statement_execute (Gda.Statement statement) {
+        var task_id = connection.async_statement_execute (statement, null, Gda.StatementModelUsage.CURSOR, null, false);
+        Object result = null;
+        while (result == null) {
+            yield;
+            result = connection.async_fetch_result (task_id, null);
+        }
+    
+        message("FINISHED FETCH");
+
+
+        return result;
     }
 
     public uint get_highest_uid_for_folder (Folder folder) {

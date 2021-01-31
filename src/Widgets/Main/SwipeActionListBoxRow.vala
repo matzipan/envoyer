@@ -198,6 +198,8 @@
 
         var icon_info = icon_theme.lookup_icon (swipe_left_icon_name, icon_size, Gtk.IconLookupFlags.GENERIC_FALLBACK);
         swipe_left_icon_pixbuf = icon_info.load_symbolic (icon_style.get_color (get_state_flags ()));
+
+        //@TODO handle cases where icon is not found
     }
 
     public void add (Gtk.Widget widget) {

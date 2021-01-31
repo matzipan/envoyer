@@ -8,6 +8,8 @@ namespace MailCoreInterface.Imap {
     public async Gee.Collection<Envoyer.Models.Folder> fetch_folders (void* session);
     [CCode (finish_name = "mail_core_interface_imap_fetch_messages_finish")]
     public async Gee.Collection<Envoyer.Models.Message> fetch_messages (void* session, string folder, uint64 starting_uid_value, uint64 end_uid_value, bool flags_only);
+    [CCode (finish_name = "mail_core_interface_imap_store_flags_for_messages_finish")]
+    public async bool store_flags_for_messages (void* session, string folder, Gee.List<uint64> message_uids);
     [CCode (finish_name = "mail_core_interface_imap_move_messages_finish")]
     public async bool move_messages (void* session, string source_folder, Gee.List<uint64> message_uids, string destination_folder);
     [CCode (finish_name = "mail_core_interface_imap_get_message_uids_for_folder_finish")]

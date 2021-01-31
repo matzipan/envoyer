@@ -13,6 +13,7 @@ set (APP_PKG_DEPS
 	webkit2gtk-4.0>=2.10.9
 	libgda-5.0
 	json-glib-1.0
+	libical-glib
 )
 
 set (APP_VALA_DEPS
@@ -26,6 +27,7 @@ set (APP_VALA_DEPS
 	webkit2gtk-4.0>=2.10.9
 	libgda-5.0
 	json-glib-1.0
+	libical-glib
 )
 
 find_package (PkgConfig)
@@ -48,6 +50,8 @@ set (APP_VALA_OPTIONS
 	--vapidir=${CMAKE_SOURCE_DIR}/vapi
 	--debug
 	--target-glib=2.47.6
+	--gir=Envoyer-${VERSION}.gir
+	--library=Envoyer-${VERSION}
 	--disable-since-check
 	${EXTRA_VALA_OPTIONS}
 )
@@ -125,9 +129,12 @@ add_executable (${PROJECT_FQDN}
 	MailCoreInterface/imap_idle_listener.cpp
 	MailCoreInterface/imap_move_messages.cpp
 	MailCoreInterface/imap_plain_text_rendering.cpp
+	MailCoreInterface/imap_store_flags.cpp
 	MailCoreInterface/smtp.cpp
 	MailCoreInterface/pool.cpp
 )
+
+target_compile_definitions(${PROJECT_FQDN} PRIVATE LIBICAL_GLIB_UNSTABLE_API=1)
 
 install (TARGETS ${PROJECT_FQDN} RUNTIME DESTINATION bin)
 
