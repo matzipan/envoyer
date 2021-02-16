@@ -9,7 +9,7 @@ use diesel::prelude::*;
 use futures::prelude::*;
 use gio::prelude::*;
 
-use log::info;
+use log::{error, info};
 
 use crate::google_oauth;
 use crate::identity;
