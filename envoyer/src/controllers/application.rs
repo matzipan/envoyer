@@ -1,4 +1,5 @@
 extern crate diesel;
+extern crate diesel_migrations;
 extern crate futures;
 extern crate gio;
 extern crate glib;
@@ -19,6 +20,8 @@ use crate::schema;
 use crate::ui;
 
 use std::sync::{Arc, Mutex};
+
+diesel_migrations::embed_migrations!();
 
 pub enum ApplicationMessage {
     Setup {},
@@ -241,18 +244,40 @@ impl Application {
     }
 
     fn on_activate(self) {
-        if self.is_setup_needed() {
-            self.application_message_sender
-                .send(ApplicationMessage::Setup {})
-                .expect("Unable to send application message");
-        } else {
-            self.application_message_sender
-                .send(ApplicationMessage::LoadIdentities { initialize: false })
-                .expect("Unable to send application message");
+        match self.initialize_database() {
+            Ok(_) => {
+                if self.is_account_setup_needed() {
+                    self.application_message_sender
+                        .send(ApplicationMessage::Setup {})
+                        .expect("Unable to send application message");
+                } else {
+                    self.application_message_sender
+                        .send(ApplicationMessage::LoadIdentities { initialize: false })
+                        .expect("Unable to send application message");
+                }
+            }
+            Err(e) => {
+                //@TODO show an error dialog
+                error!("Error encountered when initializing the database: {}", &e);
+            }
         }
     }
 
-    fn is_setup_needed(&self) -> bool {
+    fn initialize_database(&self) -> Result<(), String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        info!("Set up the migrations table");
+        diesel_migrations::setup_database(&connection).map_err(|e| e.to_string())?;
+
+        if diesel_migrations::any_pending_migrations(&connection).map_err(|e| e.to_string())? {
+            info!("Pending migrations found, running them");
+            diesel_migrations::run_pending_migrations(&connection).map_err(|e| e.to_string())?;
+        }
+
+        Ok(())
+    }
+
+    fn is_account_setup_needed(&self) -> bool {
         let connection = self
             .database_connection_pool
             .get()

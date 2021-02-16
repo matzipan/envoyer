@@ -5,6 +5,9 @@ extern crate serde_derive;
 extern crate diesel;
 
 #[macro_use]
+extern crate diesel_migrations;
+
+#[macro_use]
 extern crate glib;
 
 extern crate gio;
