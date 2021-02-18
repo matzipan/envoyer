@@ -21,6 +21,8 @@ jobs:
     - run: apt-get install -y libgtk-3-dev libglib2.0-dev libgraphene-1.0-dev libcairo-gobject2 libcairo2-dev
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
     - name: Build
       working-directory: envoyer
       run: cargo build --verbose
