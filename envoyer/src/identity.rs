@@ -3,6 +3,8 @@ use futures::prelude::*;
 
 use log::{debug, error, info};
 
+use gtk::glib;
+
 use melib::backends::{BackendMailbox, SpecialUsageMailbox};
 use melib::{AccountSettings, BackendEventConsumer};
 

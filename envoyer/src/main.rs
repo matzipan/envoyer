@@ -7,11 +7,8 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
-#[macro_use]
-extern crate glib;
-
-extern crate gio;
-extern crate gtk;
+use gtk;
+use gtk::glib;
 
 mod controllers;
 mod google_oauth;

@@ -208,7 +208,7 @@ pub struct NewBareIdentity<'a> {
     pub email_address: &'a String,
     pub gmail_refresh_token: &'a String,
     pub identity_type: IdentityType,
-    pub expires_at: &'a chrono::NaiveDateTime,
+    pub expires_at: &'a chrono::NaiveDateTime, //@TODO is this for refresh token or for access token?
     pub full_name: &'a String,
     pub account_name: &'a String,
 }

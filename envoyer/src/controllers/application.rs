@@ -1,14 +1,14 @@
 extern crate diesel;
 extern crate diesel_migrations;
 extern crate futures;
-extern crate gio;
-extern crate glib;
-extern crate gtk;
+
+use gtk;
+use gtk::gio::prelude::*;
+use gtk::glib;
 
 use chrono::prelude::*;
 use diesel::prelude::*;
 use futures::prelude::*;
-use gio::prelude::*;
 
 use log::{error, info};
 
@@ -291,3 +291,237 @@ impl Application {
         identities == 0
     }
 }
+
+// struct GmailOAuth2 {
+//     user: String,
+//     access_token: String,
+// }
+
+// impl async_imap::Authenticator for &GmailOAuth2 {
+//     type Response = String;
+//     #[allow(unused_variables)]
+//     fn process(&mut self, _data: &[u8]) -> Self::Response {
+//         format!("user={}\x01auth=Bearer {}\x01\x01", self.user, self.access_token)
+//     }
+// }
+
+// async fn bla() {}
+
+// async fn bla(user: String, access_token: String) -> async_imap::error::Result<Option<String>> {
+//     info!("BLA");
+//     info!("{}", &access_token);
+//     let gmail_auth = GmailOAuth2 {
+//         user: String::from(&user),
+//         access_token: String::from(access_token),
+//     };
+//     let domain = "imap.gmail.com";
+//     let port = 993;
+//     let socket_addr = (domain, port);
+//     let ssl_connector = async_native_tls::TlsConnector::new();
+
+//     let database_connection_manager = diesel::r2d2::ConnectionManager::<diesel::sqlite::SqliteConnection>::new("db.sqlite");
+//     let database_connection_pool = diesel::r2d2::Pool::builder().build(database_connection_manager).unwrap();
+
+//     let connection = database_connection_pool.get().expect("Unable to acquire a database connection");
+
+//     let identity = schema::identities::table
+//         .filter(schema::identities::email_address.eq(&user))
+//         .first::<models::Identity>(&connection)
+//         .unwrap();
+
+//     // we pass in the domain twice to check that the server's TLS certificate
+//     // is valid for the domain we're connecting to
+//     let client = async_imap::connect(socket_addr, domain, ssl_connector).await?;
+
+//     let mut imap_session = match client.authenticate("XOAUTH2", &gmail_auth).await {
+//         Ok(c) => c,
+//         Err((e, _unauth_client)) => {
+//             info!("error authenticating: {}", e);
+//             return Err(e);
+//         }
+//     };
+//     let database_connection_pool_clone = database_connection_pool.clone();
+
+//     let directories: Vec<_> = imap_session
+//         .list(None, Some("*"))
+//         .await
+//         .unwrap()
+//         .map(move |directory| {
+//             let name = directory.expect("BLA").name().to_string();
+
+//             info!("{}", &name);
+
+//             match models::Folder::belonging_to(&identity)
+//                 .filter(schema::folders::folder_name.eq(&name))
+//                 .first::<models::Folder>(&connection)
+//             {
+//                 Ok(_) => {}
+//                 Err(diesel::NotFound) => {
+//                     let new_folder = models::NewFolder {
+//                         folder_name: name.clone(),
+//                         identity_id: identity.id,
+//                         flags: 0, //@TODO flags
+//                     };
+
+//                     diesel::insert_into(schema::folders::table)
+//                         .values(&new_folder)
+//                         .execute(&connection)
+//                         .expect("Error saving new identity");
+//                 }
+//                 Err(_) => {}
+//             };
+
+//             return name;
+//         })
+//         .collect()
+//         .await;
+
+//     // info!("{:?}", directories);
+
+//     match imap_session.select("INBOX").await {
+//         Ok(mailbox) => info!("{}", mailbox),
+//         Err(e) => info!("Error selecting INBOX: {}", e),
+//     };
+
+//     let connection = database_connection_pool.get().expect("Unable to acquire a database connection");
+
+//     let inbox_folder = schema::folders::table
+//         .filter(schema::folders::folder_name.eq("INBOX"))
+//         .first::<models::Folder>(&connection)
+//         .unwrap();
+
+//     // fetch message number 1 in this mailbox, along with its RFC822 field.
+//     // RFC 822 dictates the format of the body of e-mails
+//     let fetch: Vec<_> = imap_session
+//         .uid_fetch(&format!("1:{}", async_imap::types::Uid::MAX), "ENVELOPE")
+//         .await
+//         .unwrap()
+//         .collect()
+//         .await;
+
+//     for message in fetch {
+//         // let body = message.as_ref().unwrap().body().expect("message did not have a body!");
+//         let subject = std::str::from_utf8(&message.as_ref().unwrap().envelope().unwrap().subject.unwrap())
+//             .unwrap()
+//             .to_string();
+//         info!("{:?}", subject);
+//         // let addresses = message.as_ref().unwrap().envelope().unwrap().to.as_ref().unwrap();
+//         // for address in addresses {
+//         // info!("{:?}", std::str::from_utf8(&address.mailbox.unwrap()));
+//         // }
+
+//         //@TODO insert in db
+//     }
+
+//     imap_session.logout().await?;
+
+//     Ok(Some("asdasd".to_string()))
+// }
+
+// #[cfg(test)]
+// mod tests {
+//     use std::thread;
+
+//     // use futures::future::FutureExt as _;
+//     use futures::future::FutureExt;
+//     use futures::prelude::*;
+
+//     use log::{Level, LevelFilter, Metadata, Record};
+
+//     struct SimpleLogger;
+
+//     impl log::Log for SimpleLogger {
+//         fn enabled(&self, metadata: &Metadata) -> bool {
+//             metadata.level() <= Level::Info
+//         }
+
+//         fn log(&self, record: &Record) {
+//             if self.enabled(record.metadata()) {
+//                 println!("{} - {}", record.level(), record.args());
+//             }
+//         }
+
+//         fn flush(&self) {}
+//     }
+
+//     static LOGGER: SimpleLogger = SimpleLogger;
+
+//     #[test]
+//     fn it_works() {
+//         log::set_logger(&LOGGER)
+//             .map(|()| log::set_max_level(LevelFilter::Info))
+//             .expect("Unable to set up logger");
+//         let context = glib::MainContext::default();
+
+//         let main_loop = glib::MainLoop::new(Some(&context), false);
+
+//         let main_loop_clone = main_loop.clone();
+//         context.spawn(super::bla("matzipan@gmail.com".to_string(), "ya29.A0AfH6SMC4eyAZM0-_I-_wUHxGZ9JGZpGBCsUdZCGHi82ym0_XJFTJn6I4VWh5Ccc6ahoIu9AzV1lHxvDgRwUEyvnb1G37mUOhRr6wP7g5mPmAwDy-A4WT8SJvBmcIAA4g5LY1gihO_23IN-Sb98vtWjEForZvhQFQU7pDo7ZsVVI".to_string()).map(move |_| {
+//             main_loop_clone.quit();
+//         }));
+
+//         main_loop.run();
+//     }
+
+//     // private async void refresh_token_loop () {
+//     //     while (true) {
+//     //         // Seconds to spare for refresh represents how much time before the expiry we refresh the access token
+//     //         var seconds_to_spare_for_refresh = 60;
+//     //         var seconds_until_refresh = (uint) (expires_at.to_unix () - (new DateTime.now_utc ()).to_unix ()) - seconds_to_spare_for_refresh;
+
+//     //         debug ("Refresh access token for identity %s scheduled in %u seconds", to_string (), seconds_until_refresh);
+
+//     //         //@TODO what happens if the internet is down when refresh is attempted and then when the imap/smtp sessions come back the token is still expired
+//     //         yield nap (seconds_until_refresh);
+
+//     //         do_token_refresh ();
+//     //     }
+//     // }
+
+//     // private void refresh_token_if_expired () {
+//     //     if (expires_at.compare (new DateTime.now_utc ()) > 0) {
+//     //         debug ("Access token is still valid for identity %s, not refreshing", to_string ());
+//     //         return;
+//     //     }
+
+//     //     do_token_refresh ();
+//     // }
+
+//     async fn x() {
+//         let token = super::refresh_access_token(
+//             "matzipan@gmail.com".to_string(),
+//             "1//09oVZumo4BBTCCgYIARAAGAkSNwF-L9Ir20V9JD_rZEdeiZmuzaY6zvJ0HOsJG92XqrsqgUrvWvHoDyJ_VPhhgxvJwL0gTNSu21A".to_string(),
+//         )
+//         .await;
+//         //@TODO remove access_token from the database
+
+//         let x = super::fetch_messages_for_inbox("matzipan@gmail.com".to_string(), token.unwrap().access_token)
+//             .await
+//             .map(|envelope| {
+//                 println!("{:?}", envelope);
+
+//                 // for envelope in envelope_chunk {
+//                 //     let mut operation = backend.operation(envelope.hash()).unwrap();
+//                 //     println!("{:?}", String::from_utf8(operation.as_bytes().unwrap().await.unwrap()));
+//                 // }
+//             });
+//         // let x = super::bla("matzipan@gmail.com".to_string(), token.unwrap().access_token).await;
+//     }
+
+//     #[test]
+//     fn fetch_folders() {
+//         log::set_logger(&LOGGER)
+//             .map(|()| log::set_max_level(LevelFilter::Info))
+//             .expect("Unable to set up logger");
+//         let context = glib::MainContext::default();
+
+//         let main_loop = glib::MainLoop::new(Some(&context), false);
+
+//         let main_loop_clone = main_loop.clone();
+//         context.spawn(x().map(move |_| {
+//             main_loop_clone.quit();
+//         }));
+
+//         main_loop.run();
+//     }
+// }

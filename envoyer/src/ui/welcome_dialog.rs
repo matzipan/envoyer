@@ -1,14 +1,13 @@
-extern crate gio;
-extern crate glib;
-extern crate gtk;
+use gtk;
 extern crate webkit2gtk;
 
+use gtk::gio;
+use gtk::glib;
+use gtk::glib::clone;
 use gtk::prelude::*;
 use webkit2gtk::WebViewExt;
 
 use log::info;
-
-use glib::clone;
 
 use url::Url;
 
