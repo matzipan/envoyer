@@ -20,7 +20,7 @@ jobs:
     - name: Update apt repositories
       run: apt-get update -y
     - name: Install apt dependencies 
-      run: apt-get install -y libgtk-3-dev libglib2.0-dev libgraphene-1.0-dev libcairo-gobject2 libcairo2-dev libsoup2.4-dev libwebkit2gtk-4.0-dev  libssl-dev
+      run: apt-get install -y libgtk-3-dev libglib2.0-dev libgraphene-1.0-dev libcairo-gobject2 libcairo2-dev libsoup2.4-dev libwebkit2gtk-4.0-dev sqlite3 libssl-dev
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
