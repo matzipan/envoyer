@@ -67,7 +67,7 @@ impl UidFetchIterator {
     }
 
     pub fn chunk_size() -> melib::backends::imap::UID {
-        1000
+        250
     }
 }
 
