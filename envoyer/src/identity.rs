@@ -117,6 +117,15 @@ impl Store {
         }
     }
 
+    pub fn get_messages_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::Message>, String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        schema::messages::table
+            .filter(schema::messages::folder_id.eq(folder.id))
+            .load::<models::Message>(&connection)
+            .map_err(|e| e.to_string())
+    }
+
     pub fn store_message_for_folder(&self, new_message: &mut models::NewMessage, folder: &models::Folder) -> Result<(), String> {
         let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
@@ -412,6 +421,14 @@ impl Identity {
 
             Ok(())
         }))
+    }
+
+    pub fn get_folders(&self) -> Result<Vec<models::Folder>, String> {
+        self.store.get_folders(&self.bare_identity)
+    }
+
+    pub fn get_threads_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::Message>, String> {
+        self.store.get_messages_for_folder(folder)
     }
 
     // fn start_listening_for_updates(&self) {
