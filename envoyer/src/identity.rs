@@ -212,7 +212,7 @@ impl Identity {
         });
     }
 
-    fn fetch_folders(&self) -> ResultFuture<HashMap<u64, Box<melib::backends::imap::ImapMailbox>>> {
+    fn fetch_folders(&self) -> ResultFuture<Vec<Box<melib::backends::imap::ImapMailbox>>> {
         let mailboxes_job = self
             .backend
             .read()
@@ -244,6 +244,10 @@ impl Identity {
                 }
 
                 mailboxes
+                    .values()
+                    .filter(|x| !x.no_select)
+                    .cloned()
+                    .collect::<Vec<Box<melib::backends::imap::ImapMailbox>>>()
             })
         }))
     }
@@ -263,7 +267,7 @@ impl Identity {
                 .map(|folder| (folder.folder_path.clone(), folder))
                 .collect();
 
-            for (_, mailbox_value) in mailboxes.iter() {
+            for mailbox_value in mailboxes.iter() {
                 let mailbox_path = mailbox_value.path().to_string();
 
                 match leftover_folders_store.get(&mailbox_path) {
