@@ -228,9 +228,16 @@ impl Application {
                         identity.start_session();
                     }
 
+                    //@TODO hacky just to get things going
+                    let identity = &identities_clone.lock().expect("BLA")[0];
+
+                    let threads = identity
+                        .get_threads_for_folder(&identity.get_folders().unwrap().iter().find(|&x| x.folder_name == "INBOX").unwrap())
+                        .expect("BLA");
+
                     welcome_dialog.hide();
                     main_window.show();
-                    main_window.load();
+                    main_window.load(threads);
                 }
             }
             // Returning false here would close the receiver and have senders
