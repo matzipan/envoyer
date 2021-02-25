@@ -342,7 +342,7 @@ impl Identity {
         let folder_clone = folder.clone();
         let store_clone = self.store.clone();
 
-        let sync_type = match sync_type {
+        let backend_sync_type = match sync_type {
             SyncType::Fresh => imap::SyncType::Fresh,
             SyncType::Update => {
                 if let Some((max_uid, uid_validity)) = self.store.get_max_uid_and_uid_validity_for_folder(folder)? {
@@ -356,7 +356,12 @@ impl Identity {
             }
         };
 
-        let sync_job = self.backend.read().unwrap().sync(folder.folder_path.clone(), sync_type).unwrap();
+        let sync_job = self
+            .backend
+            .read()
+            .unwrap()
+            .sync(folder.folder_path.clone(), backend_sync_type)
+            .unwrap();
 
         let online_job = self
             .backend
@@ -375,27 +380,35 @@ impl Identity {
 
             // @TODO asyncstream while let Some(bla) = x.next().await { }
 
-            if let Some(current_uid_validity) = store_clone.get_max_uid_and_uid_validity_for_folder(&folder_clone)? {
-                if new_uid_validity == current_uid_validity.1 {
+            match sync_type {
+                SyncType::Fresh => {
                     for new_message in new_messages.iter_mut() {
                         store_clone.store_message_for_folder(new_message, &folder_clone)?;
                     }
-
-                    if let Some(flag_updates) = flag_updates {
-                        //@TODO
-                        for flag_update in flag_updates.iter() {
-                            debug!("{}", flag_update.uid);
-                        }
-                    }
-                    //@TODO 2) find out which old messages got expunged; and
-                } else {
-                    //@TODO delete all mail
-                    //@todo store
-                    //@TODO set new uid_validity on folder
                 }
-            } else {
-                return Err("Unable to fetch the current max uid and uid validity for the sync".to_string());
-            }
+                SyncType::Update => {
+                    if let Some(current_uid_validity) = store_clone.get_max_uid_and_uid_validity_for_folder(&folder_clone)? {
+                        if new_uid_validity == current_uid_validity.1 {
+                            for new_message in new_messages.iter_mut() {
+                                store_clone.store_message_for_folder(new_message, &folder_clone)?;
+                            }
+                            if let Some(flag_updates) = flag_updates {
+                                //@TODO
+                                for flag_update in flag_updates.iter() {
+                                    debug!("{}", flag_update.uid);
+                                }
+                            }
+                            //@TODO 2) find out which old messages got expunged; and
+                        } else {
+                            //@TODO delete all mail
+                            //@todo store
+                            //@TODO set new uid_validity on folder
+                        }
+                    } else {
+                        return Err("Unable to fetch the current max uid and uid validity for the sync".to_string());
+                    }
+                }
+            };
 
             Ok(())
         }))
