@@ -230,18 +230,18 @@ impl Identity {
         Ok(Box::pin(async move {
             online_job.await.map_err(|e| e.to_string())?;
             mailboxes_job.await.map_err(|e| e.to_string()).map(|mut mailboxes| {
-                for mailbox in mailboxes.values_mut() {
-                    //@TODO
-                    let mailbox_usage = if mailbox.special_usage() != SpecialUsageMailbox::Normal {
-                        Some(mailbox.special_usage())
-                    } else {
-                        let tmp = SpecialUsageMailbox::detect_usage(mailbox.name());
-                        if tmp != Some(SpecialUsageMailbox::Normal) && tmp != None {
-                            let _ = mailbox.set_special_usage(tmp.unwrap());
-                        }
-                        tmp
-                    };
-                }
+                // for mailbox in mailboxes.values_mut() {
+                //     //@TODO
+                //     let mailbox_usage = if mailbox.special_usage() != SpecialUsageMailbox::Normal {
+                //         Some(mailbox.special_usage())
+                //     } else {
+                //         let tmp = SpecialUsageMailbox::detect_usage(mailbox.name());
+                //         if tmp != Some(SpecialUsageMailbox::Normal) && tmp != None {
+                //             let _ = mailbox.set_special_usage(tmp.unwrap());
+                //         }
+                //         tmp
+                //     };
+                // }
 
                 mailboxes
                     .values()
