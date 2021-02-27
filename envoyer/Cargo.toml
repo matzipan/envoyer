@@ -15,7 +15,7 @@ log = "0.4.11"
 chrono = "0.4"
 #async-std = ""
 url = "2.1.1"
-melib = { git = "https://github.com/matzipan/meli-envoyer", branch = "envoyer-integration", default-features = false, features = ["unicode_algorithms",  "imap_backend"] }#, "debug-tracing"] }
+melib = { git = "https://github.com/matzipan/meli-envoyer", branch = "envoyer-integration", default-features = false, features = ["unicode_algorithms",  "imap_backend"] }
 isahc = { version = "0.9.11", features = ["json"]}
 serde = "1.0.116"
 serde_qs = "0.7.0"
