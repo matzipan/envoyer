@@ -87,11 +87,6 @@ mod model {
     }
 }
 
-// Our GObject subclass for carrying a name and count for the ListBox model
-//
-// Subject is stored in a RefCell to allow for interior mutability and is
-// exposed via normal GObject properties. This allows us to use property
-// bindings below to bind the values with what widgets display in the UI
 mod row_data {
     use super::*;
 
