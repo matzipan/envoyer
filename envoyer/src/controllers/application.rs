@@ -49,6 +49,9 @@ pub enum ApplicationMessage {
         initialize: bool,
     },
     SetupDone {},
+    LoadFolder {
+        folder: models::Folder,
+    },
 }
 
 pub struct Application {
@@ -234,9 +237,18 @@ impl Application {
                         .get_threads_for_folder(&identity.get_folders().unwrap().iter().find(|&x| x.folder_name == "INBOX").unwrap())
                         .expect("BLA");
 
+                    main_window.show_threads(threads);
+
                     welcome_dialog.hide();
                     main_window.show();
-                    main_window.load(threads);
+                }
+                ApplicationMessage::LoadFolder { folder } => {
+                    //@TODO hacky just to get things going
+                    let identity = &identities_clone.lock().expect("BLA")[0];
+
+                    let threads = identity.get_threads_for_folder(&folder).expect("BLA");
+
+                    main_window.show_threads(threads);
                 }
             }
             // Returning false here would close the receiver and have senders

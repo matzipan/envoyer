@@ -79,7 +79,7 @@ impl Window {
         self.gtk_window.present();
     }
 
-    pub fn load(&self, threads: Vec<models::Message>) {
+    pub fn show_threads(&self, threads: Vec<models::Message>) {
         for thread in threads {
             let data = models::folder_conversations_list::row_data::RowData::new();
 
