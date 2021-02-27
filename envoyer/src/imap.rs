@@ -2,13 +2,12 @@ use crate::models;
 
 use melib;
 use melib::backends::imap::{
-    fetch_responses, generate_envelope_hash, list_mailbox_result, status_response, FetchResponse, ImapConnection, ImapExtensionUse,
-    ImapLineSplit, ImapMailbox, ImapProtocol::IMAP as ImapProtocol, ImapServerConf, MessageSequenceNumber, ModSequence, RequiredResponses,
-    SyncPolicy, UIDStore,
+    list_mailbox_result, status_response, ImapConnection, ImapExtensionUse, ImapLineSplit, ImapMailbox, ImapProtocol::IMAP as ImapProtocol,
+    ImapServerConf, MessageSequenceNumber, ModSequence, RequiredResponses, SyncPolicy, UIDStore,
 };
 use melib::backends::{BackendEventConsumer, MailboxHash, ResultFuture};
 use melib::connections::timeout;
-use melib::{BackendMailbox, MeliError, ResultIntoMeliError};
+use melib::{BackendMailbox, MeliError};
 
 use futures::lock::Mutex as FutureMutex;
 use std::collections::HashMap;
