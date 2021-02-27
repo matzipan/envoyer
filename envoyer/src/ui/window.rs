@@ -1,5 +1,4 @@
 use gtk;
-use gtk::glib::clone;
 use gtk::prelude::*;
 use gtk::{gdk, gio, glib};
 use log::info;
