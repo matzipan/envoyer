@@ -107,7 +107,7 @@ mod row_data {
         // The actual data structure that stores our values. This is not accessible
         // directly from the outside.
         pub struct RowData {
-            subject: RefCell<Option<String>>,
+            pub subject: RefCell<Option<String>>,
         }
 
         // Basic declaration of our type for the GObject type system
@@ -125,57 +125,34 @@ mod row_data {
             // creates the data structure that contains all our state
             fn new() -> Self {
                 Self {
-                    subject: RefCell::new(None),
+                    subject: Default::default(),
                 }
             }
         }
 
-        impl ObjectImpl for RowData {
-            fn properties() -> &'static [glib::ParamSpec] {
-                use once_cell::sync::Lazy;
-                static PROPERTIES: Lazy<Vec<glib::ParamSpec>> = Lazy::new(|| {
-                    vec![glib::ParamSpec::string(
-                        "subject",
-                        "Subject",
-                        "Subject",
-                        None, // Default value
-                        glib::ParamFlags::READWRITE,
-                    )]
-                });
-
-                PROPERTIES.as_ref()
-            }
-
-            fn set_property(&self, _obj: &Self::Type, _id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
-                match pspec.get_name() {
-                    "subject" => {
-                        let subject = value.get().expect("type conformity checked by `Object::set_property`");
-                        self.subject.replace(subject);
-                    }
-                    _ => unimplemented!(),
-                }
-            }
-
-            fn get_property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
-                match pspec.get_name() {
-                    "subject" => self.subject.borrow().to_value(),
-                    _ => unimplemented!(),
-                }
-            }
-        }
+        impl ObjectImpl for RowData {}
     }
 
-    // Public part of the RowData type. This behaves like a normal gtk-rs-style GObject
-    // binding
+    // The public part
     glib::wrapper! {
         pub struct RowData(ObjectSubclass<imp::RowData>);
     }
 
-    // Constructor for new instances. This simply calls glib::Object::new() with
-    // initial values for our two properties and then returns the new instance
     impl RowData {
-        pub fn new(name: &str) -> RowData {
-            glib::Object::new(&[("subject", &name)]).expect("Failed to create row data")
+        pub fn new() -> RowData {
+            glib::Object::new(&[]).expect("Failed to create row data")
+        }
+
+        pub fn set_subject(&self, subject: &String) {
+            let self_ = imp::RowData::from_instance(self);
+
+            self_.subject.replace(Some(subject.clone()));
+        }
+
+        pub fn get_subject(&self) -> String {
+            let self_ = imp::RowData::from_instance(self);
+
+            self_.subject.borrow().as_ref().unwrap().to_string()
         }
     }
 }
@@ -229,14 +206,9 @@ impl Window {
 
             let box_row = gtk::ListBoxRow::new();
 
-            let label = gtk::Label::new(Some(
-                &item
-                    .get_property("subject")
-                    .expect("Could not read subject property")
-                    .get::<&str>()
-                    .expect("BLA")
-                    .expect("BLA"),
-            ));
+            let label = gtk::Label::new(None);
+
+            label.set_text(item.get_subject().as_ref());
 
             box_row.add(&label);
 
@@ -260,7 +232,11 @@ impl Window {
 
     pub fn load(&self, threads: Vec<models::Message>) {
         for thread in threads {
-            self.model.append(&row_data::RowData::new(&thread.subject));
+            let data = row_data::RowData::new();
+
+            data.set_subject(&thread.subject);
+
+            self.model.append(&data);
         }
         // let (roots, threads, envelopes) = self.identities.lock().expect("Unable to acquire identities lock")[0]
         //     .clone()
