@@ -76,6 +76,8 @@ pub mod model {
     }
 }
 
+// This row data wrapper is needed because the Model get_item_type method needs
+// to have a GObject type to return to the bind_model method
 pub mod row_data {
     use super::*;
 
