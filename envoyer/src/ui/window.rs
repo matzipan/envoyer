@@ -10,9 +10,9 @@ use crate::models;
 #[derive(Clone)]
 pub struct Window {
     pub gtk_window: gtk::ApplicationWindow,
-    pub threads_list_box: gtk::ListBox,
-    pub identities: Arc<Mutex<Vec<models::Identity>>>,
-    pub model: models::folder_conversations_list::model::Model,
+    threads_list_box: gtk::ListBox,
+    identities: Arc<Mutex<Vec<models::Identity>>>,
+    model: models::folder_conversations_list::model::Model,
 }
 
 impl Window {
