@@ -50,7 +50,7 @@ impl Window {
         let model = models::folder_conversations_list::model::Model::new();
         threads_list_box.bind_model(Some(&model), |item| {
             let item = item
-                .downcast_ref::<models::folder_conversations_list::row_data::RowData>()
+                .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
                 .expect("Row data is of wrong type");
 
             let box_row = gtk::ListBoxRow::new();
@@ -79,11 +79,11 @@ impl Window {
         self.gtk_window.present();
     }
 
-    pub fn show_threads(&self, threads: Vec<models::Message>) {
-        for thread in threads {
-            let data = models::folder_conversations_list::row_data::RowData::new();
+    pub fn show_conversations(&self, conversations: Vec<models::Message>) {
+        for conversation in conversations {
+            let data = models::folder_conversations_list::row_data::ConversationRowData::new();
 
-            data.set_subject(&thread.subject);
+            data.set_conversation(conversation);
 
             self.model.append(&data);
         }

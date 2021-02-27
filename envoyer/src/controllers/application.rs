@@ -229,11 +229,11 @@ impl Application {
                     //@TODO hacky just to get things going
                     let identity = &identities_clone.lock().expect("BLA")[0];
 
-                    let threads = identity
-                        .get_threads_for_folder(&identity.get_folders().unwrap().iter().find(|&x| x.folder_name == "INBOX").unwrap())
+                    let conversations = identity
+                        .get_conversations_for_folder(&identity.get_folders().unwrap().iter().find(|&x| x.folder_name == "INBOX").unwrap())
                         .expect("BLA");
 
-                    main_window.show_threads(threads);
+                    main_window.show_conversations(conversations);
 
                     welcome_dialog.hide();
                     main_window.show();
@@ -242,9 +242,9 @@ impl Application {
                     //@TODO hacky just to get things going
                     let identity = &identities_clone.lock().expect("BLA")[0];
 
-                    let threads = identity.get_threads_for_folder(&folder).expect("BLA");
+                    let conversations = identity.get_conversations_for_folder(&folder).expect("BLA");
 
-                    main_window.show_threads(threads);
+                    main_window.show_conversations(conversations);
                 }
             }
             // Returning false here would close the receiver and have senders

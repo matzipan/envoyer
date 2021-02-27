@@ -8,15 +8,18 @@ use glib::subclass::prelude::*;
 use gtk::subclass::prelude::*;
 
 use std::cell::RefCell;
+use std::rc::Rc;
+
+use crate::models;
 
 pub mod model {
     use super::*;
-    use row_data::RowData;
+    use row_data::ConversationRowData;
     mod imp {
         use super::*;
 
         #[derive(Debug)]
-        pub struct Model(pub RefCell<Vec<RowData>>);
+        pub struct Model(pub RefCell<Vec<ConversationRowData>>);
         // Basic declaration of our type for the GObject type system
         impl ObjectSubclass for Model {
             const NAME: &'static str = "Model";
@@ -34,7 +37,7 @@ pub mod model {
         impl ObjectImpl for Model {}
         impl ListModelImpl for Model {
             fn get_item_type(&self, _list_model: &Self::Type) -> glib::Type {
-                RowData::static_type()
+                ConversationRowData::static_type()
             }
             fn get_n_items(&self, _list_model: &Self::Type) -> u32 {
                 self.0.borrow().len() as u32
@@ -54,7 +57,7 @@ pub mod model {
         pub fn new() -> Model {
             glib::Object::new(&[]).expect("Failed to create Model")
         }
-        pub fn append(&self, obj: &RowData) {
+        pub fn append(&self, obj: &ConversationRowData) {
             let self_ = imp::Model::from_instance(self);
             let index = {
                 // Borrow the data only once and ensure the borrow guard is dropped
@@ -87,13 +90,13 @@ pub mod row_data {
 
         // The actual data structure that stores our values. This is not accessible
         // directly from the outside.
-        pub struct RowData {
-            pub subject: RefCell<Option<String>>,
+        pub struct ConversationRowData {
+            pub conversation: Rc<RefCell<Option<models::Message>>>,
         }
         // Basic declaration of our type for the GObject type system
-        impl ObjectSubclass for RowData {
-            const NAME: &'static str = "RowData";
-            type Type = super::RowData;
+        impl ObjectSubclass for ConversationRowData {
+            const NAME: &'static str = "ConversationRowData";
+            type Type = super::ConversationRowData;
             type ParentType = glib::Object;
             type Interfaces = ();
             type Instance = subclass::simple::InstanceStruct<Self>;
@@ -103,27 +106,28 @@ pub mod row_data {
             // creates the data structure that contains all our state
             fn new() -> Self {
                 Self {
-                    subject: Default::default(),
+                    conversation: Default::default(),
                 }
             }
         }
-        impl ObjectImpl for RowData {}
+        impl ObjectImpl for ConversationRowData {}
     }
+
     // The public part
     glib::wrapper! {
-        pub struct RowData(ObjectSubclass<imp::RowData>);
+        pub struct ConversationRowData(ObjectSubclass<imp::ConversationRowData>);
     }
-    impl RowData {
-        pub fn new() -> RowData {
+    impl ConversationRowData {
+        pub fn new() -> ConversationRowData {
             glib::Object::new(&[]).expect("Failed to create row data")
         }
-        pub fn set_subject(&self, subject: &String) {
-            let self_ = imp::RowData::from_instance(self);
-            self_.subject.replace(Some(subject.clone()));
+        pub fn set_conversation(&self, conversation: models::Message) {
+            let self_ = imp::ConversationRowData::from_instance(self);
+            self_.conversation.replace(Some(conversation));
         }
-        pub fn get_subject(&self) -> String {
-            let self_ = imp::RowData::from_instance(self);
-            self_.subject.borrow().as_ref().unwrap().to_string()
+        pub fn get_conversation(&self) -> Rc<RefCell<Option<models::Message>>> {
+            let self_ = imp::ConversationRowData::from_instance(self);
+            self_.conversation.clone()
         }
     }
 }

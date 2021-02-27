@@ -310,7 +310,7 @@ impl Identity {
         self.store.get_folders(&self.bare_identity)
     }
 
-    pub fn get_threads_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::Message>, String> {
+    pub fn get_conversations_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::Message>, String> {
         self.store.get_messages_for_folder(folder)
     }
 
