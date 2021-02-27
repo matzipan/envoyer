@@ -1,15 +1,20 @@
 use gtk::{gio, glib};
 
+use glib::subclass;
+
+use gtk::prelude::*;
+
+use glib::subclass::prelude::*;
+use gtk::subclass::prelude::*;
+
+use std::cell::RefCell;
+
 pub mod model {
     use super::*;
-    use glib::subclass::prelude::*;
-    use gtk::prelude::*;
-    use gtk::subclass::prelude::*;
     use row_data::RowData;
     mod imp {
         use super::*;
-        use glib::subclass;
-        use std::cell::RefCell;
+
         #[derive(Debug)]
         pub struct Model(pub RefCell<Vec<RowData>>);
         // Basic declaration of our type for the GObject type system
@@ -73,12 +78,11 @@ pub mod model {
 
 pub mod row_data {
     use super::*;
-    use glib::subclass;
-    use glib::subclass::prelude::*;
+
     // Implementation sub-module of the GObject
     mod imp {
         use super::*;
-        use std::cell::RefCell;
+
         // The actual data structure that stores our values. This is not accessible
         // directly from the outside.
         pub struct RowData {
