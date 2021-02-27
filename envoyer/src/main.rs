@@ -15,6 +15,7 @@ mod google_oauth;
 mod imap;
 mod models;
 mod schema;
+mod services;
 mod ui;
 
 use log::{Level, LevelFilter, Metadata, Record};
