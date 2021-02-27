@@ -167,7 +167,6 @@ impl Window {
         header.set_show_close_button(true);
         gtk_window.set_titlebar(Some(&header));
         gtk_window.set_title("Envoyer");
-        gtk_window.set_wmclass("envoyer", "Envoyer");
         gtk_window.resize(1600, 900);
 
         gtk::Window::set_default_icon_name("iconname");
