@@ -6,7 +6,6 @@ use log::info;
 
 use std::sync::{Arc, Mutex};
 
-use crate::identity;
 use crate::models;
 
 mod model {
@@ -161,12 +160,12 @@ mod row_data {
 pub struct Window {
     pub gtk_window: gtk::ApplicationWindow,
     pub threads_list_box: gtk::ListBox,
-    pub identities: Arc<Mutex<Vec<identity::Identity>>>,
+    pub identities: Arc<Mutex<Vec<models::Identity>>>,
     pub model: model::Model,
 }
 
 impl Window {
-    pub fn new(application: &gtk::Application, identities: Arc<Mutex<Vec<identity::Identity>>>) -> Window {
+    pub fn new(application: &gtk::Application, identities: Arc<Mutex<Vec<models::Identity>>>) -> Window {
         //@TODO set icon
         let gtk_window = gtk::ApplicationWindow::new(application);
         let header = gtk::HeaderBar::new();

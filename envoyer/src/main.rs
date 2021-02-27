@@ -12,7 +12,6 @@ use gtk::glib;
 
 mod controllers;
 mod google_oauth;
-mod identity;
 mod imap;
 mod models;
 mod schema;

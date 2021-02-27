@@ -13,7 +13,6 @@ use futures::prelude::*;
 use log::{error, info};
 
 use crate::google_oauth;
-use crate::identity;
 use crate::models;
 use crate::schema;
 
@@ -58,7 +57,7 @@ pub struct Application {
     application_message_sender: glib::Sender<ApplicationMessage>,
     context: glib::MainContext,
     database_connection_pool: diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::sqlite::SqliteConnection>>,
-    identities: Arc<Mutex<Vec<identity::Identity>>>, //@TODO should probably be arc<identity>
+    identities: Arc<Mutex<Vec<models::Identity>>>, //@TODO should probably be arc<identity>
 }
 
 impl Application {
@@ -92,7 +91,7 @@ impl Application {
 
         info!("Connected to the database");
 
-        let identities = Arc::new(Mutex::new(Vec::<identity::Identity>::new()));
+        let identities = Arc::new(Mutex::new(Vec::<models::Identity>::new()));
 
         let application = Self {
             main_window: ui::Window::new(gtk_application, identities.clone()),
@@ -207,7 +206,7 @@ impl Application {
                         for bare_identity in bare_identities {
                             let database_connection_pool_clone = database_connection_pool_clone.clone();
 
-                            let identity = identity::Identity::new(bare_identity, database_connection_pool_clone).await;
+                            let identity = models::Identity::new(bare_identity, database_connection_pool_clone).await;
 
                             if initialize {
                                 identity.initialize().await.map_err(|x| error!("{}", x));
