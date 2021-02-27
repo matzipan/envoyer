@@ -1,7 +1,3 @@
-extern crate diesel;
-extern crate diesel_migrations;
-extern crate futures;
-
 use gtk;
 use gtk::gio::prelude::*;
 use gtk::glib;
