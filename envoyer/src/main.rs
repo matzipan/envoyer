@@ -7,9 +7,6 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
-use gtk;
-use gtk::glib;
-
 mod controllers;
 mod google_oauth;
 mod imap;
