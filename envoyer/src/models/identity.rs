@@ -121,7 +121,7 @@ impl Identity {
 
         Ok(Box::pin(async move {
             online_job.await.map_err(|e| e.to_string())?;
-            mailboxes_job.await.map_err(|e| e.to_string()).map(|mut mailboxes| {
+            mailboxes_job.await.map_err(|e| e.to_string()).map(|mailboxes| {
                 // for mailbox in mailboxes.values_mut() {
                 //     //@TODO
                 //     let mailbox_usage = if mailbox.special_usage() != SpecialUsageMailbox::Normal {
@@ -268,7 +268,7 @@ impl Identity {
             online_job.await.map_err(|e| e.to_string())?;
 
             debug!("Online, syncing");
-            let (new_uid_validity, mut new_messages, mut flag_updates) = sync_job.await.map_err(|e| e.to_string())?;
+            let (new_uid_validity, mut new_messages, flag_updates) = sync_job.await.map_err(|e| e.to_string())?;
 
             // @TODO asyncstream while let Some(bla) = x.next().await { }
 
