@@ -1,7 +1,8 @@
 use crate::models;
 use crate::schema;
 
-// Normally the store should be melib-agnostic, but we're adding it in for the moment for simplicity
+// Normally the store should be melib-agnostic, but we're adding it in for the
+// moment for simplicity
 use melib::BackendMailbox;
 
 use log::debug;
@@ -14,7 +15,8 @@ pub struct Store {
 }
 
 impl Store {
-    //@TODO spawn database interactions to a different thread and then join await? maybe async_thread library works for this
+    //@TODO spawn database interactions to a different thread and then join await?
+    //@TODO maybe async_thread library works for this
     pub fn store_folder_for_mailbox(
         &self,
         bare_identity: &models::BareIdentity,
@@ -84,8 +86,9 @@ impl Store {
             Ok(Some(x)) => {
                 let max_uid = x;
 
-                // max_uid is u32 according th the IMAP RFC but we're storing it as i64 since SQLite doesn't have unsigned
-                // data_types. Therefore, we're safe to do this transformation and not worry about any errors.
+                // max_uid is u32 according th the IMAP RFC but we're storing it as i64 since
+                // SQLite doesn't have unsigned data_types. Therefore, we're
+                // safe to do this transformation and not worry about any errors.
                 let max_uid = melib::backends::imap::UID::try_from(max_uid).unwrap();
 
                 let uid_validity = 0; //@TODO

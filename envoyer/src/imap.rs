@@ -71,8 +71,8 @@ impl UidFetchIterator {
 }
 
 impl Iterator for UidFetchIterator {
-    // We are doing the iteration ascendingly because if we stop mid-sync we can still use max UID to resume the sync
-    // gracefully.
+    // We are doing the iteration ascendingly because if we stop mid-sync we can
+    // still use max UID to resume the sync gracefully.
     type Item = (melib::backends::imap::UID, melib::backends::imap::UID);
     // The return type is `Option<T>`:
     //     * When the `Iterator` is finished, `None` is returned.
@@ -81,7 +81,8 @@ impl Iterator for UidFetchIterator {
         if self.next_range_start <= self.uid_range_end && !self.ended {
             let current_range_start = self.next_range_start;
 
-            // Subtracting one to because the range is inclusive so we have to subtract one if we want a length of chunk_size
+            // Subtracting one to because the range is inclusive so we have to subtract one
+            // if we want a length of chunk_size
             let current_range_end = std::cmp::min(
                 current_range_start.saturating_add(UidFetchIterator::chunk_size() - 1),
                 self.uid_range_end,
