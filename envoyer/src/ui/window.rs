@@ -1,6 +1,7 @@
-use gtk;
-use gtk::gdk;
+use gtk::{gdk, pango};
+
 use gtk::prelude::*;
+
 use log::info;
 
 use std::sync::{Arc, Mutex};
@@ -54,16 +55,76 @@ impl Window {
                 .expect("Row data is of wrong type");
 
             let box_row = gtk::ListBoxRow::new();
+            box_row.get_style_context().add_class("folder_conversation_item");
 
-            let label = gtk::Label::new(None);
+            let subject_label = gtk::Label::new(None);
+            subject_label.set_hexpand(true);
+            subject_label.set_halign(gtk::Align::Start);
+            subject_label.set_ellipsize(pango::EllipsizeMode::End);
+            subject_label.get_style_context().add_class("subject");
+            subject_label.set_xalign(0.0);
 
-            label.set_text(item.get_subject().as_ref());
+            let attachment_image = gtk::Image::from_icon_name(Some("mail-attachment-symbolic"), gtk::IconSize::Menu);
+            attachment_image.set_sensitive(false);
+            attachment_image.set_tooltip_text(Some("This thread contains one or more attachments"));
 
-            box_row.add(&label);
+            let top_grid = gtk::Grid::new();
+            top_grid.set_orientation(gtk::Orientation::Horizontal);
+            top_grid.set_column_spacing(3);
 
-            box_row.show_all();
+            // unseen_dot = new Envoyer.Widgets.Main.UnseenDot ();
+            // unseen_dot.no_show_all = true;
+            // top_grid.add (unseen_dot);
+            top_grid.add(&subject_label);
+            top_grid.add(&attachment_image);
+
+            //@TODO make smaller star_image.
+            let star_image = gtk::Button::from_icon_name(Some("starred"), gtk::IconSize::Menu);
+            star_image.get_style_context().add_class("starred");
+            star_image.set_sensitive(true);
+            star_image.set_tooltip_text(Some("Mark this thread as starred"));
+
+            let addresses_label = gtk::Label::new(None);
+            addresses_label.set_hexpand(true);
+            addresses_label.set_halign(gtk::Align::Start);
+            addresses_label.set_ellipsize(pango::EllipsizeMode::End);
+            addresses_label.get_style_context().add_class("addresses");
+            addresses_label.get_style_context().add_class(&gtk::STYLE_CLASS_DIM_LABEL);
+
+            let datetime_received_label = gtk::Label::new(None);
+
+            let bottom_grid = gtk::Grid::new();
+            bottom_grid.set_orientation(gtk::Orientation::Horizontal);
+            bottom_grid.set_column_spacing(3);
+            bottom_grid.add(&addresses_label);
+            bottom_grid.add(&datetime_received_label);
+            bottom_grid.add(&star_image);
+
+            let outer_grid = gtk::Grid::new();
+            outer_grid.set_orientation(gtk::Orientation::Vertical);
+            outer_grid.set_row_spacing(3);
+            outer_grid.set_margin_top(4);
+            outer_grid.set_margin_bottom(4);
+            outer_grid.set_margin_start(8);
+            outer_grid.set_margin_end(8);
+
+            outer_grid.add(&top_grid);
+            outer_grid.add(&bottom_grid);
+
+            box_row.add(&outer_grid);
+
+            let conversation_rc = item.get_conversation();
+            let conversation_borrow = conversation_rc.borrow();
+            let conversation = conversation_borrow.as_ref().expect("BLA");
+
+            subject_label.set_text(&conversation.subject);
+            addresses_label.set_text(&"TEST");
+
+            // box_row.show_all();
 
             box_row.upcast::<gtk::Widget>()
+
+            // set_swipe_icon_name ("envoyer-delete-symbolic");
         });
 
         Self {
