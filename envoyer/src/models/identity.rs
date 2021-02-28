@@ -38,6 +38,9 @@ impl Identity {
         database_connection_pool: diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
     ) -> Identity {
         info!("Creating identity with address {}", bare_identity.email_address);
+
+        //@TODO do the thread token response fetch asynchronously so that the
+        //@TODO application does not have to wait for this to start up
         let access_token_response = google_oauth::refresh_access_token(&bare_identity.gmail_refresh_token)
             .await
             .unwrap();
