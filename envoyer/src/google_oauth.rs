@@ -55,7 +55,10 @@ pub async fn refresh_access_token(refresh_token: &String) -> Result<GoogleAccess
         .unwrap();
 
     let mut response = client.send_async(request).await.unwrap();
-    let tokens_response: GoogleAccessTokenRefreshResponse = serde_json::from_str(&response.text_async().await.unwrap()).unwrap(); //@TODO gracefully handle instead of unwrap
+
+    //@TODO gracefully handle instead of unwrap
+    let response_text = response.text_async().await.unwrap();
+    let tokens_response: GoogleAccessTokenRefreshResponse = serde_json::from_str(&response_text).unwrap();
 
     info!("Access token refreshed");
 
@@ -95,7 +98,10 @@ pub async fn request_tokens(authorization_code: String) -> Result<GoogleAuthoriz
         .body(serde_qs::to_string(&request).unwrap())?;
 
     let mut response = client.send_async(request).await?;
-    let tokens_response: GoogleAuthorizationCodeResponse = serde_json::from_str(&response.text_async().await?).unwrap(); //@TODO gracefully handle instead of unwrap
+
+    //@TODO gracefully handle instead of unwrap
+    let response_text = response.text_async().await.unwrap();
+    let tokens_response: GoogleAuthorizationCodeResponse = serde_json::from_str(&response_text).unwrap();
 
     Ok(tokens_response)
 }
