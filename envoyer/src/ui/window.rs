@@ -117,8 +117,20 @@ impl Window {
             let conversation_borrow = conversation_rc.borrow();
             let conversation = conversation_borrow.as_ref().expect("BLA");
 
+            // Load data
+            // @TODO Currently this is done in a very naive way, to be detailed later
+            addresses_label.set_text(&conversation.from);
             subject_label.set_text(&conversation.subject);
-            addresses_label.set_text(&"TEST");
+
+            //@TODO implement an autoupdating timestamp
+            datetime_received_label.set_text(&conversation.get_relative_time_ago());
+
+            datetime_received_label.set_tooltip_text(Some(&conversation.time_received.to_string()));
+
+            attachment_image.set_no_show_all(true);
+            attachment_image.hide();
+            star_image.set_no_show_all(true);
+            star_image.hide();
 
             // box_row.show_all();
 

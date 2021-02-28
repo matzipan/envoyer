@@ -45,6 +45,17 @@ pub struct Message {
     pub deleted: bool,
 }
 
+impl Message {
+    pub fn get_time_received_utc(&self) -> chrono::DateTime<chrono::Utc> {
+        chrono::DateTime::<chrono::Utc>::from_utc(self.time_received, chrono::Utc)
+    }
+
+    pub fn get_relative_time_ago(&self) -> String {
+        chrono_humanize::HumanTime::from(self.get_time_received_utc())
+            .to_text_en(chrono_humanize::Accuracy::Rough, chrono_humanize::Tense::Past)
+    }
+}
+
 use smallvec::SmallVec;
 
 impl From<Message> for melib::email::Envelope {
