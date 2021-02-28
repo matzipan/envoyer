@@ -8,3 +8,35 @@ dialog.welcome-dialog {
 dialog.welcome-dialog headerbar {
     background: #fff;
 }
+
+.folder_conversation_item {
+    padding-right: 5px;
+    padding-left: 14px;
+    border-bottom: 1px solid #efefef;
+}
+
+.folder_conversation_item .starred {
+    border: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.folder_conversation_item.unseen {
+    padding-left: 0;
+}
+
+.folder_conversation_item.unseen .subject {
+    margin-left: 0;
+}
+
+.folder_conversation_item.unseen .addresses {
+    margin-left: 14px;
+}
+
+.folder_conversation_item.unseen .subject, .folder_conversation_item.unseen .unseen_dot {
+    color: #0777D4;
+}
+
+.folder_conversation_item.unseen:selected .subject, .folder_conversation_item.unseen:selected .unseen_dot {
+    color: #fff;
+}
