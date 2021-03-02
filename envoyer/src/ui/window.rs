@@ -1,4 +1,4 @@
-use gtk::{gdk, pango};
+use gtk::{gdk, glib, pango};
 
 use gtk::prelude::*;
 
@@ -8,11 +8,76 @@ use std::sync::{Arc, Mutex};
 
 use crate::models;
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 pub struct Window {
     pub gtk_window: gtk::ApplicationWindow,
     threads_list_box: gtk::ListBox,
     identities: Arc<Mutex<Vec<models::Identity>>>,
     model: models::folder_conversations_list::model::Model,
+}
+
+pub mod folder_conversation_item {
+    use super::*;
+
+    use glib::subclass;
+    use gtk::subclass::prelude::*;
+    // Implementation sub-module of the GObject
+    mod imp {
+        use super::*;
+
+        // The actual data structure that stores our values. This is not accessible
+        // directly from the outside.
+        pub struct FolderConversationItem { 
+            pub conversation: Rc<RefCell<Option<models::Message>>>
+        }
+        // Basic declaration of our type for the GObject type system
+        impl ObjectSubclass for FolderConversationItem {
+            const NAME: &'static str = "FolderConversationItem";
+            type Type = super::FolderConversationItem;
+            type ParentType = gtk::ListBoxRow;
+            type Interfaces = ();
+            type Instance = subclass::simple::InstanceStruct<Self>;
+            type Class = subclass::simple::ClassStruct<Self>;
+            glib::object_subclass!();
+            // Called once at the very beginning of instantiation of each instance and
+            // creates the data structure that contains all our state
+            fn new() -> Self {
+                Self { conversation: Default::default() }
+            }
+        }
+        impl ObjectImpl for FolderConversationItem {}
+        impl ListBoxRowImpl for FolderConversationItem {}
+        impl BinImpl for FolderConversationItem {}
+        impl ContainerImpl for FolderConversationItem {}
+        impl WidgetImpl for FolderConversationItem {}
+    }
+
+    // The public part
+    glib::wrapper! {
+        pub struct FolderConversationItem(ObjectSubclass<imp::FolderConversationItem>) @extends gtk::ListBoxRow, gtk::Bin, gtk::Widget, gtk::Container, @implements gtk::Buildable, gtk::Actionable;
+    }
+    impl FolderConversationItem {
+        pub fn new() -> FolderConversationItem {
+            glib::Object::new(&[]).expect("Failed to create row data")
+        }
+
+        pub fn new_with_conversation(conversation: &models::Message) -> FolderConversationItem {
+            let instance = Self::new();
+
+            let self_ = imp::FolderConversationItem::from_instance(&instance);
+            //@TODO can we get rid of this clone?
+            self_.conversation.replace(Some(conversation.clone()));
+
+            instance
+        }
+
+        pub fn get_conversation(&self) -> Rc<RefCell<Option<models::Message>>> {
+            let self_ = imp::FolderConversationItem::from_instance(self);
+            self_.conversation.clone()
+        }
+    }
 }
 
 impl Window {
@@ -37,23 +102,62 @@ impl Window {
         );
 
         let threads_list_box = gtk::ListBox::new();
+        threads_list_box.set_activate_on_single_click(false);
+        threads_list_box.set_selection_mode(gtk::SelectionMode::Multiple);
 
-        let scroll_box = gtk::ScrolledWindow::new(gtk::NONE_ADJUSTMENT, gtk::NONE_ADJUSTMENT);
-        scroll_box.set_vexpand(true);
-        scroll_box.set_hexpand(true);
-        scroll_box.add(&threads_list_box);
+        let folder_conversations_scroll_box = gtk::ScrolledWindow::new(gtk::NONE_ADJUSTMENT, gtk::NONE_ADJUSTMENT);
+        folder_conversations_scroll_box.set_vexpand(true);
+        folder_conversations_scroll_box.set_size_request(200, -1);
+        folder_conversations_scroll_box.add(&threads_list_box);
 
-        gtk_window.add(&scroll_box);
+        let conversation_viewer_list_box = gtk::ListBox::new();
 
-        threads_list_box.connect_row_selected(|_, list_box_row| info!("{}", list_box_row.unwrap().get_index()));
+        let conversation_viewer_scroll_box = gtk::ScrolledWindow::new(gtk::NONE_ADJUSTMENT, gtk::NONE_ADJUSTMENT);
+        conversation_viewer_scroll_box.set_hexpand(true);
+        conversation_viewer_scroll_box.add(&conversation_viewer_list_box);
+        conversation_viewer_scroll_box.set_property_hscrollbar_policy(gtk::PolicyType::Never);
+
+        let main_grid = gtk::Grid::new();
+
+        main_grid.set_orientation(gtk::Orientation::Horizontal);
+        main_grid.add(&folder_conversations_scroll_box);
+        main_grid.add(&conversation_viewer_scroll_box);
+
+        gtk_window.add(&main_grid);
 
         let model = models::folder_conversations_list::model::Model::new();
+
+        threads_list_box.connect_row_selected(|_, row| {
+            if let Some(row) = row {
+                let row = row
+                    .downcast_ref::<folder_conversation_item::FolderConversationItem>()
+                    .expect("List box row is of wrong type");
+
+
+                let conversation  = row.get_conversation();
+
+                info!("{}", conversation.borrow().as_ref().expect("Model configuration invalid").subject);
+                    
+                //         assert(row is FolderConversationItem);
+                //         application.load_conversation_thread (((FolderConversationItem)
+                // row).thread);     }
+                //@TODO custom type is needed so we can get the  conversation instead of just getting the index
+                // info!("{}", row.unwrap().get_index())
+            } else {
+                //         application.unload_current_conversation_thread ();   
+            }
+        });
+
         threads_list_box.bind_model(Some(&model), |item| {
             let item = item
                 .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
                 .expect("Row data is of wrong type");
+            
+            let conversation_rc = item.get_conversation();
+            let conversation_borrow = conversation_rc.borrow();
+            let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
 
-            let box_row = gtk::ListBoxRow::new();
+            let box_row = folder_conversation_item::FolderConversationItem::new_with_conversation(&conversation);
             box_row.get_style_context().add_class("folder_conversation_item");
 
             let subject_label = gtk::Label::new(None);
@@ -111,10 +215,6 @@ impl Window {
             outer_grid.add(&bottom_grid);
 
             box_row.add(&outer_grid);
-
-            let conversation_rc = item.get_conversation();
-            let conversation_borrow = conversation_rc.borrow();
-            let conversation = conversation_borrow.as_ref().expect("BLA");
 
             // Load data
             // @TODO Currently this is done in a very naive way, to be detailed later
