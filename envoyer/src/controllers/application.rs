@@ -16,6 +16,9 @@ use crate::ui;
 
 use std::sync::{Arc, Mutex};
 
+use std::rc::Rc;
+use std::cell::RefCell;
+
 diesel_migrations::embed_migrations!();
 
 pub enum ApplicationMessage {
@@ -51,8 +54,8 @@ pub enum ApplicationMessage {
 }
 
 pub struct Application {
-    main_window: ui::Window,
-    welcome_dialog: ui::WelcomeDialog,
+    main_window: Rc<RefCell<ui::Window>>,
+    welcome_dialog: Rc<RefCell<ui::WelcomeDialog>>,
     application_message_sender: glib::Sender<ApplicationMessage>,
     context: glib::MainContext,
     database_connection_pool: diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::sqlite::SqliteConnection>>,
@@ -93,11 +96,11 @@ impl Application {
         let identities = Arc::new(Mutex::new(Vec::<models::Identity>::new()));
 
         let application = Self {
-            main_window: ui::Window::new(gtk_application, identities.clone()),
+            main_window: Rc::new(RefCell::new(ui::Window::new(gtk_application, identities.clone()))),
             // Ideally this dialog would be created only if account setup is
             // needed, but to simplify reference passing right now, we're
             // always creating it.
-            welcome_dialog: ui::WelcomeDialog::new(application_message_sender.clone()),
+            welcome_dialog: Rc::new(RefCell::new(ui::WelcomeDialog::new(application_message_sender.clone()))),
             application_message_sender: application_message_sender,
             context: context,
             database_connection_pool: database_connection_pool,
@@ -109,13 +112,13 @@ impl Application {
         let database_connection_pool = application.database_connection_pool.clone();
         let context_clone = application.context.clone();
         let identities_clone = application.identities.clone();
-        let welcome_dialog = application.welcome_dialog.clone(); //@TODO these should be rc not clones
-        let main_window = application.main_window.clone(); //@TODO these should be rc not clones
+        let welcome_dialog = application.welcome_dialog.clone();
+        let main_window = application.main_window.clone();
         let application_message_sender = application.application_message_sender.clone();
         application_message_receiver.attach(None, move |msg| {
             match msg {
                 ApplicationMessage::Setup {} => {
-                    welcome_dialog.show();
+                    welcome_dialog.borrow().show();
                 }
                 ApplicationMessage::SaveIdentity {
                     email_address,
@@ -233,10 +236,10 @@ impl Application {
                         .get_conversations_for_folder(&identity.get_folders().unwrap().iter().find(|&x| x.folder_name == "INBOX").unwrap())
                         .expect("BLA");
 
-                    main_window.show_conversations(conversations);
+                    main_window.borrow().show_conversations(conversations);
 
-                    welcome_dialog.hide();
-                    main_window.show();
+                    welcome_dialog.borrow().hide();
+                    main_window.borrow().show();
                 }
                 ApplicationMessage::LoadFolder { folder } => {
                     //@TODO hacky just to get things going
@@ -244,7 +247,7 @@ impl Application {
 
                     let conversations = identity.get_conversations_for_folder(&folder).expect("BLA");
 
-                    main_window.show_conversations(conversations);
+                    main_window.borrow().show_conversations(conversations);
                 }
             }
             // Returning false here would close the receiver and have senders
@@ -252,7 +255,7 @@ impl Application {
             glib::Continue(true)
         });
 
-        application.welcome_dialog.transient_for(&application.main_window);
+        application.welcome_dialog.borrow().transient_for(&application.main_window.borrow());
 
         application
     }

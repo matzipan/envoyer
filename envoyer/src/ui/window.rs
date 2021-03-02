@@ -8,7 +8,6 @@ use std::sync::{Arc, Mutex};
 
 use crate::models;
 
-#[derive(Clone)]
 pub struct Window {
     pub gtk_window: gtk::ApplicationWindow,
     threads_list_box: gtk::ListBox,
