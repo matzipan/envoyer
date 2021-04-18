@@ -10,7 +10,6 @@ edition = "2018"
 async-stream = "0.3.0"
 diesel = { version = "1.4.4", features = ["sqlite", "chrono", "r2d2"] }
 diesel_migrations = "1.4.0"
-gtk = { git = "https://github.com/gtk-rs/gtk-rs.git", features=["v3_22"] }
 log = "0.4.11"
 chrono = "0.4"
 #async-std = ""
@@ -27,3 +26,7 @@ futures = "0.3"
 webkit2gtk = { git = "https://github.com/gtk-rs/webkit2gtk-rs.git" }
 data-encoding = "2.1.1"
 chrono-humanize = "0.1.2"
+
+[dependencies.gtk]
+package = "gtk4"
+git = "https://github.com/gtk-rs/gtk4-rs"
