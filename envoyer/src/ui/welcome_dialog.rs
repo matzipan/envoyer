@@ -29,9 +29,9 @@ struct FormData {
 pub struct WelcomeDialog {
     pub sender: glib::Sender<ApplicationMessage>,
     pub gtk_dialog: gtk::Dialog,
+    pub authorize_button: gtk::Button,
     pub submit_button: gtk::Button,
     pub stack: gtk::Stack,
-    pub webview: webkit2gtk::WebView,
     pub email_address_entry: gtk::Entry,
     pub account_name_entry: gtk::Entry,
     pub full_name_entry: gtk::Entry,
@@ -50,9 +50,9 @@ impl WelcomeDialog {
                 gtk::DialogFlags::USE_HEADER_BAR | gtk::DialogFlags::MODAL,
                 &[],
             ),
-            submit_button: gtk::Button::with_label("Authorize"),
+            authorize_button: gtk::Button::with_label("Authorize"),
+            submit_button: gtk::Button::with_label("Next"),
             stack: gtk::Stack::new(),
-            webview: webkit2gtk::WebView::new(),
             email_address_entry: gtk::Entry::new(),
             account_name_entry: gtk::Entry::new(),
             full_name_entry: gtk::Entry::new(),
@@ -135,6 +135,22 @@ impl WelcomeDialog {
         welcome_screen.attach(&initial_information_grid, 0, 2, 1, 1);
         welcome_screen.attach(&self.submit_button, 0, 3, 1, 1);
 
+        let authorization_label = gtk::Label::new(Some("Authorization"));
+        authorization_label.set_halign(gtk::Align::Start);
+        authorization_label.get_style_context().add_class("h1");
+        let description_label = gtk::Label::new(Some(
+            "Clicking the button will open a browser window requesting you to authorize Envoyer to read your emails.",
+        ));
+        self.authorize_button.set_halign(gtk::Align::End);
+
+        let authorization_screen = gtk::Grid::new();
+        authorization_screen.set_halign(gtk::Align::Center);
+        authorization_screen.set_valign(gtk::Align::Center);
+        authorization_screen.set_orientation(gtk::Orientation::Vertical);
+        authorization_screen.attach(&authorization_label, 0, 0, 1, 1);
+        authorization_screen.attach(&description_label, 0, 1, 1, 1);
+        authorization_screen.attach(&self.authorize_button, 0, 2, 1, 1);
+
         self.spinner.set_size_request(40, 40);
         self.spinner.set_halign(gtk::Align::Center);
         self.spinner.set_valign(gtk::Align::Center);
@@ -155,7 +171,7 @@ impl WelcomeDialog {
         please_wait_grid.attach(&self.spinner, 0, 2, 1, 1);
 
         self.stack.add_named(&welcome_screen, Some("welcome-screen"));
-        self.stack.add_named(&self.webview, Some("authorization-screen"));
+        self.stack.add_named(&authorization_screen, Some("authorization-screen"));
         self.stack.add_named(&please_wait_grid, Some("please-wait"));
 
         self.gtk_dialog.get_content_area().append(&self.stack);
@@ -166,11 +182,11 @@ impl WelcomeDialog {
         let email_address_entry = self.email_address_entry.clone();
         let account_name_entry = self.account_name_entry.clone();
         let full_name_entry = self.full_name_entry.clone();
-        let webview = self.webview.clone();
         let form_data_rc = self.form_data_rc.clone();
 
         self.submit_button
-            .connect_clicked(clone!(@weak stack, @weak email_address_entry, @weak account_name_entry, @weak full_name_entry, @weak webview => move |_| {
+            .connect_clicked(clone!(@weak stack, @weak email_address_entry, @weak
+            account_name_entry, @weak full_name_entry => move |_| {
                 let email_address = email_address_entry.get_text().to_string();
                 let full_name = full_name_entry.get_text().to_string();
                 let account_name = account_name_entry.get_text().to_string();
@@ -185,49 +201,26 @@ impl WelcomeDialog {
                 form_data.full_name = Some(full_name);
                 form_data.account_name = Some(account_name);
 
-                stack.set_visible_child_name("webview");
+                stack.set_visible_child_name("authorization-screen");
 
-                webview.load_uri(&format!(
-                    "https://accounts.google.com/o/oauth2/v2/auth?scope={scope}&login_hint={email_address}&response_type=code&\
-                    redirect_uri={redirect_uri}&client_id={client_id}",
-                    scope = google_oauth::OAUTH_SCOPE,
-                    email_address = email_address_clone,
-                    redirect_uri = google_oauth::REDIRECT_URI,
-                    client_id = google_oauth::CLIENT_ID
-                ));
+
             }));
+
+        let form_data_rc = self.form_data_rc.clone();
+        let sender_clone = self.sender.clone();
+
+        self.authorize_button.connect_clicked(move |_| {
+            let form_data = form_data_rc.borrow();
+            sender_clone
+                .send(ApplicationMessage::OpenGoogleAuthentication {
+                    email_address: form_data.email_address.as_ref().unwrap().clone(),
+                })
+                .expect("Unable to send application message");
+        });
 
         let spinner = self.spinner.clone();
         let sender = self.sender.clone();
         let form_data_rc = self.form_data_rc.clone();
-        self.webview.connect_load_changed(clone!(@weak spinner, @strong sender => move |webview, event| {
-                if event == webkit2gtk::LoadEvent::Started {
-                    let webview_uri = String::from(webview.get_uri().expect("Unable to fetch URI from WebView"));
-
-                    if webview_uri.starts_with(google_oauth::REDIRECT_URI) {
-                        stack.set_visible_child_name("please-wait");
-                        spinner.start();
-
-                        //@TODO gracefully handle instead of unwrap and expect
-                        let request_url = Url::parse(&webview_uri).unwrap();
-                        let authorization_code = request_url.query_pairs().into_owned().find(|x| x.0 == "code").expect("Unable to fetch authorization code from Google authenticaiton");
-
-                        info!("Received authorization code from Google authentication");
-
-                        let form_data = form_data_rc.borrow();
-                        
-                        sender.send(ApplicationMessage::GoogleAuthorizationCodeReceived {
-                            // The fields cannot be none since it is a
-                            // precondition that they will be set before a load
-                            // is triggered
-                            email_address: (&form_data.email_address.as_ref().unwrap()).to_string(),
-                            full_name: (&form_data.full_name.as_ref().unwrap()).to_string(),
-                            account_name: (&form_data.account_name.as_ref().unwrap()).to_string(),
-                            authorization_code: authorization_code.1
-                        }).expect("Unable to send application message");
-                    }
-                }
-            }));
     }
 
     pub fn show(&self) {

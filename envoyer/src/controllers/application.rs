@@ -51,6 +51,9 @@ pub enum ApplicationMessage {
     LoadFolder {
         folder: models::Folder,
     },
+    OpenGoogleAuthentication {
+        email_address: String,
+    },
 }
 
 pub struct Application {
@@ -248,6 +251,25 @@ impl Application {
                     let conversations = identity.get_conversations_for_folder(&folder).expect("BLA");
 
                     main_window.borrow().show_conversations(conversations);
+                }
+                ApplicationMessage::OpenGoogleAuthentication { email_address } => {
+                    context_clone.spawn_local(async move {
+                        if let Err(err) = gio::AppInfo::launch_default_for_uri_async_future(
+                            &format!(
+                                "https://accounts.google.com/o/oauth2/v2/auth?scope={scope}&login_hint={email_address}&response_type=code&\
+                            redirect_uri={redirect_uri}&client_id={client_id}",
+                                scope = google_oauth::OAUTH_SCOPE,
+                                email_address = email_address,
+                                redirect_uri = google_oauth::REDIRECT_URI,
+                                client_id = google_oauth::CLIENT_ID
+                            ),
+                            None::<&gio::AppLaunchContext>,
+                        )
+                        .await
+                        {
+                            error!("error happened {}", err);
+                        }
+                    });
                 }
             }
             // Returning false here would close the receiver and have senders
