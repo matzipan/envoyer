@@ -21,14 +21,14 @@ pub mod model {
         #[derive(Debug)]
         pub struct Model(pub RefCell<Vec<ConversationRowData>>);
         // Basic declaration of our type for the GObject type system
+
+        #[glib::object_subclass]
         impl ObjectSubclass for Model {
             const NAME: &'static str = "Model";
             type Type = super::Model;
             type ParentType = glib::Object;
             type Interfaces = (gio::ListModel,);
-            type Instance = subclass::simple::InstanceStruct<Self>;
-            type Class = subclass::simple::ClassStruct<Self>;
-            glib::object_subclass!();
+
             // Called once at the very beginning of instantiation
             fn new() -> Self {
                 Self(RefCell::new(Vec::new()))
@@ -93,15 +93,13 @@ pub mod row_data {
         pub struct ConversationRowData {
             pub conversation: Rc<RefCell<Option<models::Message>>>,
         }
+
         // Basic declaration of our type for the GObject type system
+        #[glib::object_subclass]
         impl ObjectSubclass for ConversationRowData {
             const NAME: &'static str = "ConversationRowData";
             type Type = super::ConversationRowData;
             type ParentType = glib::Object;
-            type Interfaces = ();
-            type Instance = subclass::simple::InstanceStruct<Self>;
-            type Class = subclass::simple::ClassStruct<Self>;
-            glib::object_subclass!();
             // Called once at the very beginning of instantiation of each instance and
             // creates the data structure that contains all our state
             fn new() -> Self {
