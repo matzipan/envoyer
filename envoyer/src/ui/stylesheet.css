@@ -1,13 +1,30 @@
-@define-color colorPrimary #F7AC37;
-@define-color textColorPrimary rgba(30,30,30,0.7);
+@define-color headerbar_background_color rgb(247,172,55);
+@define-color headerbar_color rgba(30,30,30,0.7);
 
-dialog.welcome-dialog {
+headerbar {
+    background: @headerbar_background_color;
+    color: @headerbar_color;
+    font-weight: bold;
+}
+
+headerbar button:hover {
+    color: @headerbar_color;
+    background-color: lighter(@headerbar_background_color);
+}
+
+headerbar button:active {
+    color: @headerbar_color;
+    background-color: darker(@headerbar_background_color);
+}
+
+.welcome-dialog {
     background: #fff;
 }
 
-dialog.welcome-dialog headerbar {
-    background: #fff;
-}
+.welcome-dialog .h1  { font-size: 30px; }
+
+.welcome-dialog .initial-information-grid { margin-top: 40px; }
+.welcome-dialog .form-entry { margin-left: 30px; }
 
 .folder_conversation_item {
     padding-right: 5px;
@@ -15,7 +32,15 @@ dialog.welcome-dialog headerbar {
     border-bottom: 1px solid #efefef;
 }
 
-.folder_conversation_item .starred {
+.folder_conversation_item .addresses, .folder_conversation_item .received {
+    color: rgba(100, 100, 100, 0.6);
+}
+
+.folder_conversation_item:selected .addresses, .folder_conversation_item:selected .received {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.folder_conversation_item .star {
     border: 0;
     padding: 0;
     background: transparent;
