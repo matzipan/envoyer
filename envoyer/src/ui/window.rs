@@ -29,18 +29,16 @@ pub mod folder_conversation_item {
 
         // The actual data structure that stores our values. This is not accessible
         // directly from the outside.
-        pub struct FolderConversationItem { 
-            pub conversation: Rc<RefCell<Option<models::Message>>>
+        pub struct FolderConversationItem {
+            pub conversation: Rc<RefCell<Option<models::Message>>>,
         }
+
         // Basic declaration of our type for the GObject type system
+        #[glib::object_subclass]
         impl ObjectSubclass for FolderConversationItem {
             const NAME: &'static str = "FolderConversationItem";
             type Type = super::FolderConversationItem;
             type ParentType = gtk::ListBoxRow;
-            type Interfaces = ();
-            type Instance = subclass::simple::InstanceStruct<Self>;
-            type Class = subclass::simple::ClassStruct<Self>;
-            glib::object_subclass!();
             // Called once at the very beginning of instantiation of each instance and
             // creates the data structure that contains all our state
             fn new() -> Self {
@@ -49,14 +47,12 @@ pub mod folder_conversation_item {
         }
         impl ObjectImpl for FolderConversationItem {}
         impl ListBoxRowImpl for FolderConversationItem {}
-        impl BinImpl for FolderConversationItem {}
-        impl ContainerImpl for FolderConversationItem {}
         impl WidgetImpl for FolderConversationItem {}
     }
 
     // The public part
     glib::wrapper! {
-        pub struct FolderConversationItem(ObjectSubclass<imp::FolderConversationItem>) @extends gtk::ListBoxRow, gtk::Bin, gtk::Widget, gtk::Container, @implements gtk::Buildable, gtk::Actionable;
+        pub struct FolderConversationItem(ObjectSubclass<imp::FolderConversationItem>) @extends gtk::ListBoxRow, gtk::Widget, @implements gtk::Buildable, gtk::Actionable;
     }
     impl FolderConversationItem {
         pub fn new() -> FolderConversationItem {
