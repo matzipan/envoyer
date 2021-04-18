@@ -81,18 +81,16 @@ impl Window {
         //@TODO set icon
         let gtk_window = gtk::ApplicationWindow::new(application);
         let header = gtk::HeaderBar::new();
-        header.set_title(Some("Envoyer"));
-        header.set_show_close_button(true);
+        header.set_title_widget(Some(&gtk::Label::new(Some("Envoyer"))));
         gtk_window.set_titlebar(Some(&header));
-        gtk_window.set_title("Envoyer");
-        gtk_window.resize(1600, 900);
+        gtk_window.set_default_size(1600, 900);
 
         gtk::Window::set_default_icon_name("iconname");
         let my_str = include_str!("stylesheet.css");
         let provider = gtk::CssProvider::new();
-        provider.load_from_data(my_str.as_bytes()).expect("Failed to load CSS");
-        gtk::StyleContext::add_provider_for_screen(
-            &gdk::Screen::get_default().expect("Error initializing gtk css provider."),
+        provider.load_from_data(my_str.as_bytes());
+        gtk::StyleContext::add_provider_for_display(
+            &gdk::Display::get_default().expect("Error initializing gtk css provider."),
             &provider,
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
@@ -101,25 +99,25 @@ impl Window {
         threads_list_box.set_activate_on_single_click(false);
         threads_list_box.set_selection_mode(gtk::SelectionMode::Multiple);
 
-        let folder_conversations_scroll_box = gtk::ScrolledWindow::new(gtk::NONE_ADJUSTMENT, gtk::NONE_ADJUSTMENT);
+        let folder_conversations_scroll_box = gtk::ScrolledWindow::new();
         folder_conversations_scroll_box.set_vexpand(true);
         folder_conversations_scroll_box.set_size_request(200, -1);
-        folder_conversations_scroll_box.add(&threads_list_box);
+        folder_conversations_scroll_box.set_child(Some(&threads_list_box));
 
         let conversation_viewer_list_box = gtk::ListBox::new();
 
-        let conversation_viewer_scroll_box = gtk::ScrolledWindow::new(gtk::NONE_ADJUSTMENT, gtk::NONE_ADJUSTMENT);
+        let conversation_viewer_scroll_box = gtk::ScrolledWindow::new();
         conversation_viewer_scroll_box.set_hexpand(true);
-        conversation_viewer_scroll_box.add(&conversation_viewer_list_box);
         conversation_viewer_scroll_box.set_property_hscrollbar_policy(gtk::PolicyType::Never);
+        conversation_viewer_scroll_box.set_child(Some(&conversation_viewer_list_box));
 
         let main_grid = gtk::Grid::new();
 
         main_grid.set_orientation(gtk::Orientation::Horizontal);
-        main_grid.add(&folder_conversations_scroll_box);
-        main_grid.add(&conversation_viewer_scroll_box);
+        main_grid.attach(&folder_conversations_scroll_box, 0, 0, 1, 1);
+        main_grid.attach(&conversation_viewer_scroll_box, 1, 0, 1, 1);
 
-        gtk_window.add(&main_grid);
+        gtk_window.set_child(Some(&main_grid));
 
         let model = models::folder_conversations_list::model::Model::new();
 
@@ -128,7 +126,6 @@ impl Window {
                 let row = row
                     .downcast_ref::<folder_conversation_item::FolderConversationItem>()
                     .expect("List box row is of wrong type");
-
 
                 let conversation  = row.get_conversation();
 
@@ -163,7 +160,7 @@ impl Window {
             subject_label.get_style_context().add_class("subject");
             subject_label.set_xalign(0.0);
 
-            let attachment_image = gtk::Image::from_icon_name(Some("mail-attachment-symbolic"), gtk::IconSize::Menu);
+            let attachment_image = gtk::Image::from_icon_name(Some("mail-attachment-symbolic"));
             attachment_image.set_sensitive(false);
             attachment_image.set_tooltip_text(Some("This thread contains one or more attachments"));
 
@@ -174,12 +171,12 @@ impl Window {
             // unseen_dot = new Envoyer.Widgets.Main.UnseenDot ();
             // unseen_dot.no_show_all = true;
             // top_grid.add (unseen_dot);
-            top_grid.add(&subject_label);
-            top_grid.add(&attachment_image);
+            top_grid.attach(&subject_label, 0, 0, 1, 1);
+            top_grid.attach(&attachment_image, 1, 0, 1, 1);
 
             //@TODO make smaller star_image.
-            let star_image = gtk::Button::from_icon_name(Some("starred"), gtk::IconSize::Menu);
-            star_image.get_style_context().add_class("starred");
+            let star_image = gtk::Button::from_icon_name(Some("starred"));
+            star_image.get_style_context().add_class("star");
             star_image.set_sensitive(true);
             star_image.set_tooltip_text(Some("Mark this thread as starred"));
 
@@ -188,16 +185,17 @@ impl Window {
             addresses_label.set_halign(gtk::Align::Start);
             addresses_label.set_ellipsize(pango::EllipsizeMode::End);
             addresses_label.get_style_context().add_class("addresses");
-            addresses_label.get_style_context().add_class(&gtk::STYLE_CLASS_DIM_LABEL);
 
             let datetime_received_label = gtk::Label::new(None);
+            datetime_received_label.get_style_context().add_class("received");
+
 
             let bottom_grid = gtk::Grid::new();
             bottom_grid.set_orientation(gtk::Orientation::Horizontal);
             bottom_grid.set_column_spacing(3);
-            bottom_grid.add(&addresses_label);
-            bottom_grid.add(&datetime_received_label);
-            bottom_grid.add(&star_image);
+            bottom_grid.attach(&addresses_label, 0, 0, 1, 1);
+            bottom_grid.attach(&datetime_received_label, 1, 0, 1, 1);
+            bottom_grid.attach(&star_image, 2, 0, 1, 1);
 
             let outer_grid = gtk::Grid::new();
             outer_grid.set_orientation(gtk::Orientation::Vertical);
@@ -207,10 +205,10 @@ impl Window {
             outer_grid.set_margin_start(8);
             outer_grid.set_margin_end(8);
 
-            outer_grid.add(&top_grid);
-            outer_grid.add(&bottom_grid);
+            outer_grid.attach(&top_grid, 0, 0, 1, 1);
+            outer_grid.attach(&bottom_grid, 0, 1, 1, 1);
 
-            box_row.add(&outer_grid);
+            box_row.set_child(Some(&outer_grid));
 
             // Load data
             // @TODO Currently this is done in a very naive way, to be detailed later
@@ -222,12 +220,8 @@ impl Window {
 
             datetime_received_label.set_tooltip_text(Some(&conversation.time_received.to_string()));
 
-            attachment_image.set_no_show_all(true);
             attachment_image.hide();
-            star_image.set_no_show_all(true);
             star_image.hide();
-
-            // box_row.show_all();
 
             box_row.upcast::<gtk::Widget>()
 
@@ -243,7 +237,7 @@ impl Window {
     }
 
     pub fn show(&self) {
-        self.gtk_window.show_all();
+        self.gtk_window.show();
         self.gtk_window.present();
     }
 

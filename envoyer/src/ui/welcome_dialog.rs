@@ -43,7 +43,13 @@ impl WelcomeDialog {
     pub fn new(sender: glib::Sender<ApplicationMessage>) -> WelcomeDialog {
         let dialog = Self {
             sender: sender,
-            gtk_dialog: gtk::Dialog::new(),
+            // Workaround for the desktop manager seemingly taking over headerbars?
+            gtk_dialog: gtk::Dialog::with_buttons(
+                Some(&""),
+                None::<&gtk::Window>,
+                gtk::DialogFlags::USE_HEADER_BAR | gtk::DialogFlags::MODAL,
+                &[],
+            ),
             submit_button: gtk::Button::with_label("Authorize"),
             stack: gtk::Stack::new(),
             webview: webkit2gtk::WebView::new(),
@@ -67,13 +73,7 @@ impl WelcomeDialog {
 
         self.gtk_dialog.get_style_context().add_class("welcome-dialog");
         self.gtk_dialog.set_size_request(1024, 1024);
-        self.gtk_dialog.set_property_window_position(gtk::WindowPosition::Center);
         self.gtk_dialog.set_modal(true);
-        self.gtk_dialog.set_resizable(false);
-        self.gtk_dialog.set_border_width(5);
-
-        self.webview.set_hexpand(true);
-        self.webview.set_vexpand(true);
 
         //@TODO handle close button
 
@@ -82,33 +82,41 @@ impl WelcomeDialog {
         welcome_label.set_halign(gtk::Align::Start);
 
         let description_label = gtk::Label::new(Some("Let's get you set up using the app. Enter your information below:"));
-        description_label.set_margin_bottom(40);
 
         let email_address_label = gtk::Label::new(Some("E-mail address"));
-        email_address_label.set_margin_end(30);
+        email_address_label.set_halign(gtk::Align::Start);
+        email_address_label.get_style_context().add_class("form-label");
 
         self.email_address_entry.set_placeholder_text(Some("you@yourdomain.com"));
+        self.email_address_entry.get_style_context().add_class("form-entry");
 
         let account_name_label = gtk::Label::new(Some("Account name"));
-        account_name_label.set_margin_end(30);
+        account_name_label.set_halign(gtk::Align::Start);
+        account_name_label.get_style_context().add_class("form-label");
 
         self.account_name_entry.set_placeholder_text(Some("Personal"));
+        self.account_name_entry.get_style_context().add_class("form-entry");
 
         let full_name_label = gtk::Label::new(Some("Full name"));
+        full_name_label.set_halign(gtk::Align::Start);
+        full_name_label.get_style_context().add_class("form-label");
 
         let full_name_info_image = gtk::Image::new();
-        full_name_info_image.set_from_gicon(&gio::ThemedIcon::new("dialog-information-symbolic"), gtk::IconSize::Button);
-        full_name_info_image.set_pixel_size(16);
-        full_name_info_image.set_margin_end(30);
+        full_name_info_image.set_from_gicon(&gio::ThemedIcon::new("dialog-information-symbolic"));
+        full_name_info_image.set_pixel_size(15);
         full_name_info_image.set_tooltip_text(Some("Publicly visible. Used in the sender field of your e-mails."));
 
         self.full_name_entry.set_placeholder_text(Some("John Doe"));
+        self.full_name_entry.get_style_context().add_class("form-entry");
 
         self.submit_button.set_halign(gtk::Align::End);
         self.submit_button.set_margin_top(40);
 
         let initial_information_grid = gtk::Grid::new();
+        initial_information_grid.get_style_context().add_class("initial-information-grid");
         initial_information_grid.set_halign(gtk::Align::Center);
+        initial_information_grid.set_hexpand(true);
+        initial_information_grid.set_vexpand(true);
         initial_information_grid.set_row_spacing(5);
         initial_information_grid.attach(&email_address_label, 0, 0, 2, 1);
         initial_information_grid.attach(&self.email_address_entry, 2, 0, 1, 1);
@@ -122,10 +130,10 @@ impl WelcomeDialog {
         welcome_screen.set_halign(gtk::Align::Center);
         welcome_screen.set_valign(gtk::Align::Center);
         welcome_screen.set_orientation(gtk::Orientation::Vertical);
-        welcome_screen.add(&welcome_label);
-        welcome_screen.add(&description_label);
-        welcome_screen.add(&initial_information_grid);
-        welcome_screen.add(&self.submit_button);
+        welcome_screen.attach(&welcome_label, 0, 0, 1, 1);
+        welcome_screen.attach(&description_label, 0, 1, 1, 1);
+        welcome_screen.attach(&initial_information_grid, 0, 2, 1, 1);
+        welcome_screen.attach(&self.submit_button, 0, 3, 1, 1);
 
         self.spinner.set_size_request(40, 40);
         self.spinner.set_halign(gtk::Align::Center);
@@ -142,15 +150,15 @@ impl WelcomeDialog {
         please_wait_grid.set_orientation(gtk::Orientation::Vertical);
         please_wait_grid.set_halign(gtk::Align::Center);
         please_wait_grid.set_valign(gtk::Align::Center);
-        please_wait_grid.add(&please_wait_label);
-        please_wait_grid.add(&synchronizing_label);
-        please_wait_grid.add(&self.spinner);
+        please_wait_grid.attach(&please_wait_label, 0, 0, 1, 1);
+        please_wait_grid.attach(&synchronizing_label, 0, 1, 1, 1);
+        please_wait_grid.attach(&self.spinner, 0, 2, 1, 1);
 
-        self.stack.add_named(&welcome_screen, "welcome-screen");
-        self.stack.add_named(&self.webview, "webview");
-        self.stack.add_named(&please_wait_grid, "please-wait");
+        self.stack.add_named(&welcome_screen, Some("welcome-screen"));
+        self.stack.add_named(&self.webview, Some("authorization-screen"));
+        self.stack.add_named(&please_wait_grid, Some("please-wait"));
 
-        self.gtk_dialog.get_content_area().add(&self.stack);
+        self.gtk_dialog.get_content_area().append(&self.stack);
     }
 
     pub fn connect_signals(&self) {
@@ -223,7 +231,7 @@ impl WelcomeDialog {
     }
 
     pub fn show(&self) {
-        self.gtk_dialog.show_all();
+        self.gtk_dialog.show();
         self.gtk_dialog.present();
     }
 
