@@ -69,14 +69,13 @@ impl Application {
     pub fn run() {
         gtk::init().expect("Failed to initialize GTK Application");
 
-        let gtk_application =
-            gtk::Application::new(Some("com.github.matzipan.envoyer"), Default::default()).expect("Failed to initialize application");
+        let gtk_application = gtk::Application::new(Some("com.github.matzipan.envoyer"), Default::default());
 
         gtk_application.connect_startup(|gtk_application| {
             Application::on_startup(&gtk_application);
         });
 
-        gtk_application.run(&[]);
+        gtk_application.run();
     }
 
     fn on_startup(gtk_application: &gtk::Application) {
