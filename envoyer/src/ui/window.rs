@@ -108,7 +108,7 @@ impl Window {
 
         let conversation_viewer_scroll_box = gtk::ScrolledWindow::new();
         conversation_viewer_scroll_box.set_hexpand(true);
-        conversation_viewer_scroll_box.set_property_hscrollbar_policy(gtk::PolicyType::Never);
+        conversation_viewer_scroll_box.set_hscrollbar_policy(gtk::PolicyType::Never);
         conversation_viewer_scroll_box.set_child(Some(&conversation_viewer_list_box));
 
         let main_grid = gtk::Grid::new();
@@ -151,13 +151,13 @@ impl Window {
             let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
 
             let box_row = folder_conversation_item::FolderConversationItem::new_with_conversation(&conversation);
-            box_row.get_style_context().add_class("folder_conversation_item");
+            box_row.style_context().add_class("folder_conversation_item");
 
             let subject_label = gtk::Label::new(None);
             subject_label.set_hexpand(true);
             subject_label.set_halign(gtk::Align::Start);
             subject_label.set_ellipsize(pango::EllipsizeMode::End);
-            subject_label.get_style_context().add_class("subject");
+            subject_label.style_context().add_class("subject");
             subject_label.set_xalign(0.0);
 
             let attachment_image = gtk::Image::from_icon_name(Some("mail-attachment-symbolic"));
@@ -176,7 +176,7 @@ impl Window {
 
             //@TODO make smaller star_image.
             let star_image = gtk::Button::from_icon_name(Some("starred"));
-            star_image.get_style_context().add_class("star");
+            star_image.style_context().add_class("star");
             star_image.set_sensitive(true);
             star_image.set_tooltip_text(Some("Mark this thread as starred"));
 
@@ -184,10 +184,10 @@ impl Window {
             addresses_label.set_hexpand(true);
             addresses_label.set_halign(gtk::Align::Start);
             addresses_label.set_ellipsize(pango::EllipsizeMode::End);
-            addresses_label.get_style_context().add_class("addresses");
+            addresses_label.style_context().add_class("addresses");
 
             let datetime_received_label = gtk::Label::new(None);
-            datetime_received_label.get_style_context().add_class("received");
+            datetime_received_label.style_context().add_class("received");
 
 
             let bottom_grid = gtk::Grid::new();
