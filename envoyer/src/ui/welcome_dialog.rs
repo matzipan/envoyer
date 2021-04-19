@@ -71,35 +71,35 @@ impl WelcomeDialog {
     pub fn build_ui(&self) {
         //@TODO set icon
 
-        self.gtk_dialog.get_style_context().add_class("welcome-dialog");
+        self.gtk_dialog.style_context().add_class("welcome-dialog");
         self.gtk_dialog.set_size_request(1024, 1024);
         self.gtk_dialog.set_modal(true);
 
         //@TODO handle close button
 
         let welcome_label = gtk::Label::new(Some("Welcome!"));
-        welcome_label.get_style_context().add_class("h1");
+        welcome_label.style_context().add_class("h1");
         welcome_label.set_halign(gtk::Align::Start);
 
         let description_label = gtk::Label::new(Some("Let's get you set up using the app. Enter your information below:"));
 
         let email_address_label = gtk::Label::new(Some("E-mail address"));
         email_address_label.set_halign(gtk::Align::Start);
-        email_address_label.get_style_context().add_class("form-label");
+        email_address_label.style_context().add_class("form-label");
 
         self.email_address_entry.set_placeholder_text(Some("you@yourdomain.com"));
-        self.email_address_entry.get_style_context().add_class("form-entry");
+        self.email_address_entry.style_context().add_class("form-entry");
 
         let account_name_label = gtk::Label::new(Some("Account name"));
         account_name_label.set_halign(gtk::Align::Start);
-        account_name_label.get_style_context().add_class("form-label");
+        account_name_label.style_context().add_class("form-label");
 
         self.account_name_entry.set_placeholder_text(Some("Personal"));
-        self.account_name_entry.get_style_context().add_class("form-entry");
+        self.account_name_entry.style_context().add_class("form-entry");
 
         let full_name_label = gtk::Label::new(Some("Full name"));
         full_name_label.set_halign(gtk::Align::Start);
-        full_name_label.get_style_context().add_class("form-label");
+        full_name_label.style_context().add_class("form-label");
 
         let full_name_info_image = gtk::Image::new();
         full_name_info_image.set_from_gicon(&gio::ThemedIcon::new("dialog-information-symbolic"));
@@ -107,13 +107,13 @@ impl WelcomeDialog {
         full_name_info_image.set_tooltip_text(Some("Publicly visible. Used in the sender field of your e-mails."));
 
         self.full_name_entry.set_placeholder_text(Some("John Doe"));
-        self.full_name_entry.get_style_context().add_class("form-entry");
+        self.full_name_entry.style_context().add_class("form-entry");
 
         self.submit_button.set_halign(gtk::Align::End);
         self.submit_button.set_margin_top(40);
 
         let initial_information_grid = gtk::Grid::new();
-        initial_information_grid.get_style_context().add_class("initial-information-grid");
+        initial_information_grid.style_context().add_class("initial-information-grid");
         initial_information_grid.set_halign(gtk::Align::Center);
         initial_information_grid.set_hexpand(true);
         initial_information_grid.set_vexpand(true);
@@ -137,7 +137,7 @@ impl WelcomeDialog {
 
         let authorization_label = gtk::Label::new(Some("Authorization"));
         authorization_label.set_halign(gtk::Align::Start);
-        authorization_label.get_style_context().add_class("h1");
+        authorization_label.style_context().add_class("h1");
         let description_label = gtk::Label::new(Some(
             "Clicking the button will open a browser window requesting you to authorize Envoyer to read your emails.",
         ));
@@ -156,7 +156,7 @@ impl WelcomeDialog {
         self.spinner.set_valign(gtk::Align::Center);
 
         let please_wait_label = gtk::Label::new(Some("Please wait"));
-        please_wait_label.get_style_context().add_class("h1");
+        please_wait_label.style_context().add_class("h1");
         please_wait_label.set_halign(gtk::Align::Start);
 
         let synchronizing_label = gtk::Label::new(Some("We are synchronizing with the server. It may take a while."));
@@ -174,7 +174,7 @@ impl WelcomeDialog {
         self.stack.add_named(&authorization_screen, Some("authorization-screen"));
         self.stack.add_named(&please_wait_grid, Some("please-wait"));
 
-        self.gtk_dialog.get_content_area().append(&self.stack);
+        self.gtk_dialog.content_area().append(&self.stack);
     }
 
     pub fn connect_signals(&self) {
