@@ -187,9 +187,9 @@ impl WelcomeDialog {
         self.submit_button
             .connect_clicked(clone!(@weak stack, @weak email_address_entry, @weak
             account_name_entry, @weak full_name_entry => move |_| {
-                let email_address = email_address_entry.get_text().to_string();
-                let full_name = full_name_entry.get_text().to_string();
-                let account_name = account_name_entry.get_text().to_string();
+                let email_address = email_address_entry.text().to_string();
+                let full_name = full_name_entry.text().to_string();
+                let account_name = account_name_entry.text().to_string();
 
                 //@TODO check the values
 
