@@ -8,7 +8,6 @@ use serde::Deserialize;
 //@TODO move the constants to a nice configuration file
 pub const CLIENT_SECRET: &str = "N_GoSZys__JPgKXrh_jIUuOh";
 pub const CLIENT_ID: &str = "577724563203-55upnrbic0a2ft8qr809for8ns74jmqj.apps.googleusercontent.com";
-pub const REDIRECT_URI: &str = "com.googleusercontent.apps.577724563203-55upnrbic0a2ft8qr809for8ns74jmqj:";
 pub const OAUTH_SCOPE: &str = "https://mail.google.com/";
 
 #[derive(Serialize)]

@@ -1,11 +1,9 @@
 use gtk;
-extern crate webkit2gtk;
 
 use gtk::gio;
 use gtk::glib;
 use gtk::glib::clone;
 use gtk::prelude::*;
-use webkit2gtk::WebViewExt;
 
 use log::info;
 
@@ -58,8 +56,10 @@ impl WelcomeDialog {
             full_name_entry: gtk::Entry::new(),
             spinner: gtk::Spinner::new(),
             form_data_rc: Rc::new(RefCell::new(FormData {
-                email_address: None, full_name: None, account_name: None
-            }))
+                email_address: None,
+                full_name: None,
+                account_name: None,
+            })),
         };
 
         dialog.build_ui();

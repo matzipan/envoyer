@@ -11,6 +11,7 @@ use log::{error, info};
 use crate::google_oauth;
 use crate::models;
 use crate::schema;
+use crate::services;
 
 use crate::ui;
 
@@ -252,6 +253,14 @@ impl Application {
                     main_window.borrow().show_conversations(conversations);
                 }
                 ApplicationMessage::OpenGoogleAuthentication { email_address } => {
+                    let mut receiver = services::TokenReceiver::new().expect("bla");
+                    let token_receiver_address = receiver.get_address();
+
+                    let application_message_sender = application_message_sender.clone();
+                    context_clone.spawn_local(async move {
+                        receiver.start(application_message_sender).await;
+                    });
+
                     context_clone.spawn_local(async move {
                         if let Err(err) = gio::AppInfo::launch_default_for_uri_async_future(
                             &format!(
@@ -259,7 +268,7 @@ impl Application {
                             redirect_uri={redirect_uri}&client_id={client_id}",
                                 scope = google_oauth::OAUTH_SCOPE,
                                 email_address = email_address,
-                                redirect_uri = google_oauth::REDIRECT_URI,
+                                redirect_uri = token_receiver_address,
                                 client_id = google_oauth::CLIENT_ID
                             ),
                             None::<&gio::AppLaunchContext>,
