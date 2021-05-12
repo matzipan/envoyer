@@ -214,6 +214,8 @@ impl WelcomeDialog {
             sender_clone
                 .send(ApplicationMessage::OpenGoogleAuthentication {
                     email_address: form_data.email_address.as_ref().unwrap().clone(),
+                    full_name: form_data.full_name.as_ref().unwrap().clone(),
+                    account_name: form_data.account_name.as_ref().unwrap().clone(),
                 })
                 .expect("Unable to send application message");
         });

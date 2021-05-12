@@ -54,6 +54,8 @@ pub enum ApplicationMessage {
     },
     OpenGoogleAuthentication {
         email_address: String,
+        full_name: String,
+        account_name: String,
     },
 }
 
@@ -252,7 +254,11 @@ impl Application {
 
                     main_window.borrow().show_conversations(conversations);
                 }
-                ApplicationMessage::OpenGoogleAuthentication { email_address } => {
+                ApplicationMessage::OpenGoogleAuthentication {
+                    email_address,
+                    full_name,
+                    account_name,
+                } => {
                     let mut receiver = services::TokenReceiver::new().expect("bla");
                     let token_receiver_address = receiver.get_address();
 
