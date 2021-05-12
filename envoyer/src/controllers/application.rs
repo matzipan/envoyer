@@ -6,7 +6,7 @@ use chrono::prelude::*;
 use diesel::prelude::*;
 use futures::prelude::*;
 
-use log::{error, info};
+use log::{debug, error, info};
 
 use crate::google_oauth;
 use crate::models;
@@ -23,18 +23,6 @@ diesel_migrations::embed_migrations!();
 
 pub enum ApplicationMessage {
     Setup {},
-    RequestGoogleRefreshTokens {
-        email_address: String,
-        full_name: String,
-        account_name: String,
-        authorization_code: String,
-    },
-    GoogleAuthorizationCodeReceived {
-        email_address: String,
-        full_name: String,
-        account_name: String,
-        authorization_code: String,
-    },
     SaveIdentity {
         email_address: String,
         full_name: String,
@@ -154,45 +142,6 @@ impl Application {
                         .send(ApplicationMessage::LoadIdentities { initialize: true })
                         .expect("Unable to send application message");
                 }
-                ApplicationMessage::GoogleAuthorizationCodeReceived {
-                    email_address,
-                    full_name,
-                    account_name,
-                    authorization_code,
-                } => application_message_sender
-                    .send(ApplicationMessage::RequestGoogleRefreshTokens {
-                        email_address,
-                        full_name,
-                        account_name,
-                        authorization_code,
-                    })
-                    .expect("Unable to send application message"),
-                ApplicationMessage::RequestGoogleRefreshTokens {
-                    email_address,
-                    full_name,
-                    account_name,
-                    authorization_code,
-                } => {
-                    info!("RequestGoogleRefreshTokens for {}", email_address);
-
-                    let application_message_sender = application_message_sender.clone();
-                    context_clone.spawn(google_oauth::request_tokens(authorization_code).map(move |result| {
-                        match result {
-                            Err(error) => eprintln!("Got error: {}", error),
-                            Ok(response_token) => application_message_sender
-                                .send(ApplicationMessage::SaveIdentity {
-                                    email_address: email_address,
-                                    full_name: full_name,
-                                    identity_type: models::IdentityType::Gmail,
-                                    account_name: account_name,
-                                    gmail_access_token: response_token.access_token,
-                                    gmail_refresh_token: response_token.refresh_token,
-                                    expires_at: response_token.expires_at,
-                                })
-                                .expect("Unable to send application message"),
-                        }
-                    }));
-                }
                 ApplicationMessage::LoadIdentities { initialize } => {
                     info!("LoadIdentities with initialize {}", initialize);
 
@@ -276,12 +225,13 @@ impl Application {
                         debug!("Authorization code receiver stopped");
                     });
 
+                    let welcome_dialog_clone = welcome_dialog.clone();
                     context_clone.spawn_local(async move {
                         let token_receiver_address = address_receiver.next().await.unwrap(); //@TODO
-                        if let Err(err) = gio::AppInfo::launch_default_for_uri_async_future(
+
+                        match gio::AppInfo::launch_default_for_uri_async_future(
                             &format!(
-                                "https://accounts.google.com/o/oauth2/v2/auth?scope={scope}&login_hint={email_address}&response_type=code&\
-                            redirect_uri={redirect_uri}&client_id={client_id}",
+                                "https://accounts.google.com/o/oauth2/v2/auth?scope={scope}&login_hint={email_address}&response_type=code&redirect_uri={redirect_uri}&client_id={client_id}",
                                 scope = google_oauth::OAUTH_SCOPE,
                                 email_address = email_address,
                                 redirect_uri = token_receiver_address,
@@ -291,7 +241,30 @@ impl Application {
                         )
                         .await
                         {
-                            error!("error happened {}", err);
+                            Err(err) => error!("Unable to open URL in browser: {}", err),
+                            Ok(_) => {
+                                let authorization_code = authorization_code_receiver.next().await.expect("BLA"); //@TODO
+                                //@TODO handle the case where error is returned because the sender is closed
+
+                                welcome_dialog_clone.borrow().show();
+
+                                // @TODO shutdown token receiver here
+
+                                match google_oauth::request_tokens(authorization_code, token_receiver_address).await {
+                                    Err(error) => error!("Unable to fetch : {}", error),
+                                    Ok(response_token) => application_message_sender
+                                        .send(ApplicationMessage::SaveIdentity {
+                                            email_address: email_address,
+                                            full_name: full_name,
+                                            identity_type: models::IdentityType::Gmail,
+                                            account_name: account_name,
+                                            gmail_access_token: response_token.access_token,
+                                            gmail_refresh_token: response_token.refresh_token,
+                                            expires_at: response_token.expires_at,
+                                        })
+                                        .expect("Unable to send application message"),
+                                };
+                            }
                         }
                     });
                 }

@@ -82,14 +82,14 @@ pub struct GoogleTokensResponse {
     pub refresh_token: String,
 }
 
-pub async fn request_tokens(authorization_code: String) -> Result<GoogleAuthorizationCodeResponse, isahc::Error> {
+pub async fn request_tokens(authorization_code: String, redirect_uri: String) -> Result<GoogleTokensResponse, isahc::Error> {
     let client = HttpClient::new()?;
 
     let request = GoogleTokensRequest {
         code: &authorization_code,
         client_id: &CLIENT_ID.to_string(),
         client_secret: &CLIENT_SECRET.to_string(),
-        redirect_uri: &REDIRECT_URI.to_string(),
+        redirect_uri: &redirect_uri,
         grant_type: &"authorization_code".to_string(),
     };
 
