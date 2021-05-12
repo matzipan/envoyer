@@ -27,6 +27,8 @@ data-encoding = "2.1.1"
 chrono-humanize = "0.1.2"
 rand = "0.8.3"
 
+actix-web = "3"
+
 tide = "0.16.0"
 
 [dependencies.gtk]

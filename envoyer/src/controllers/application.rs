@@ -258,15 +258,26 @@ impl Application {
                     full_name,
                     account_name,
                 } => {
-                    let mut receiver = services::TokenReceiver::new().expect("bla");
-                    let token_receiver_address = receiver.get_address();
-
                     let application_message_sender = application_message_sender.clone();
-                    context_clone.spawn_local(async move {
-                        receiver.start(application_message_sender).await;
+
+                    let (authorization_code_sender, mut authorization_code_receiver) = futures::channel::mpsc::channel(1);
+                    let (mut address_sender, mut address_receiver) = futures::channel::mpsc::channel(1);
+
+                    // Actix is a bit more prententious about the way it wants to run, therefore we
+                    // spin up its own thread, where we give it control. We then call stop on the
+                    // server which should make it gracefully shut down and free up the thread.
+                    std::thread::spawn(move || {
+                        let mut system = actix_web::rt::System::new("TokenReceiverThread");
+                        let mut receiver = services::TokenReceiver::new(authorization_code_sender).expect("bla");
+
+                        address_sender.try_send(receiver.get_address());
+
+                        system.block_on(receiver.run());
+                        debug!("Token receiver stopped");
                     });
 
                     context_clone.spawn_local(async move {
+                        let token_receiver_address = address_receiver.next().await.unwrap(); //@TODO
                         if let Err(err) = gio::AppInfo::launch_default_for_uri_async_future(
                             &format!(
                                 "https://accounts.google.com/o/oauth2/v2/auth?scope={scope}&login_hint={email_address}&response_type=code&\
