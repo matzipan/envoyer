@@ -20,7 +20,7 @@ struct GoogleAccessTokenRefreshRequest<'a> {
 }
 
 #[derive(Deserialize)]
-pub struct GoogleAccessTokenRefreshResponse {
+pub struct GoogleTokenRefreshResponse {
     pub access_token: String,
     #[serde(deserialize_with = "duration_to_timestamp", rename = "expires_in")]
     pub expires_at: DateTime<Utc>,
@@ -37,7 +37,7 @@ where
     Ok(Utc::now() + duration)
 }
 
-pub async fn refresh_access_token(refresh_token: &String) -> Result<GoogleAccessTokenRefreshResponse, ()> {
+pub async fn refresh_access_token(refresh_token: &String) -> Result<GoogleTokenRefreshResponse, ()> {
     info!("Refreshing access token");
 
     let client = HttpClient::new().unwrap();
@@ -58,7 +58,7 @@ pub async fn refresh_access_token(refresh_token: &String) -> Result<GoogleAccess
 
     //@TODO gracefully handle instead of unwrap
     let response_text = response.text_async().await.unwrap();
-    let tokens_response: GoogleAccessTokenRefreshResponse = serde_json::from_str(&response_text).unwrap();
+    let tokens_response: GoogleTokenRefreshResponse = serde_json::from_str(&response_text).unwrap();
 
     info!("Access token refreshed");
 
