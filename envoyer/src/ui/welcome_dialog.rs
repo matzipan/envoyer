@@ -13,14 +13,13 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::controllers::ApplicationMessage;
-use crate::ui;
 use crate::google_oauth;
-
+use crate::ui;
 
 struct FormData {
     pub email_address: Option<String>,
-    pub full_name: Option<String>, 
-    pub account_name: Option<String>
+    pub full_name: Option<String>,
+    pub account_name: Option<String>,
 }
 
 #[derive(Clone)]
@@ -34,7 +33,7 @@ pub struct WelcomeDialog {
     pub account_name_entry: gtk::Entry,
     pub full_name_entry: gtk::Entry,
     pub spinner: gtk::Spinner,
-    form_data_rc: Rc<RefCell<FormData>>
+    form_data_rc: Rc<RefCell<FormData>>,
 }
 
 impl WelcomeDialog {
@@ -218,11 +217,51 @@ impl WelcomeDialog {
                     account_name: form_data.account_name.as_ref().unwrap().clone(),
                 })
                 .expect("Unable to send application message");
+
+            //@TODO show spinner and cancel button
         });
 
         let spinner = self.spinner.clone();
         let sender = self.sender.clone();
         let form_data_rc = self.form_data_rc.clone();
+        // self.webview.connect_load_changed(clone!(@weak spinner, @strong
+        // sender => move |webview, event| {         if event ==
+        // webkit2gtk::LoadEvent::Started {             let webview_uri
+        // = String::from(webview.get_uri().expect("Unable to fetch URI from
+        // WebView"));
+
+        //             if webview_uri.starts_with(google_oauth::REDIRECT_URI) {
+        //                 stack.set_visible_child_name("please-wait");
+        //                 spinner.start();
+
+        //                 //@TODO gracefully handle instead of unwrap and
+        // expect                 let request_url =
+        // Url::parse(&webview_uri).unwrap();                 let
+        // authorization_code = request_url.query_pairs().into_owned().find(|x|
+        // x.0 == "code").expect("Unable to fetch authorization code from Google
+        // authenticaiton");
+
+        //                 info!("Received authorization code from Google
+        // authentication");
+
+        //                 let form_data = form_data_rc.borrow();
+
+        //
+        // sender.send(ApplicationMessage::GoogleAuthorizationCodeReceived {
+        //                     // The fields cannot be none since it is a
+        //                     // precondition that they will be set before a
+        // load                     // is triggered
+        //                     email_address:
+        // (&form_data.email_address.as_ref().unwrap()).to_string(),
+        //                     full_name:
+        // (&form_data.full_name.as_ref().unwrap()).to_string(),
+        //                     account_name:
+        // (&form_data.account_name.as_ref().unwrap()).to_string(),
+        //                     authorization_code: authorization_code.1
+        //                 }).expect("Unable to send application message");
+        //             }
+        //         }
+        //     }));
     }
 
     pub fn show(&self) {
