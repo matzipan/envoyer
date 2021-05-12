@@ -9,6 +9,7 @@ use serde::Deserialize;
 pub const CLIENT_SECRET: &str = "N_GoSZys__JPgKXrh_jIUuOh";
 pub const CLIENT_ID: &str = "577724563203-55upnrbic0a2ft8qr809for8ns74jmqj.apps.googleusercontent.com";
 pub const OAUTH_SCOPE: &str = "https://mail.google.com/";
+pub const TOKEN_ENDPOINT: &str = "https://www.googleapis.com/oauth2/v4/token";
 
 #[derive(Serialize)]
 struct GoogleAccessTokenRefreshRequest<'a> {
@@ -48,7 +49,7 @@ pub async fn refresh_access_token(refresh_token: &String) -> Result<GoogleAccess
         grant_type: &"refresh_token".to_string(),
     };
 
-    let request = Request::post("https://www.googleapis.com/oauth2/v4/token")
+    let request = Request::post(TOKEN_ENDPOINT)
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(serde_qs::to_string(&request).unwrap())
         .unwrap();
@@ -92,7 +93,7 @@ pub async fn request_tokens(authorization_code: String) -> Result<GoogleAuthoriz
         grant_type: &"authorization_code".to_string(),
     };
 
-    let request = Request::post("https://www.googleapis.com/oauth2/v4/token")
+    let request = Request::post(TOKEN_ENDPOINT)
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(serde_qs::to_string(&request).unwrap())?;
 
