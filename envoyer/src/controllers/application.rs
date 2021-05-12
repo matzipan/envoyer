@@ -15,10 +15,9 @@ use crate::services;
 
 use crate::ui;
 
-use std::sync::{Arc, Mutex};
-
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 diesel_migrations::embed_migrations!();
 
