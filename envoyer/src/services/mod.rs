@@ -1,5 +1,5 @@
+mod authorization_code_receiver;
 mod store;
-mod token_receiver;
 
+pub use authorization_code_receiver::AuthorizationCodeReceiver;
 pub use store::Store;
-pub use token_receiver::TokenReceiver;

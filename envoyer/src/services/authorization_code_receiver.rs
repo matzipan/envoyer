@@ -15,7 +15,7 @@ struct GoogleAuthorizationResponse {
     code: String,
 }
 
-pub struct TokenReceiver {
+pub struct AuthorizationCodeReceiver {
     port_number: u32,
     server: actix_web::dev::Server,
 }
@@ -44,14 +44,14 @@ async fn get_token(
     SUCCESS_HTML_RESPONSE
 }
 
-impl TokenReceiver {
+impl AuthorizationCodeReceiver {
     const PORT_RANGE: std::ops::Range<u32> = 49152..65535;
     const IP_ADDRESS: &'static str = "127.0.0.1";
 
-    pub fn new(tx: futures::channel::mpsc::Sender<String>) -> Result<TokenReceiver, std::io::Error> {
+    pub fn new(tx: futures::channel::mpsc::Sender<String>) -> Result<AuthorizationCodeReceiver, std::io::Error> {
         let (port_number, server) = Self::get_server(tx)?;
 
-        Ok(TokenReceiver { port_number, server })
+        Ok(AuthorizationCodeReceiver { port_number, server })
     }
 
     fn get_server(tx: futures::channel::mpsc::Sender<String>) -> Result<(u32, actix_web::dev::Server), std::io::Error> {

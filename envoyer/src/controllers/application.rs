@@ -267,13 +267,13 @@ impl Application {
                     // spin up its own thread, where we give it control. We then call stop on the
                     // server which should make it gracefully shut down and free up the thread.
                     std::thread::spawn(move || {
-                        let mut system = actix_web::rt::System::new("TokenReceiverThread");
-                        let mut receiver = services::TokenReceiver::new(authorization_code_sender).expect("bla");
+                        let mut system = actix_web::rt::System::new("AuthorizationCodeReceiverThread");
+                        let mut receiver = services::AuthorizationCodeReceiver::new(authorization_code_sender).expect("bla");
 
                         address_sender.try_send(receiver.get_address());
 
                         system.block_on(receiver.run());
-                        debug!("Token receiver stopped");
+                        debug!("Authorization code receiver stopped");
                     });
 
                     context_clone.spawn_local(async move {
