@@ -66,7 +66,7 @@ pub async fn refresh_access_token(refresh_token: &String) -> Result<GoogleAccess
 }
 
 #[derive(Serialize)]
-struct GoogleAuthorizationCodeRequest<'a> {
+struct GoogleTokensRequest<'a> {
     code: &'a String,
     client_id: &'a String,
     client_secret: &'a String,
@@ -75,7 +75,7 @@ struct GoogleAuthorizationCodeRequest<'a> {
 }
 
 #[derive(Deserialize)]
-pub struct GoogleAuthorizationCodeResponse {
+pub struct GoogleTokensResponse {
     pub access_token: String,
     #[serde(deserialize_with = "duration_to_timestamp", rename = "expires_in")]
     pub expires_at: DateTime<Utc>,
@@ -85,7 +85,7 @@ pub struct GoogleAuthorizationCodeResponse {
 pub async fn request_tokens(authorization_code: String) -> Result<GoogleAuthorizationCodeResponse, isahc::Error> {
     let client = HttpClient::new()?;
 
-    let request = GoogleAuthorizationCodeRequest {
+    let request = GoogleTokensRequest {
         code: &authorization_code,
         client_id: &CLIENT_ID.to_string(),
         client_secret: &CLIENT_SECRET.to_string(),
@@ -101,7 +101,7 @@ pub async fn request_tokens(authorization_code: String) -> Result<GoogleAuthoriz
 
     //@TODO gracefully handle instead of unwrap
     let response_text = response.text_async().await.unwrap();
-    let tokens_response: GoogleAuthorizationCodeResponse = serde_json::from_str(&response_text).unwrap();
+    let tokens_response: GoogleTokensResponse = serde_json::from_str(&response_text).unwrap();
 
     Ok(tokens_response)
 }
