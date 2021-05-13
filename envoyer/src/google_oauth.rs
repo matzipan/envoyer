@@ -115,6 +115,7 @@ pub async fn request_tokens(authorization_code: String, redirect_uri: String) ->
 pub async fn authenticate(email_address: String) -> Result<GoogleTokensResponse, String> {
     let (authorization_code_sender, mut authorization_code_receiver) = futures::channel::mpsc::channel(1);
     let (mut address_sender, mut address_receiver) = futures::channel::mpsc::channel(1);
+    let (mut instance_sender, mut instance_receiver) = std::sync::mpsc::channel();
 
     // Actix is a bit more prententious about the way it wants to run, therefore we
     // spin up its own thread, where we give it control. We then call stop on the
@@ -122,6 +123,8 @@ pub async fn authenticate(email_address: String) -> Result<GoogleTokensResponse,
     std::thread::spawn(move || {
         let mut system = actix_web::rt::System::new("AuthorizationCodeReceiverThread");
         let receiver = services::AuthorizationCodeReceiver::new(authorization_code_sender).expect("bla");
+
+        instance_sender.send(receiver.clone());
 
         address_sender
             .try_send(receiver.get_address())
@@ -142,7 +145,10 @@ pub async fn authenticate(email_address: String) -> Result<GoogleTokensResponse,
     debug!("Got authorization code");
     //@TODO handle the case where error is returned because the sender is closed
 
-    // @TODO shutdown token receiver here
+    // Shut down the HTTP server
+    let receiver = instance_receiver.recv().expect("Unable to receive server instance for shutdown");
+
+    receiver.stop().await;
 
     request_tokens(authorization_code, token_receiver_address)
         .await
