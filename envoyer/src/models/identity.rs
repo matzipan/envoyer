@@ -232,8 +232,6 @@ impl Identity {
     // }
 
     fn sync_messages_for_folder(&self, folder: &models::Folder, sync_type: SyncType) -> ResultFuture<()> {
-        let store_clone = self.store.clone();
-        let bare_identity_clone = self.bare_identity.clone();
         let folder_clone = folder.clone();
         let store_clone = self.store.clone();
 

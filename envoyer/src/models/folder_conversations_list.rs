@@ -1,7 +1,5 @@
 use gtk::{gio, glib};
 
-use glib::subclass;
-
 use gtk::prelude::*;
 
 use glib::subclass::prelude::*;
