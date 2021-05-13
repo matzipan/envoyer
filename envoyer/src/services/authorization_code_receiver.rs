@@ -39,6 +39,8 @@ async fn get_token(
     actix_web::web::Query(authorization_response): actix_web::web::Query<GoogleAuthorizationResponse>,
     data: actix_web::web::Data<futures::channel::mpsc::Sender<String>>,
 ) -> impl actix_web::Responder {
+    debug!("Received HTTP request for authorization code.");
+
     data.get_ref().clone().try_send(authorization_response.code).expect("BLA"); //@TODO
 
     SUCCESS_HTML_RESPONSE
