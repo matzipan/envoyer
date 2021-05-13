@@ -115,7 +115,7 @@ pub async fn request_tokens(authorization_code: String, redirect_uri: String) ->
 pub async fn authenticate(email_address: String) -> Result<GoogleTokensResponse, String> {
     let (authorization_code_sender, mut authorization_code_receiver) = futures::channel::mpsc::channel(1);
     let (mut address_sender, mut address_receiver) = futures::channel::mpsc::channel(1);
-    let (mut instance_sender, mut instance_receiver) = std::sync::mpsc::channel();
+    let (instance_sender, instance_receiver) = std::sync::mpsc::channel();
 
     // Actix is a bit more prententious about the way it wants to run, therefore we
     // spin up its own thread, where we give it control. We then call stop on the
