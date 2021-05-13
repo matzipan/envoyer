@@ -7,6 +7,7 @@ struct GoogleAuthorizationResponse {
     code: String,
 }
 
+#[derive(Clone)]
 pub struct AuthorizationCodeReceiver {
     port_number: u32,
     server: actix_web::dev::Server,
@@ -90,6 +91,10 @@ impl AuthorizationCodeReceiver {
         self.server.await?;
 
         Ok(())
+    }
+
+    pub async fn stop(self) {
+        self.server.stop(true).await
     }
 
     pub fn get_address(&self) -> String {
