@@ -123,7 +123,9 @@ pub async fn authenticate(email_address: String) -> Result<GoogleTokensResponse,
         let mut system = actix_web::rt::System::new("AuthorizationCodeReceiverThread");
         let receiver = services::AuthorizationCodeReceiver::new(authorization_code_sender).expect("bla");
 
-        address_sender.try_send(receiver.get_address());
+        address_sender
+            .try_send(receiver.get_address())
+            .expect("Unable to send address over channel");
 
         system.block_on(receiver.run());
         debug!("Authorization code receiver stopped");
