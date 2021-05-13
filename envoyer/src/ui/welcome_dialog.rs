@@ -219,6 +219,10 @@ impl WelcomeDialog {
         self.gtk_dialog.present();
     }
 
+    pub fn hide(&self) {
+        self.gtk_dialog.hide();
+    }
+
     pub fn transient_for(&self, main_window: &ui::Window) {
         self.gtk_dialog.set_transient_for(Some(&main_window.gtk_window));
     }
