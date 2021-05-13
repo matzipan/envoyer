@@ -43,7 +43,9 @@ async fn get_token(
 
     data.get_ref().clone().try_send(authorization_response.code).expect("BLA"); //@TODO
 
-    SUCCESS_HTML_RESPONSE
+    actix_web::HttpResponse::build(actix_web::http::StatusCode::OK)
+        .content_type("text/html; charset=utf-8")
+        .body(SUCCESS_HTML_RESPONSE)
 }
 
 impl AuthorizationCodeReceiver {
