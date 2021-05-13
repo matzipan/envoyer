@@ -120,7 +120,7 @@ impl Application {
                     gmail_refresh_token,
                     expires_at,
                 } => {
-                    info!("CreateIdentity for {}", email_address);
+                    info!("SaveIdentity for {}", email_address);
 
                     let new_bare_identity = models::NewBareIdentity {
                         email_address: &email_address,
