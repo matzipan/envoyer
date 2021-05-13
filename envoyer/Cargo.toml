@@ -34,6 +34,3 @@ tide = "0.16.0"
 [dependencies.gtk]
 package = "gtk4"
 git = "https://github.com/gtk-rs/gtk4-rs"
-
-[dependencies.gio]
-git = "https://github.com/gtk-rs/gtk-rs"
