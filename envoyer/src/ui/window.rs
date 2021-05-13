@@ -90,7 +90,7 @@ impl Window {
         let provider = gtk::CssProvider::new();
         provider.load_from_data(my_str.as_bytes());
         gtk::StyleContext::add_provider_for_display(
-            &gdk::Display::get_default().expect("Error initializing gtk css provider."),
+            &gdk::Display::default().expect("Error initializing gtk css provider."),
             &provider,
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
