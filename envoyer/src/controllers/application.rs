@@ -212,26 +212,24 @@ impl Application {
 
                     // welcome_dialog_clone.borrow().show();
 
-                    context_clone.spawn_local(
-                        google_oauth::authenticate(email_address.clone(), full_name.clone(), account_name.clone()).map(move |result| {
-                            match result {
-                                Err(err) => {
-                                    error!("Unable to authenticate: {}", err)
-                                }
-                                Ok(response_token) => application_message_sender
-                                    .send(ApplicationMessage::SaveIdentity {
-                                        email_address: email_address,
-                                        full_name: full_name,
-                                        identity_type: models::IdentityType::Gmail,
-                                        account_name: account_name,
-                                        gmail_access_token: response_token.access_token,
-                                        gmail_refresh_token: response_token.refresh_token,
-                                        expires_at: response_token.expires_at,
-                                    })
-                                    .expect("Unable to send application message"),
+                    context_clone.spawn_local(google_oauth::authenticate(email_address.clone()).map(move |result| {
+                        match result {
+                            Err(err) => {
+                                error!("Unable to authenticate: {}", err)
                             }
-                        }),
-                    );
+                            Ok(response_token) => application_message_sender
+                                .send(ApplicationMessage::SaveIdentity {
+                                    email_address: email_address,
+                                    full_name: full_name,
+                                    identity_type: models::IdentityType::Gmail,
+                                    account_name: account_name,
+                                    gmail_access_token: response_token.access_token,
+                                    gmail_refresh_token: response_token.refresh_token,
+                                    expires_at: response_token.expires_at,
+                                })
+                                .expect("Unable to send application message"),
+                        }
+                    }));
                 }
             }
             // Returning false here would close the receiver and have senders

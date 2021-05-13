@@ -3,7 +3,7 @@ use gtk::gio;
 use chrono::prelude::*;
 use isahc::prelude::*;
 
-use log::{debug, error, info};
+use log::{debug, info};
 
 use serde::Deserialize;
 
@@ -112,7 +112,7 @@ pub async fn request_tokens(authorization_code: String, redirect_uri: String) ->
     Ok(tokens_response)
 }
 
-pub async fn authenticate(email_address: String, full_name: String, account_name: String) -> Result<GoogleTokensResponse, String> {
+pub async fn authenticate(email_address: String) -> Result<GoogleTokensResponse, String> {
     let (authorization_code_sender, mut authorization_code_receiver) = futures::channel::mpsc::channel(1);
     let (mut address_sender, mut address_receiver) = futures::channel::mpsc::channel(1);
 
@@ -121,7 +121,7 @@ pub async fn authenticate(email_address: String, full_name: String, account_name
     // server which should make it gracefully shut down and free up the thread.
     std::thread::spawn(move || {
         let mut system = actix_web::rt::System::new("AuthorizationCodeReceiverThread");
-        let mut receiver = services::AuthorizationCodeReceiver::new(authorization_code_sender).expect("bla");
+        let receiver = services::AuthorizationCodeReceiver::new(authorization_code_sender).expect("bla");
 
         address_sender.try_send(receiver.get_address());
 

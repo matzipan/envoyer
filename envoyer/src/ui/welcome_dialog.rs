@@ -5,15 +5,10 @@ use gtk::glib;
 use gtk::glib::clone;
 use gtk::prelude::*;
 
-use log::info;
-
-use url::Url;
-
 use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::controllers::ApplicationMessage;
-use crate::google_oauth;
 use crate::ui;
 
 struct FormData {
@@ -192,8 +187,6 @@ impl WelcomeDialog {
 
                 //@TODO check the values
 
-                let email_address_clone = email_address.clone();
-
                 let mut form_data = form_data_rc.borrow_mut();
 
                 form_data.email_address = Some(email_address);
@@ -201,8 +194,6 @@ impl WelcomeDialog {
                 form_data.account_name = Some(account_name);
 
                 stack.set_visible_child_name("authorization-screen");
-
-
             }));
 
         let form_data_rc = self.form_data_rc.clone();
@@ -220,57 +211,11 @@ impl WelcomeDialog {
 
             //@TODO show spinner and cancel button
         });
-
-        let spinner = self.spinner.clone();
-        let sender = self.sender.clone();
-        let form_data_rc = self.form_data_rc.clone();
-        // self.webview.connect_load_changed(clone!(@weak spinner, @strong
-        // sender => move |webview, event| {         if event ==
-        // webkit2gtk::LoadEvent::Started {             let webview_uri
-        // = String::from(webview.get_uri().expect("Unable to fetch URI from
-        // WebView"));
-
-        //             if webview_uri.starts_with(google_oauth::REDIRECT_URI) {
-        //                 stack.set_visible_child_name("please-wait");
-        //                 spinner.start();
-
-        //                 //@TODO gracefully handle instead of unwrap and
-        // expect                 let request_url =
-        // Url::parse(&webview_uri).unwrap();                 let
-        // authorization_code = request_url.query_pairs().into_owned().find(|x|
-        // x.0 == "code").expect("Unable to fetch authorization code from Google
-        // authenticaiton");
-
-        //                 info!("Received authorization code from Google
-        // authentication");
-
-        //                 let form_data = form_data_rc.borrow();
-
-        //
-        // sender.send(ApplicationMessage::GoogleAuthorizationCodeReceived {
-        //                     // The fields cannot be none since it is a
-        //                     // precondition that they will be set before a
-        // load                     // is triggered
-        //                     email_address:
-        // (&form_data.email_address.as_ref().unwrap()).to_string(),
-        //                     full_name:
-        // (&form_data.full_name.as_ref().unwrap()).to_string(),
-        //                     account_name:
-        // (&form_data.account_name.as_ref().unwrap()).to_string(),
-        //                     authorization_code: authorization_code.1
-        //                 }).expect("Unable to send application message");
-        //             }
-        //         }
-        //     }));
     }
 
     pub fn show(&self) {
         self.gtk_dialog.show();
         self.gtk_dialog.present();
-    }
-
-    pub fn hide(&self) {
-        self.gtk_dialog.hide();
     }
 
     pub fn transient_for(&self, main_window: &ui::Window) {

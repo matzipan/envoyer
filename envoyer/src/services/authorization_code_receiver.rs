@@ -1,14 +1,6 @@
-use gtk::glib;
-
 use log::{debug, error, info};
 
-use rand::{thread_rng, Rng};
-
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::sync::mpsc;
-
-use crate::controllers::ApplicationMessage;
+use rand::Rng;
 
 #[derive(Debug, Deserialize)]
 struct GoogleAuthorizationResponse {
@@ -95,7 +87,7 @@ impl AuthorizationCodeReceiver {
     }
 
     pub async fn run(self) -> std::io::Result<()> {
-        self.server.await;
+        self.server.await?;
 
         Ok(())
     }

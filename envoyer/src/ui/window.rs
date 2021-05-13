@@ -21,7 +21,6 @@ pub struct Window {
 pub mod folder_conversation_item {
     use super::*;
 
-    use glib::subclass;
     use gtk::subclass::prelude::*;
     // Implementation sub-module of the GObject
     mod imp {
