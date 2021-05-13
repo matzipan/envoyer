@@ -6,12 +6,11 @@ use chrono::prelude::*;
 use diesel::prelude::*;
 use futures::prelude::*;
 
-use log::{debug, error, info};
+use log::{error, info};
 
 use crate::google_oauth;
 use crate::models;
 use crate::schema;
-use crate::services;
 
 use crate::ui;
 
@@ -209,64 +208,30 @@ impl Application {
                 } => {
                     let application_message_sender = application_message_sender.clone();
 
-                    let (authorization_code_sender, mut authorization_code_receiver) = futures::channel::mpsc::channel(1);
-                    let (mut address_sender, mut address_receiver) = futures::channel::mpsc::channel(1);
-
-                    // Actix is a bit more prententious about the way it wants to run, therefore we
-                    // spin up its own thread, where we give it control. We then call stop on the
-                    // server which should make it gracefully shut down and free up the thread.
-                    std::thread::spawn(move || {
-                        let mut system = actix_web::rt::System::new("AuthorizationCodeReceiverThread");
-                        let mut receiver = services::AuthorizationCodeReceiver::new(authorization_code_sender).expect("bla");
-
-                        address_sender.try_send(receiver.get_address());
-
-                        system.block_on(receiver.run());
-                        debug!("Authorization code receiver stopped");
-                    });
-
                     let welcome_dialog_clone = welcome_dialog.clone();
-                    context_clone.spawn_local(async move {
-                        let token_receiver_address = address_receiver.next().await.unwrap(); //@TODO
 
-                        match gio::AppInfo::launch_default_for_uri_async_future(
-                            &format!(
-                                "https://accounts.google.com/o/oauth2/v2/auth?scope={scope}&login_hint={email_address}&response_type=code&redirect_uri={redirect_uri}&client_id={client_id}",
-                                scope = google_oauth::OAUTH_SCOPE,
-                                email_address = email_address,
-                                redirect_uri = token_receiver_address,
-                                client_id = google_oauth::CLIENT_ID
-                            ),
-                            None::<&gio::AppLaunchContext>,
-                        )
-                        .await
-                        {
-                            Err(err) => error!("Unable to open URL in browser: {}", err),
-                            Ok(_) => {
-                                let authorization_code = authorization_code_receiver.next().await.expect("BLA"); //@TODO
-                                //@TODO handle the case where error is returned because the sender is closed
+                    // welcome_dialog_clone.borrow().show();
 
-                                welcome_dialog_clone.borrow().show();
-
-                                // @TODO shutdown token receiver here
-
-                                match google_oauth::request_tokens(authorization_code, token_receiver_address).await {
-                                    Err(error) => error!("Unable to fetch : {}", error),
-                                    Ok(response_token) => application_message_sender
-                                        .send(ApplicationMessage::SaveIdentity {
-                                            email_address: email_address,
-                                            full_name: full_name,
-                                            identity_type: models::IdentityType::Gmail,
-                                            account_name: account_name,
-                                            gmail_access_token: response_token.access_token,
-                                            gmail_refresh_token: response_token.refresh_token,
-                                            expires_at: response_token.expires_at,
-                                        })
-                                        .expect("Unable to send application message"),
-                                };
+                    context_clone.spawn_local(
+                        google_oauth::authenticate(email_address.clone(), full_name.clone(), account_name.clone()).map(move |result| {
+                            match result {
+                                Err(err) => {
+                                    error!("Unable to authenticate: {}", err)
+                                }
+                                Ok(response_token) => application_message_sender
+                                    .send(ApplicationMessage::SaveIdentity {
+                                        email_address: email_address,
+                                        full_name: full_name,
+                                        identity_type: models::IdentityType::Gmail,
+                                        account_name: account_name,
+                                        gmail_access_token: response_token.access_token,
+                                        gmail_refresh_token: response_token.refresh_token,
+                                        expires_at: response_token.expires_at,
+                                    })
+                                    .expect("Unable to send application message"),
                             }
-                        }
-                    });
+                        }),
+                    );
                 }
             }
             // Returning false here would close the receiver and have senders
