@@ -104,7 +104,7 @@ impl WelcomeDialog {
         self.full_name_entry.style_context().add_class("form-entry");
 
         self.submit_button.set_halign(gtk::Align::End);
-        self.submit_button.set_margin_top(40);
+        self.submit_button.style_context().add_class("button");
 
         let initial_information_grid = gtk::Grid::new();
         initial_information_grid.style_context().add_class("initial-information-grid");
@@ -136,6 +136,7 @@ impl WelcomeDialog {
             "Clicking the button will open a browser window requesting you to authorize Envoyer to read your emails.",
         ));
         self.authorize_button.set_halign(gtk::Align::End);
+        self.authorize_button.style_context().add_class("button");
 
         let authorization_screen = gtk::Grid::new();
         authorization_screen.set_halign(gtk::Align::Center);
