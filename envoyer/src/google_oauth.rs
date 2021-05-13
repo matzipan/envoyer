@@ -1,9 +1,15 @@
+use gtk::gio;
+
 use chrono::prelude::*;
 use isahc::prelude::*;
 
-use log::info;
+use log::{debug, error, info};
 
 use serde::Deserialize;
+
+use futures::prelude::*;
+
+use crate::services;
 
 //@TODO move the constants to a nice configuration file
 pub const CLIENT_SECRET: &str = "N_GoSZys__JPgKXrh_jIUuOh";
@@ -104,4 +110,54 @@ pub async fn request_tokens(authorization_code: String, redirect_uri: String) ->
     let tokens_response: GoogleTokensResponse = serde_json::from_str(&response_text).unwrap();
 
     Ok(tokens_response)
+}
+
+pub async fn authenticate(email_address: String, full_name: String, account_name: String) -> Result<GoogleTokensResponse, String> {
+    let (authorization_code_sender, mut authorization_code_receiver) = futures::channel::mpsc::channel(1);
+    let (mut address_sender, mut address_receiver) = futures::channel::mpsc::channel(1);
+
+    // Actix is a bit more prententious about the way it wants to run, therefore we
+    // spin up its own thread, where we give it control. We then call stop on the
+    // server which should make it gracefully shut down and free up the thread.
+    std::thread::spawn(move || {
+        let mut system = actix_web::rt::System::new("AuthorizationCodeReceiverThread");
+        let mut receiver = services::AuthorizationCodeReceiver::new(authorization_code_sender).expect("bla");
+
+        address_sender.try_send(receiver.get_address());
+
+        system.block_on(receiver.run());
+        debug!("Authorization code receiver stopped");
+    });
+
+    let token_receiver_address = address_receiver.next().await.unwrap(); //@TODO
+
+    open_browser(&email_address, &token_receiver_address)
+        .await
+        .map_err(|e| format!("Unable to open URL in browser: {}", e))?;
+
+    let authorization_code = authorization_code_receiver.next().await.expect("BLA");
+
+    debug!("Got authorization code");
+    //@TODO handle the case where error is returned because the sender is closed
+
+    // @TODO shutdown token receiver here
+
+    request_tokens(authorization_code, token_receiver_address)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+pub async fn open_browser(email_address: &String, token_receiver_address: &String) -> Result<(), String> {
+    gio::AppInfo::launch_default_for_uri_async_future(
+        &format!(
+            "https://accounts.google.com/o/oauth2/v2/auth?scope={scope}&login_hint={email_address}&response_type=code&redirect_uri={redirect_uri}&client_id={client_id}",
+            scope = OAUTH_SCOPE,
+            email_address = email_address,
+            redirect_uri = token_receiver_address,
+            client_id = CLIENT_ID
+        ),
+        None::<&gio::AppLaunchContext>,
+    )
+    .await
+    .map_err(|e| e.to_string())
 }
