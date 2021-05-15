@@ -34,6 +34,12 @@ pub struct GoogleTokenRefreshResponse {
     pub token_type: String,
 }
 
+#[derive(Clone, Debug)]
+pub struct AuthenicationResult {
+    pub authorization_code: String,
+    pub redirect_uri: String,
+}
+
 fn duration_to_timestamp<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -88,14 +94,14 @@ pub struct GoogleTokensResponse {
     pub refresh_token: String,
 }
 
-pub async fn request_tokens(authorization_code: String, redirect_uri: String) -> Result<GoogleTokensResponse, isahc::Error> {
+pub async fn request_tokens(authentication_result: AuthenicationResult) -> Result<GoogleTokensResponse, isahc::Error> {
     let client = HttpClient::new()?;
 
     let request = GoogleTokensRequest {
-        code: &authorization_code,
+        code: &authentication_result.authorization_code,
         client_id: &CLIENT_ID.to_string(),
         client_secret: &CLIENT_SECRET.to_string(),
-        redirect_uri: &redirect_uri,
+        redirect_uri: &authentication_result.redirect_uri,
         grant_type: &"authorization_code".to_string(),
     };
 
@@ -112,7 +118,7 @@ pub async fn request_tokens(authorization_code: String, redirect_uri: String) ->
     Ok(tokens_response)
 }
 
-pub async fn authenticate(email_address: String) -> Result<GoogleTokensResponse, String> {
+pub async fn authenticate(email_address: String) -> Result<AuthenicationResult, String> {
     let (authorization_code_sender, mut authorization_code_receiver) = futures::channel::mpsc::channel(1);
     let (mut address_sender, mut address_receiver) = futures::channel::mpsc::channel(1);
     let (instance_sender, instance_receiver) = std::sync::mpsc::channel();
@@ -150,9 +156,10 @@ pub async fn authenticate(email_address: String) -> Result<GoogleTokensResponse,
 
     receiver.stop().await;
 
-    request_tokens(authorization_code, token_receiver_address)
-        .await
-        .map_err(|e| e.to_string())
+    Ok(AuthenicationResult {
+        authorization_code,
+        redirect_uri: token_receiver_address,
+    })
 }
 
 pub async fn open_browser(email_address: &String, token_receiver_address: &String) -> Result<(), String> {

@@ -210,9 +210,20 @@ impl Application {
 
                     let welcome_dialog_clone = welcome_dialog.clone();
 
-                    // welcome_dialog_clone.borrow().show();
+                    context_clone.spawn_local(async move {
+                        //@TODO handle errors
+                        let authentication_result = google_oauth::authenticate(email_address.clone()).await.unwrap();
 
-                    context_clone.spawn_local(google_oauth::authenticate(email_address.clone()).map(move |result| {
+                        let dialog_borrow_handle = welcome_dialog_clone.borrow();
+                        dialog_borrow_handle.show();
+                        dialog_borrow_handle.show_please_wait();
+
+                        let result = google_oauth::request_tokens(authentication_result)
+                            .await
+                            .map_err(|e| e.to_string())
+                            .unwrap();
+                        //@TODO move error handling internally
+
                         match result {
                             Err(err) => {
                                 error!("Unable to authenticate: {}", err)
@@ -229,7 +240,7 @@ impl Application {
                                 })
                                 .expect("Unable to send application message"),
                         }
-                    }));
+                    });
                 }
             }
             // Returning false here would close the receiver and have senders
