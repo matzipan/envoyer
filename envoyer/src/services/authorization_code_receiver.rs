@@ -94,7 +94,9 @@ impl AuthorizationCodeReceiver {
     }
 
     pub async fn stop(self) {
-        self.server.stop(true).await
+        // Graceful shutdown waits for the shutdown to be finalized. We don't want this
+        // since it causes the GUI gets janky.
+        self.server.stop(false).await
     }
 
     pub fn get_address(&self) -> String {
