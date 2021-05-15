@@ -133,7 +133,7 @@ impl WelcomeDialog {
         authorization_label.set_halign(gtk::Align::Start);
         authorization_label.style_context().add_class("h1");
         let description_label = gtk::Label::new(Some(
-            "Clicking the button will open a browser window requesting you to authorize Envoyer to read your emails.",
+            "Clicking the button will open a browser window requesting you to authorize Envoyer to read your e-mails.",
         ));
         self.authorize_button.set_halign(gtk::Align::End);
         self.authorize_button.style_context().add_class("button");
@@ -169,7 +169,7 @@ impl WelcomeDialog {
         please_wait_label.style_context().add_class("h1");
         please_wait_label.set_halign(gtk::Align::Start);
 
-        let synchronizing_label = gtk::Label::new(Some("We are synchronizing with the server. It may take a while."));
+        let synchronizing_label = gtk::Label::new(Some("Synchronizing with the server. It may take a while."));
         synchronizing_label.set_margin_bottom(40);
 
         let please_wait_grid = gtk::Grid::new();
