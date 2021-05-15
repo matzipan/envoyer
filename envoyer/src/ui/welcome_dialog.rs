@@ -146,6 +146,21 @@ impl WelcomeDialog {
         authorization_screen.attach(&description_label, 0, 1, 1, 1);
         authorization_screen.attach(&self.authorize_button, 0, 2, 1, 1);
 
+        let check_browser_label = gtk::Label::new(Some("Check your Internet browser"));
+        check_browser_label.style_context().add_class("h1");
+        check_browser_label.set_halign(gtk::Align::Start);
+
+        let browser_window_label = gtk::Label::new(Some(
+            "A browser window was opened to authenticate with your e-mail provider. Please continue there.",
+        ));
+
+        let check_browser_grid = gtk::Grid::new();
+        check_browser_grid.set_orientation(gtk::Orientation::Vertical);
+        check_browser_grid.set_halign(gtk::Align::Center);
+        check_browser_grid.set_valign(gtk::Align::Center);
+        check_browser_grid.attach(&check_browser_label, 0, 0, 1, 1);
+        check_browser_grid.attach(&browser_window_label, 0, 1, 1, 1);
+
         self.spinner.set_size_request(40, 40);
         self.spinner.set_halign(gtk::Align::Center);
         self.spinner.set_valign(gtk::Align::Center);
@@ -167,6 +182,7 @@ impl WelcomeDialog {
 
         self.stack.add_named(&welcome_screen, Some("welcome-screen"));
         self.stack.add_named(&authorization_screen, Some("authorization-screen"));
+        self.stack.add_named(&check_browser_grid, Some("check-browser"));
         self.stack.add_named(&please_wait_grid, Some("please-wait"));
 
         self.gtk_dialog.content_area().append(&self.stack);
@@ -210,7 +226,7 @@ impl WelcomeDialog {
                 })
                 .expect("Unable to send application message");
 
-            //@TODO show spinner and cancel button
+            stack.set_visible_child_name("check-browser");
         });
     }
 
