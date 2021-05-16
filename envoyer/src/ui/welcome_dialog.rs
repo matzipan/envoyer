@@ -232,7 +232,7 @@ impl WelcomeDialog {
 
     pub fn show(&self) {
         self.gtk_dialog.show();
-        self.gtk_dialog.present();
+        self.gtk_dialog.present_with_time((glib::monotonic_time() / 1000) as u32);
     }
 
     pub fn hide(&self) {
