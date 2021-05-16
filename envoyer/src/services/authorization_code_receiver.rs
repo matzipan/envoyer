@@ -27,6 +27,20 @@ pub const SUCCESS_HTML_RESPONSE: &str = "<!DOCTYPE html>
     </body>
     </html>";
 
+pub const ERROR_HTML_RESPONSE: &str = "<!DOCTYPE html>
+    <html lang=\"en\">
+    <head><meta charset=\"utf-8\" />
+    <style>
+    body { font-family: sans-serif; }
+    </style>
+    <title>Internal error - Envoyer</title>
+    </head>
+    <body>
+    <h1>Internal error</h1>
+    <p>Unable to obtain the authorization code due to internal error.</p>
+    </body>
+    </html>";
+
 #[actix_web::get("/")]
 async fn get_token(
     actix_web::web::Query(authorization_response): actix_web::web::Query<GoogleAuthorizationResponse>,
@@ -34,11 +48,24 @@ async fn get_token(
 ) -> impl actix_web::Responder {
     debug!("Received HTTP request for authorization code.");
 
-    data.get_ref().clone().try_send(authorization_response.code).expect("BLA"); //@TODO
+    match data.get_ref().clone().try_send(authorization_response.code) {
+        Ok(_) => actix_web::HttpResponse::build(actix_web::http::StatusCode::OK)
+            .content_type("text/html; charset=utf-8")
+            .body(SUCCESS_HTML_RESPONSE),
+        Err(_) => {
+            // The only error kinds for try_send are whether the channel is full or
+            // disconnected. Disconnection is not expected to happen because the scope which
+            // owns this channel is blocking on the channel itself. We are currently not
+            // doing any error prevention for the chanel full case, so there's a chance that
+            // it might happen. There's a task to limit the number of times that this action
+            // can get called to exactly one.
+            error!("Unable to send the authorization code");
 
-    actix_web::HttpResponse::build(actix_web::http::StatusCode::OK)
-        .content_type("text/html; charset=utf-8")
-        .body(SUCCESS_HTML_RESPONSE)
+            actix_web::HttpResponse::build(actix_web::http::StatusCode::INTERNAL_SERVER_ERROR)
+                .content_type("text/html; charset=utf-8")
+                .body(ERROR_HTML_RESPONSE)
+        }
+    }
 }
 
 impl AuthorizationCodeReceiver {
