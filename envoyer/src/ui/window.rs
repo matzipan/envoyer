@@ -237,7 +237,7 @@ impl Window {
 
     pub fn show(&self) {
         self.gtk_window.show();
-        self.gtk_window.present();
+        self.gtk_window.present_with_time((glib::monotonic_time() / 1000) as u32);
     }
 
     pub fn show_conversations(&self, conversations: Vec<models::Message>) {
