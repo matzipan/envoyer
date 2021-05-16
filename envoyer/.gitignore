@@ -1,2 +1,5 @@
 target
 db.sqlite
+sdk
+.flatpak-builder
+build
