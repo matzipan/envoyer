@@ -1,0 +1,30 @@
+id: com.github.matzipan.envoyer.Devel
+tags:
+  - "nightly"
+runtime: org.gnome.Platform
+runtime-version: "40"
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: envoyer
+finish-args:
+  - --share=ipc
+  - --device=dri
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --talk-name=org.freedesktop.portal.OpenURI
+build-options:
+  append-path: "/usr/lib/sdk/rust-stable/bin"
+  build-args:
+    - --share=network
+  env:
+    CARGO_HOME: "/run/build/com.github.matzipan.envoyer/cargo"
+modules:
+  - name: com.github.matzipan.envoyer
+    buildsystem: simple
+    sources:
+      - type: dir
+        path: "."
+    build-commands:
+      - "cargo build --release --verbose"
+      - "install -Dm755 ./target/release/envoyer -t /app/bin/"
