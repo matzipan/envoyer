@@ -17,8 +17,7 @@ build-options:
   append-path: "/usr/lib/sdk/rust-stable/bin"
   build-args:
     - --share=network
-  env:
-    CARGO_HOME: "/run/build/com.github.matzipan.envoyer/cargo"
+    - --socket=session-bus
 modules:
   - name: com.github.matzipan.envoyer
     buildsystem: simple
