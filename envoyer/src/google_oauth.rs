@@ -3,7 +3,7 @@ use gtk::gio;
 use chrono::prelude::*;
 use isahc::prelude::*;
 
-use log::{debug, info};
+use log::{debug, error, info};
 
 use serde::Deserialize;
 
@@ -128,31 +128,40 @@ pub async fn authenticate(email_address: String) -> Result<AuthenicationResult, 
     // server which should make it gracefully shut down and free up the thread.
     std::thread::spawn(move || {
         let mut system = actix_web::rt::System::new("AuthorizationCodeReceiverThread");
-        let receiver = services::AuthorizationCodeReceiver::new(authorization_code_sender).expect("bla");
 
-        instance_sender.send(receiver.clone());
+        services::AuthorizationCodeReceiver::new(authorization_code_sender)
+            .map_err(|e| e.to_string())
+            .and_then(move |receiver| {
+                instance_sender.send(receiver.clone()).map_err(|e| e.to_string())?;
 
-        address_sender
-            .try_send(receiver.get_address())
-            .expect("Unable to send address over channel");
+                address_sender.try_send(receiver.get_address()).map_err(|e| e.to_string())?;
 
-        system.block_on(receiver.run());
-        debug!("Authorization code receiver stopped");
+                system.block_on(receiver.run()).map_err(|e| e.to_string())?;
+
+                debug!("Authorization code receiver stopped");
+
+                Ok(())
+            })
+            .map_err(|err| {
+                //@TODO propagate to future thread
+                error!("Unable to authenticate: {}", err);
+            });
     });
 
-    let token_receiver_address = address_receiver.next().await.unwrap(); //@TODO
+    let token_receiver_address = address_receiver.next().await.ok_or("Unable to get receiver address")?;
 
     open_browser(&email_address, &token_receiver_address)
         .await
         .map_err(|e| format!("Unable to open URL in browser: {}", e))?;
 
-    let authorization_code = authorization_code_receiver.next().await.expect("BLA");
+    let authorization_code = authorization_code_receiver.next().await.ok_or("Unable to get authorization code")?;
 
     debug!("Got authorization code");
-    //@TODO handle the case where error is returned because the sender is closed
 
-    // Shut down the HTTP server
-    let receiver = instance_receiver.recv().expect("Unable to receive server instance for shutdown");
+    // Shut down the HTTP server. The lifetime of the channel sender is tied to the
+    // server runtime thread, so if there's an error which causes the deallocation
+    // of the sender, it's not possible that the server will be left running.
+    let receiver = instance_receiver.recv().map_err(|e| e.to_string())?;
 
     receiver.stop().await;
 
