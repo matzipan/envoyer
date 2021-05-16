@@ -214,8 +214,8 @@ impl Application {
                         google_oauth::authenticate(email_address.clone())
                             .and_then(|authentication_result| async move {
                                 let dialog_borrow_handle = welcome_dialog_clone.borrow();
-                                dialog_borrow_handle.show();
                                 dialog_borrow_handle.show_please_wait();
+                                dialog_borrow_handle.show();
 
                                 Ok(authentication_result)
                             })
