@@ -218,11 +218,7 @@ impl Application {
                         dialog_borrow_handle.show();
                         dialog_borrow_handle.show_please_wait();
 
-                        let result = google_oauth::request_tokens(authentication_result)
-                            .await
-                            .map_err(|e| e.to_string())
-                            .unwrap();
-                        //@TODO move error handling internally
+                        let result = google_oauth::request_tokens(authentication_result).await;
 
                         match result {
                             Err(err) => {
