@@ -94,8 +94,8 @@ pub struct GoogleTokensResponse {
     pub refresh_token: String,
 }
 
-pub async fn request_tokens(authentication_result: AuthenicationResult) -> Result<GoogleTokensResponse, isahc::Error> {
-    let client = HttpClient::new()?;
+pub async fn request_tokens(authentication_result: AuthenicationResult) -> Result<GoogleTokensResponse, String> {
+    let client = HttpClient::new().map_err(|e| e.to_string())?;
 
     let request = GoogleTokensRequest {
         code: &authentication_result.authorization_code,
@@ -107,13 +107,13 @@ pub async fn request_tokens(authentication_result: AuthenicationResult) -> Resul
 
     let request = Request::post(TOKEN_ENDPOINT)
         .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(serde_qs::to_string(&request).unwrap())?;
+        .body(serde_qs::to_string(&request).unwrap())
+        .map_err(|e| e.to_string())?;
 
-    let mut response = client.send_async(request).await?;
+    let mut response = client.send_async(request).await.map_err(|e| e.to_string())?;
 
-    //@TODO gracefully handle instead of unwrap
-    let response_text = response.text_async().await.unwrap();
-    let tokens_response: GoogleTokensResponse = serde_json::from_str(&response_text).unwrap();
+    let response_text = response.text_async().await.map_err(|e| e.to_string())?;
+    let tokens_response: GoogleTokensResponse = serde_json::from_str(&response_text).map_err(|e| e.to_string())?;
 
     Ok(tokens_response)
 }
