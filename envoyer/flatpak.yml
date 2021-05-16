@@ -1,4 +1,4 @@
-id: com.github.matzipan.envoyer.Devel
+id: com.github.matzipan.envoyer
 tags:
   - "nightly"
 runtime: org.gnome.Platform
