@@ -210,33 +210,41 @@ impl Application {
 
                     let welcome_dialog_clone = welcome_dialog.clone();
 
-                    context_clone.spawn_local(async move {
-                        //@TODO handle errors
-                        let authentication_result = google_oauth::authenticate(email_address.clone()).await.unwrap();
+                    context_clone.spawn_local(
+                        google_oauth::authenticate(email_address.clone())
+                            .and_then(|authentication_result| async move {
+                                let dialog_borrow_handle = welcome_dialog_clone.borrow();
+                                dialog_borrow_handle.show();
+                                dialog_borrow_handle.show_please_wait();
 
-                        let dialog_borrow_handle = welcome_dialog_clone.borrow();
-                        dialog_borrow_handle.show();
-                        dialog_borrow_handle.show_please_wait();
+                                Ok(authentication_result)
+                            })
+                            .and_then(google_oauth::request_tokens)
+                            .and_then(|response_token| async move {
+                                application_message_sender
+                                    .send(ApplicationMessage::SaveIdentity {
+                                        email_address: email_address,
+                                        full_name: full_name,
+                                        identity_type: models::IdentityType::Gmail,
+                                        account_name: account_name,
+                                        gmail_access_token: response_token.access_token,
+                                        gmail_refresh_token: response_token.refresh_token,
+                                        expires_at: response_token.expires_at,
+                                    })
+                                    .map_err(|e| e.to_string())?;
 
-                        let result = google_oauth::request_tokens(authentication_result).await;
-
-                        match result {
-                            Err(err) => {
-                                error!("Unable to authenticate: {}", err)
-                            }
-                            Ok(response_token) => application_message_sender
-                                .send(ApplicationMessage::SaveIdentity {
-                                    email_address: email_address,
-                                    full_name: full_name,
-                                    identity_type: models::IdentityType::Gmail,
-                                    account_name: account_name,
-                                    gmail_access_token: response_token.access_token,
-                                    gmail_refresh_token: response_token.refresh_token,
-                                    expires_at: response_token.expires_at,
-                                })
-                                .expect("Unable to send application message"),
-                        }
-                    });
+                                Ok(())
+                            })
+                            .map(|result| {
+                                match result {
+                                    Err(err) => {
+                                        //@TODO show in UI
+                                        error!("Unable to authenticate: {}", err);
+                                    }
+                                    _ => {}
+                                };
+                            }),
+                    );
                 }
             }
             // Returning false here would close the receiver and have senders
