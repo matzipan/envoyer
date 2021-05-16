@@ -24,7 +24,7 @@ jobs:
       with:
         bundle: com.github.matzipan.envoyer.flatpak
         manifest-path: ./envoyer/flatpak.yaml
-        cache-key: flatpak-builder-${{ github.sha }}
+        cache-key: flatpak-builder-${{ github.ref }}
     # - name: Run tests
     #   working-directory: envoyer
     #   run: cargo test --verbose
