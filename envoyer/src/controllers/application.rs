@@ -15,6 +15,7 @@ use crate::schema;
 use crate::ui;
 
 use std::cell::RefCell;
+use std::env;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
@@ -54,6 +55,30 @@ pub struct Application {
     identities: Arc<Mutex<Vec<models::Identity>>>, //@TODO should probably be arc<identity>
 }
 
+fn get_database_path() -> Option<String> {
+    fn allow_only_absolute(path: std::path::PathBuf) -> Option<std::path::PathBuf> {
+        if path.is_absolute() {
+            Some(path)
+        } else {
+            None
+        }
+    }
+
+    env::var("XDG_DATA_HOME")
+        .ok()
+        .map(std::path::PathBuf::from)
+        .and_then(allow_only_absolute)
+        .or_else(|| {
+            env::var("HOME")
+                .ok()
+                .map(std::path::PathBuf::from)
+                .and_then(allow_only_absolute)
+                .map(|path| path.join(".local/share"))
+        })
+        .map(|path| path.join("db.sqlite"))
+        .map(|path| path.into_os_string().into_string().unwrap())
+}
+
 impl Application {
     pub fn run() {
         gtk::init().expect("Failed to initialize GTK Application");
@@ -79,10 +104,13 @@ impl Application {
         let (application_message_sender, application_message_receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
         let context = glib::MainContext::default();
 
-        let database_connection_manager = diesel::r2d2::ConnectionManager::<diesel::sqlite::SqliteConnection>::new("db.sqlite");
+        let database_path = get_database_path().expect("Unable to determine where to store the database");
+        info!("Using database path {}", database_path);
+
+        let database_connection_manager = diesel::r2d2::ConnectionManager::<diesel::sqlite::SqliteConnection>::new(database_path);
         let database_connection_pool = diesel::r2d2::Pool::builder().build(database_connection_manager).unwrap();
 
-        info!("Connected to the database");
+        info!("Created database connection pool");
 
         let identities = Arc::new(Mutex::new(Vec::<models::Identity>::new()));
 
