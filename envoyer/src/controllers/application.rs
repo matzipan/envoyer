@@ -311,10 +311,7 @@ impl Application {
         info!("Set up the migrations table");
         diesel_migrations::setup_database(&connection).map_err(|e| e.to_string())?;
 
-        if diesel_migrations::any_pending_migrations(&connection).map_err(|e| e.to_string())? {
-            info!("Pending migrations found, running them");
-            diesel_migrations::run_pending_migrations(&connection).map_err(|e| e.to_string())?;
-        }
+        diesel_migrations::run_pending_migrations(&connection).map_err(|e| e.to_string())?;
 
         Ok(())
     }
