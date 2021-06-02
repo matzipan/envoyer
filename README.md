@@ -3,7 +3,7 @@
 [![CI](https://github.com/matzipan/envoyer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/matzipan/envoyer/actions/workflows/ci.yml)
 
 Envoyer intends to be the mail app for the Linux desktop of today. It has been
-through many writes and rewrites, it is currently written in Rust on top of GTK
+through many writes and rewrites. It is currently written in Rust on top of GTK
 4.0 using the melib library as a mailing backend.
 
 While this application started with the intent of being a serious effort, it
