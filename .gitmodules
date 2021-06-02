@@ -1,6 +1,0 @@
-[submodule "lib/mailcore2"]
-	path = lib/mailcore2
-	url = https://github.com/mailcore/mailcore2
-[submodule "lib/basalt"]
-	path = lib/basalt
-	url = git@github.com:matzipan/basalt
