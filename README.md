@@ -1,76 +1,36 @@
 # Envoyer app
 
-Envoyer intends to be the mail app for the Linux desktop of today. It is written
-in Vala using the MailCore 2 library as a backend and GTK+3 as a toolkit. It is
-designed to be used with elementary OS.
+[![CI](https://github.com/matzipan/envoyer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/matzipan/envoyer/actions/workflows/ci.yml)
 
-The application is currently under development.
+Envoyer intends to be the mail app for the Linux desktop of today. It has been
+through many writes and rewrites, it is currently written in Rust on top of GTK
+4.0 using the melib library as a mailing backend.
 
-### Review of other mail clients
+While this application started with the intent of being a serious effort, it
+has since become a vehicle for me to learn and experiment. It will likely never
+be finished. Anyway, the experience of rewriting this in Rust has been very
+nice. Go learn Rust!
 
-* Geary (or its brother, Pantheon Mail): while the UI was great, the performance
-and usability of the application as a daily driver is upsetting. I originally
-intended to work on Pantheon Mail and improve on these points but was turned
-away by the poor quality of the code. For example, the most important class of
-the application, GearyController, has over 2800 lines. There is severe overlap
-of concerns and plenty of undocumented assumptions, which make further
-development cumbersome. Envoyer intends to adhere to principled development.
+## Building
 
-* Evolution: Envoyer was initially built to use Evolution's backend (Evolution
-Data Server/Camel), but it was quickly found to be clunky and limiting. GObject
-in C (Evolution) demands a lot of boilerplate code and it makes the overall
-development experience really difficult. Envoyer uses Vala, which makes it
-much more easy to write GObject code.  Furthermore, Envoyer aims to have a
-much lighter and friendlier UI.
+### Installing locally
 
-* Thunderbird: just as Evolution, I think many use cases for which this
-application was built are no longer as important today.
-
-* Nylas N1: very good UI and UX, but it uses a third-party HTTPS API for mail
-communication. Built on the Electron framework, it cannot make use of native
-toolkit goodies like theming, icons or better performance.
-
-### How to build
-
-On elementary OS, the following packages need to be installed:
-
-```
-sudo apt install cmake build-essential valac libgtk-3-dev libsoup2.4-dev libgranite-dev libgda-5.0-dev libjson-glib-dev libwebkit2gtk-4.0-dev libgirepository1.0-dev
-```
-
-On top of this, you need to install the package dependencies for the Mailcore 2
-libraries which can be found
-[here](https://github.com/MailCore/mailcore2/blob/master/build-linux/README.md).
-
-The repository includes Mailcore 2 and Basalt libraries as a git submodule.
-Therefore, you will need to pass `--recursive` to git when you clone Envoyer.
-
-To build Envoyer, run the following commands:
 ```
 mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-make
+flatpak-builder --user --install build flatpak.yml
 ```
 
-By default, the Envoyer binary will instruct WebKitGTK+ to look for web
-extension libraries under
-`${CMAKE_INSTALL_PREFIX}/lib/com.github.matzipan.envoyer/`. If Envoyer is not
-installed on your system or you want to test changes to the web extensions, you
-can use the `WEBKIT_EXTENSION_DIRECTORY` environment variable.
+### Developing
 
-### Folder structure
-
-* `src/FutureGranite` - modules that are intended to be merged into `libgranite`
-when finished
-* `src/WebExtensions` - implementation of `webkit2gtk-web-extension-4.0` as
-exemplified [here](https://github.com/rschroll/webkitdom/tree/extension).
-* `src/Widgets` - view folder, almost always backed by some models. Never
-accesses backend libraries, such as `mailcore`, directly.
+```
+flatpak-builder build flatpak.yml
+flatpak-builder --run build flatpak.yml bash
+cargo build
+```
 
 ### License
 
-Copyright 2011-2019 Andrei-Costin Zisu.
+Copyright 2016-2021 Andrei-Costin Zisu.
 
 This software is licensed under the GNU General Public License (version 3).
 See the LICENSE file in this distribution.
