@@ -218,7 +218,7 @@ impl Application {
 
                     main_window.borrow().show_conversations(conversations);
 
-                    // welcome_dialog.borrow().hide();
+                    welcome_dialog.borrow().hide();
                     main_window.borrow().show();
                 }
                 ApplicationMessage::LoadFolder { folder } => {
@@ -286,9 +286,6 @@ impl Application {
     }
 
     fn on_activate(self) {
-        self.application_message_sender
-            .send(ApplicationMessage::Setup {})
-            .expect("Unable to send application message");
         match self.initialize_database() {
             Ok(_) => {
                 if self.is_account_setup_needed() {
