@@ -1,3 +1,4 @@
+pub mod conversation_messages_list;
 mod database;
 pub mod folder_conversations_list;
 mod identity;
