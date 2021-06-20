@@ -17,13 +17,13 @@ pub mod model {
         use super::*;
 
         #[derive(Debug)]
-        pub struct Model(pub RefCell<Vec<ConversationRowData>>);
+        pub struct FolderModel(pub RefCell<Vec<ConversationRowData>>);
         // Basic declaration of our type for the GObject type system
 
         #[glib::object_subclass]
-        impl ObjectSubclass for Model {
-            const NAME: &'static str = "Model";
-            type Type = super::Model;
+        impl ObjectSubclass for FolderModel {
+            const NAME: &'static str = "FolderModel";
+            type Type = super::FolderModel;
             type ParentType = glib::Object;
             type Interfaces = (gio::ListModel,);
 
@@ -32,8 +32,8 @@ pub mod model {
                 Self(RefCell::new(Vec::new()))
             }
         }
-        impl ObjectImpl for Model {}
-        impl ListModelImpl for Model {
+        impl ObjectImpl for FolderModel {}
+        impl ListModelImpl for FolderModel {
             fn item_type(&self, _list_model: &Self::Type) -> glib::Type {
                 ConversationRowData::static_type()
             }
@@ -47,16 +47,16 @@ pub mod model {
     }
     // Public part of the Model type.
     glib::wrapper! {
-        pub struct Model(ObjectSubclass<imp::Model>) @implements gio::ListModel;
+        pub struct FolderModel(ObjectSubclass<imp::FolderModel>) @implements gio::ListModel;
     }
     // Constructor for new instances. This simply calls glib::Object::new()
-    impl Model {
+    impl FolderModel {
         #[allow(clippy::new_without_default)]
-        pub fn new() -> Model {
-            glib::Object::new(&[]).expect("Failed to create Model")
+        pub fn new() -> FolderModel {
+            glib::Object::new(&[]).expect("Failed to create FolderModel")
         }
         pub fn append(&self, obj: &ConversationRowData) {
-            let self_ = imp::Model::from_instance(self);
+            let self_ = imp::FolderModel::from_instance(self);
             let index = {
                 // Borrow the data only once and ensure the borrow guard is dropped
                 // before we emit the items_changed signal because the view
@@ -69,7 +69,7 @@ pub mod model {
             self.items_changed(index as u32, 0, 1);
         }
         pub fn remove(&self, index: u32) {
-            let self_ = imp::Model::from_instance(self);
+            let self_ = imp::FolderModel::from_instance(self);
             self_.0.borrow_mut().remove(index as usize);
             // Emits a signal that 1 item was removed, 0 added at the position index
             self.items_changed(index, 1, 0);
@@ -77,8 +77,8 @@ pub mod model {
     }
 }
 
-// This row data wrapper is needed because the Model get_item_type method needs
-// to have a GObject type to return to the bind_model method
+// This row data wrapper is needed because the FolderModel get_item_type method
+// needs to have a GObject type to return to the bind_model method
 pub mod row_data {
     use super::*;
 
