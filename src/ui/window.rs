@@ -41,7 +41,9 @@ pub mod folder_conversation_item {
             // Called once at the very beginning of instantiation of each instance and
             // creates the data structure that contains all our state
             fn new() -> Self {
-                Self { conversation: Default::default() }
+                Self {
+                    conversation: Default::default(),
+                }
             }
         }
         impl ObjectImpl for FolderConversationItem {}
