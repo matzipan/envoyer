@@ -36,8 +36,11 @@ pub enum ApplicationMessage {
         initialize: bool,
     },
     SetupDone {},
-    LoadFolder {
+    ShowFolder {
         folder: models::Folder,
+    },
+    ShowConversation {
+        conversation: models::Message,
     },
     OpenGoogleAuthentication {
         email_address: String,
@@ -115,7 +118,11 @@ impl Application {
         let identities = Arc::new(Mutex::new(Vec::<models::Identity>::new()));
 
         let application = Self {
-            main_window: Rc::new(RefCell::new(ui::Window::new(gtk_application, identities.clone()))),
+            main_window: Rc::new(RefCell::new(ui::Window::new(
+                gtk_application,
+                application_message_sender.clone(),
+                identities.clone(),
+            ))),
             // Ideally this dialog would be created only if account setup is
             // needed, but to simplify reference passing right now, we're
             // always creating it.
@@ -221,13 +228,16 @@ impl Application {
                     welcome_dialog.borrow().hide();
                     main_window.borrow().show();
                 }
-                ApplicationMessage::LoadFolder { folder } => {
+                ApplicationMessage::ShowFolder { folder } => {
                     //@TODO hacky just to get things going
                     let identity = &identities_clone.lock().expect("BLA")[0];
 
                     let conversations = identity.get_conversations_for_folder(&folder).expect("BLA");
 
                     main_window.borrow().show_conversations(conversations);
+                }
+                ApplicationMessage::ShowConversation { conversation } => {
+                    main_window.borrow().show_conversation(conversation);
                 }
                 ApplicationMessage::OpenGoogleAuthentication {
                     email_address,

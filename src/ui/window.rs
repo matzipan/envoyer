@@ -11,11 +11,15 @@ use crate::models;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::controllers::ApplicationMessage;
+
 pub struct Window {
     pub gtk_window: gtk::ApplicationWindow,
     threads_list_box: gtk::ListBox,
+    conversation_viewer_list_box: gtk::ListBox,
     identities: Arc<Mutex<Vec<models::Identity>>>,
-    model: models::folder_conversations_list::model::Model,
+    folder_model: models::folder_conversations_list::model::FolderModel,
+    conversation_model: models::conversation_messages_list::model::ConversationModel,
 }
 
 pub mod folder_conversation_item {
@@ -137,7 +141,11 @@ pub mod conversation_message_item {
 }
 
 impl Window {
-    pub fn new(application: &gtk::Application, identities: Arc<Mutex<Vec<models::Identity>>>) -> Window {
+    pub fn new(
+        application: &gtk::Application,
+        sender: glib::Sender<ApplicationMessage>,
+        identities: Arc<Mutex<Vec<models::Identity>>>,
+    ) -> Window {
         //@TODO set icon
         let gtk_window = gtk::ApplicationWindow::new(application);
         let header = gtk::HeaderBar::new();
@@ -165,6 +173,7 @@ impl Window {
         folder_conversations_scroll_box.set_child(Some(&threads_list_box));
 
         let conversation_viewer_list_box = gtk::ListBox::new();
+        conversation_viewer_list_box.set_can_target(false);
 
         let conversation_viewer_scroll_box = gtk::ScrolledWindow::new();
         conversation_viewer_scroll_box.set_hexpand(true);
@@ -179,33 +188,35 @@ impl Window {
 
         gtk_window.set_child(Some(&main_grid));
 
-        let model = models::folder_conversations_list::model::Model::new();
+        let folder_model = models::folder_conversations_list::model::FolderModel::new();
+        let conversation_model = models::conversation_messages_list::model::ConversationModel::new();
 
-        threads_list_box.connect_row_selected(|_, row| {
+        let sender_clone = sender.clone();
+
+        threads_list_box.connect_row_selected(move |_, row| {
             if let Some(row) = row {
                 let row = row
                     .downcast_ref::<folder_conversation_item::FolderConversationItem>()
                     .expect("List box row is of wrong type");
 
-                let conversation  = row.get_conversation();
+                let conversation = row.get_conversation();
 
-                info!("{}", conversation.borrow().as_ref().expect("Model configuration invalid").subject);
-                    
-                //         assert(row is FolderConversationItem);
-                //         application.load_conversation_thread (((FolderConversationItem)
-                // row).thread);     }
-                //@TODO custom type is needed so we can get the  conversation instead of just getting the index
-                // info!("{}", row.unwrap().get_index())
+                let message = conversation.borrow().as_ref().expect("Model configuration invalid").clone();
+
+                info!("Opening conversation with subject \"{}\"", message.subject);
+
+                sender_clone
+                    .send(ApplicationMessage::ShowConversation { conversation: message })
+                    .expect("Unable to send application message");
             } else {
-                //         application.unload_current_conversation_thread ();   
+                //         application.unload_current_conversation_thread ();
             }
         });
 
-        threads_list_box.bind_model(Some(&model), |item| {
+        threads_list_box.bind_model(Some(&folder_model), |item| {
             let item = item
                 .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
                 .expect("Row data is of wrong type");
-            
             let conversation_rc = item.get_conversation();
             let conversation_borrow = conversation_rc.borrow();
             let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
@@ -249,7 +260,6 @@ impl Window {
             let datetime_received_label = gtk::Label::new(None);
             datetime_received_label.style_context().add_class("received");
 
-
             let bottom_grid = gtk::Grid::new();
             bottom_grid.set_orientation(gtk::Orientation::Horizontal);
             bottom_grid.set_column_spacing(3);
@@ -288,11 +298,31 @@ impl Window {
             // set_swipe_icon_name ("envoyer-delete-symbolic");
         });
 
+        conversation_viewer_list_box.bind_model(Some(&conversation_model), |item| {
+            let item = item
+                .downcast_ref::<models::conversation_messages_list::row_data::MessageRowData>()
+                .expect("Row data is of wrong type");
+            let message_rc = item.get_message();
+            let message_borrow = message_rc.borrow();
+            let message = message_borrow.as_ref().expect("Model contents invalid");
+
+            let box_row = conversation_message_item::ConversationMessageItem::new_with_message(&message);
+
+            let subject_label = gtk::Label::new(None);
+            subject_label.set_text(&message.subject);
+
+            box_row.set_child(Some(&subject_label));
+
+            box_row.upcast::<gtk::Widget>()
+        });
+
         Self {
             gtk_window,
             threads_list_box,
+            conversation_viewer_list_box,
             identities,
-            model,
+            folder_model,
+            conversation_model,
         }
     }
 
@@ -307,7 +337,7 @@ impl Window {
 
             data.set_conversation(conversation);
 
-            self.model.append(&data);
+            self.folder_model.append(&data);
         }
 
         // public new void grab_focus () {
@@ -371,5 +401,15 @@ impl Window {
         //     }
 
         //     self.threads_model.append(&row_data)
+    }
+
+    pub fn show_conversation(&self, conversation: models::Message) {
+        let data = models::conversation_messages_list::row_data::MessageRowData::new();
+
+        data.set_message(conversation);
+
+        self.conversation_model.remove_all();
+
+        self.conversation_model.append(&data);
     }
 }
