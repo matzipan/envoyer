@@ -106,6 +106,7 @@ impl Store {
 
         schema::messages::table
             .filter(schema::messages::folder_id.eq(folder.id))
+            .order(schema::messages::time_received.desc())
             .load::<models::Message>(&connection)
             .map_err(|e| e.to_string())
     }
