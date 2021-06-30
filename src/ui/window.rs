@@ -409,25 +409,25 @@ impl Window {
             }
 
             if (message.to.trim().is_empty()) {
-                to_addresses_grid.hide()
+                to_addresses_grid.hide();
             } else {
                 to_addresses_list.set_text(&message.to);
             }
 
             if (message.from.trim().is_empty()) {
-                from_addresses_grid.hide()
+                from_addresses_list.hide();
             } else {
                 from_addresses_list.set_text(&message.from);
             }
 
             if (message.cc.trim().is_empty()) {
-                cc_addresses_grid.hide()
+                cc_addresses_grid.hide();
             } else {
                 cc_addresses_list.set_text(&message.cc);
             }
 
             if (message.bcc.trim().is_empty()) {
-                bcc_addresses_grid.hide()
+                bcc_addresses_grid.hide();
             } else {
                 bcc_addresses_list.set_text(&message.bcc);
             }
