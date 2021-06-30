@@ -65,7 +65,7 @@ impl WelcomeDialog {
     pub fn build_ui(&self) {
         //@TODO set icon
 
-        self.gtk_dialog.style_context().add_class("welcome-dialog");
+        self.gtk_dialog.style_context().add_class("welcome_dialog");
         self.gtk_dialog.set_size_request(1024, 1024);
         self.gtk_dialog.set_modal(true);
 
@@ -82,14 +82,14 @@ impl WelcomeDialog {
         email_address_label.style_context().add_class("form-label");
 
         self.email_address_entry.set_placeholder_text(Some("you@yourdomain.com"));
-        self.email_address_entry.style_context().add_class("form-entry");
+        self.email_address_entry.style_context().add_class("form_entry");
 
         let account_name_label = gtk::Label::new(Some("Account name"));
         account_name_label.set_halign(gtk::Align::Start);
         account_name_label.style_context().add_class("form-label");
 
         self.account_name_entry.set_placeholder_text(Some("Personal"));
-        self.account_name_entry.style_context().add_class("form-entry");
+        self.account_name_entry.style_context().add_class("form_entry");
 
         let full_name_label = gtk::Label::new(Some("Full name"));
         full_name_label.set_halign(gtk::Align::Start);
@@ -101,13 +101,13 @@ impl WelcomeDialog {
         full_name_info_image.set_tooltip_text(Some("Publicly visible. Used in the sender field of your e-mails."));
 
         self.full_name_entry.set_placeholder_text(Some("John Doe"));
-        self.full_name_entry.style_context().add_class("form-entry");
+        self.full_name_entry.style_context().add_class("form_entry");
 
         self.submit_button.set_halign(gtk::Align::End);
         self.submit_button.style_context().add_class("button");
 
         let initial_information_grid = gtk::Grid::new();
-        initial_information_grid.style_context().add_class("initial-information-grid");
+        initial_information_grid.style_context().add_class("initial_information_grid");
         initial_information_grid.set_halign(gtk::Align::Center);
         initial_information_grid.set_hexpand(true);
         initial_information_grid.set_vexpand(true);
