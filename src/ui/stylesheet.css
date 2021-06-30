@@ -17,16 +17,20 @@ headerbar button:active {
     background-color: darker(@headerbar_background_color);
 }
 
-.welcome-dialog {
+.welcome_dialog {
     background: #fff;
 }
 
-.welcome-dialog .h1  { font-size: 30px; }
+.welcome_dialog .h1  { font-size: 30px; }
 
-.welcome-dialog .initial-information-grid { margin-top: 40px; }
-.welcome-dialog .form-entry { margin-left: 30px; }
+.welcome_dialog .initial-information-grid { margin-top: 40px; }
+.welcome_dialog .form_entry { margin-left: 30px; }
 
-.welcome-dialog .button { margin-top: 30px; }
+.welcome_dialog .button { margin-top: 30px; }
+
+.conversation_viewer { background: #eee; }
+
+.conversation_viewer .conversation_message_item { background: #fff; }
 
 .folder_conversation_item {
     padding-right: 5px;
@@ -34,8 +38,31 @@ headerbar button:active {
     border-bottom: 1px solid #efefef;
 }
 
-.folder_conversation_item .addresses, .folder_conversation_item .received {
-    color: rgba(100, 100, 100, 0.6);
+.folder_conversation_item .addresses, .folder_conversation_item .received,
+.conversation_message_item .addresses.to, .conversation_message_item .addresses.cc,
+.conversation_message_item .addresses.bcc, .conversation_message_item .received  {
+    color: rgba(100, 100, 100, 1);
+}
+
+.conversation_message_item .subject {
+    font-size: 16px;
+}
+
+.conversation_message_item {
+    margin: 7px;
+    padding: 10px;
+}
+
+.conversation_message_item .addresses_label {
+    margin-right: 3px;
+}
+
+.conversation_message_item .header_summary_fields {
+    margin-bottom: 15px;
+}
+
+.conversation_message_item .attachment_indicator {
+    margin-right: 3px;
 }
 
 .folder_conversation_item:selected .addresses, .folder_conversation_item:selected .received {
