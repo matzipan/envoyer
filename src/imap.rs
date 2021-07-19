@@ -506,8 +506,12 @@ async fn fetch_messages_in_uid_range(
             //@TODO Fix conversion from u32 to i32
             new_message.uid = uid.try_into().unwrap();
             //     message_sequence_number: 0,
-            //     body: None,
             //     references: None,
+
+            let builder = melib::AttachmentBuilder::new(message.body.unwrap());
+            let parsed_body = builder.build();
+
+            new_message.content = parsed_body.text();
 
             //@TODO conversion from i64 to u64
             new_message.modification_sequence = message.modseq.unwrap().0.get().try_into().unwrap();
