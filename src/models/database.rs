@@ -162,8 +162,6 @@ impl From<melib::email::Envelope> for NewMessage {
             draft: flags.contains(melib::email::Flag::DRAFT),
             deleted: flags.contains(melib::email::Flag::TRASHED),
             // REPLIED flag?
-
-            // content: envelope.body().text(),
             content: "".to_string(),
         }
     }
