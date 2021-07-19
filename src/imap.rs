@@ -475,7 +475,7 @@ async fn fetch_messages_in_uid_range(
         let mut messages = connection
             .uid_fetch(
                 format!("{}:{}", fetch_range_start, fetch_range_end),
-                "(UID FLAGS ENVELOPE BODY.PEEK[HEADER.FIELDS (REFERENCES)] BODYSTRUCTURE)".to_string(),
+                "(UID FLAGS ENVELOPE BODY.PEEK[] BODYSTRUCTURE)".to_string(),
                 &mut response,
             )
             .await?;
