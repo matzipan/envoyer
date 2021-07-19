@@ -1,10 +1,11 @@
 use futures::prelude::*;
 
-use log::{debug, info};
+use log::{debug, error, info};
 
 use gtk::glib;
 
 use melib::{backends::BackendMailbox, BackendEventConsumer};
+use serde_json::error;
 
 use std::boxed::Box;
 use std::collections::HashMap;
@@ -102,8 +103,14 @@ impl Identity {
 
         let context = glib::MainContext::default();
         context.spawn(async move {
-            sync_folder_job.await;
-            sync_messages_for_index_job.await;
+            sync_folder_job.await.map_err(|e| {
+                //@TODO show in UI
+                error!("{}", e);
+            });
+            sync_messages_for_index_job.await.map_err(|e| {
+                //@TODO show in UI
+                error!("{}", e);
+            });
         });
     }
 
