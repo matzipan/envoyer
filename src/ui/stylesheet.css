@@ -1,5 +1,6 @@
 @define-color headerbar_background_color rgb(247,172,55);
 @define-color headerbar_color rgba(30,30,30,0.7);
+@define-color background_secondary_color rgba(238,238,238);
 
 headerbar {
     background: @headerbar_background_color;
@@ -28,7 +29,7 @@ headerbar button:active {
 
 .welcome_dialog .button { margin-top: 30px; }
 
-.conversation_viewer { background: #eee; }
+.conversation_viewer { background: @background_secondary_color; }
 
 .conversation_viewer .conversation_message_item { background: #fff; }
 
@@ -93,4 +94,8 @@ headerbar button:active {
 
 .folder_conversation_item.unseen:selected .subject, .folder_conversation_item.unseen:selected .unseen_dot {
     color: #fff;
+}
+
+.folders_sidebar { 
+    background-color: @background_secondary_color;
 }
