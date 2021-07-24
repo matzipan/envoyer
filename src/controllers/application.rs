@@ -222,8 +222,10 @@ impl Application {
                     let conversations = identity
                         .get_conversations_for_folder(&identity.get_folders().unwrap().iter().find(|&x| x.folder_name == "INBOX").unwrap())
                         .expect("BLA");
+                    let folders = identity.get_folders().expect("BLA");
 
-                    main_window.borrow().show_conversations(conversations);
+                    main_window.borrow().load_conversations(conversations);
+                    main_window.borrow().load_folders(folders);
 
                     welcome_dialog.borrow().hide();
                     main_window.borrow().show();
@@ -234,7 +236,7 @@ impl Application {
 
                     let conversations = identity.get_conversations_for_folder(&folder).expect("BLA");
 
-                    main_window.borrow().show_conversations(conversations);
+                    main_window.borrow().load_conversations(conversations);
                 }
                 ApplicationMessage::ShowConversation { conversation } => {
                     main_window.borrow().show_conversation(conversation);

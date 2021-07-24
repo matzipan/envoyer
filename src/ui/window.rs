@@ -18,8 +18,68 @@ pub struct Window {
     threads_list_box: gtk::ListBox,
     conversation_viewer_list_box: gtk::ListBox,
     identities: Arc<Mutex<Vec<models::Identity>>>,
-    folder_model: models::folder_conversations_list::model::FolderModel,
+    folders_list_model: models::folders_list::model::FolderListModel,
+    conversations_list_model: models::folder_conversations_list::model::FolderModel,
     conversation_model: models::conversation_messages_list::model::ConversationModel,
+}
+
+pub mod folders_list_item {
+    use super::*;
+
+    use gtk::subclass::prelude::*;
+    // Implementation sub-module of the GObject
+    mod imp {
+        use super::*;
+
+        // The actual data structure that stores our values. This is not accessible
+        // directly from the outside.
+        pub struct FoldersListItem {
+            pub folder: Rc<RefCell<Option<models::Folder>>>,
+        }
+
+        // Basic declaration of our type for the GObject type system
+        #[glib::object_subclass]
+        impl ObjectSubclass for FoldersListItem {
+            const NAME: &'static str = "FoldersListItem";
+            type Type = super::FoldersListItem;
+            type ParentType = gtk::ListBoxRow;
+            // Called once at the very beginning of instantiation of each instance and
+            // creates the data structure that contains all our state
+            fn new() -> Self {
+                Self {
+                    folder: Default::default(),
+                }
+            }
+        }
+        impl ObjectImpl for FoldersListItem {}
+        impl ListBoxRowImpl for FoldersListItem {}
+        impl WidgetImpl for FoldersListItem {}
+    }
+
+    // The public part
+    glib::wrapper! {
+        pub struct FoldersListItem(ObjectSubclass<imp::FoldersListItem>) @extends gtk::ListBoxRow, gtk::Widget, @implements gtk::Buildable, gtk::Actionable;
+    }
+    impl FoldersListItem {
+        pub fn new() -> FoldersListItem {
+            glib::Object::new(&[]).expect("Failed to create row data")
+        }
+
+        pub fn new_with_folder(folder: &models::Folder) -> FoldersListItem {
+            let instance = Self::new();
+
+            let self_ = imp::FoldersListItem::from_instance(&instance);
+            //@TODO can we get rid of this clone?
+            self_.folder.replace(Some(folder.clone()));
+
+            instance
+        }
+
+        pub fn get_folder(&self) -> Rc<RefCell<Option<models::Folder>>> {
+            let self_ = imp::FoldersListItem::from_instance(self);
+            self_.folder.clone()
+        }
+    }
 }
 
 pub mod folder_conversation_item {
@@ -163,6 +223,16 @@ impl Window {
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
 
+        let folders_list_box = gtk::ListBox::new();
+        folders_list_box.set_activate_on_single_click(false);
+        folders_list_box.set_selection_mode(gtk::SelectionMode::Single);
+        folders_list_box.style_context().add_class("folders_sidebar");
+
+        let folders_scroll_box = gtk::ScrolledWindow::new();
+        folders_scroll_box.set_vexpand(true);
+        folders_scroll_box.set_size_request(200, -1);
+        folders_scroll_box.set_child(Some(&folders_list_box));
+
         let threads_list_box = gtk::ListBox::new();
         threads_list_box.set_activate_on_single_click(false);
         threads_list_box.set_selection_mode(gtk::SelectionMode::Multiple);
@@ -183,13 +253,60 @@ impl Window {
         let main_grid = gtk::Grid::new();
 
         main_grid.set_orientation(gtk::Orientation::Horizontal);
-        main_grid.attach(&folder_conversations_scroll_box, 0, 0, 1, 1);
-        main_grid.attach(&conversation_viewer_scroll_box, 1, 0, 1, 1);
+
+        main_grid.attach(&folders_scroll_box, 0, 0, 1, 1);
+        main_grid.attach(&folder_conversations_scroll_box, 1, 0, 1, 1);
+        main_grid.attach(&conversation_viewer_scroll_box, 2, 0, 1, 1);
 
         gtk_window.set_child(Some(&main_grid));
 
-        let folder_model = models::folder_conversations_list::model::FolderModel::new();
+        let folders_list_model = models::folders_list::model::FolderListModel::new();
+        let conversations_list_model = models::folder_conversations_list::model::FolderModel::new();
         let conversation_model = models::conversation_messages_list::model::ConversationModel::new();
+
+        let sender_clone = sender.clone();
+
+        folders_list_box.connect_row_selected(move |_, row| {
+            if let Some(row) = row {
+                let row = row
+                    .downcast_ref::<folders_list_item::FoldersListItem>()
+                    .expect("List box row is of wrong type");
+
+                let folder_rc = row.get_folder();
+                let folder_borrow = folder_rc.borrow();
+                let folder = folder_borrow.as_ref().expect("Model contents invalid");
+
+                info!("Selected folder with name \"{}\"", folder.folder_name);
+
+                sender_clone
+                    .send(ApplicationMessage::ShowFolder { folder: folder.clone() })
+                    .expect("Unable to send application message");
+            } else {
+                // application.unload_current_folder ();
+            }
+        });
+
+        folders_list_box.bind_model(Some(&folders_list_model), |item| {
+            let item = item
+                .downcast_ref::<models::folders_list::row_data::FolderRowData>()
+                .expect("Row data is of wrong type");
+
+            let folder_rc = item.get_folder();
+            let folder_borrow = folder_rc.borrow();
+            let folder = folder_borrow.as_ref().expect("Model contents invalid");
+
+            let box_row = folders_list_item::FoldersListItem::new_with_folder(&folder);
+
+            box_row.style_context().add_class("folders_list_item");
+
+            let name_label = gtk::Label::new(None);
+
+            name_label.set_text(&folder.folder_name);
+            name_label.set_halign(gtk::Align::Start);
+
+            box_row.set_child(Some(&name_label));
+            box_row.upcast::<gtk::Widget>()
+        });
 
         let sender_clone = sender.clone();
 
@@ -213,7 +330,7 @@ impl Window {
             }
         });
 
-        threads_list_box.bind_model(Some(&folder_model), |item| {
+        threads_list_box.bind_model(Some(&conversations_list_model), |item| {
             let item = item
                 .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
                 .expect("Row data is of wrong type");
@@ -450,7 +567,8 @@ impl Window {
             threads_list_box,
             conversation_viewer_list_box,
             identities,
-            folder_model,
+            folders_list_model,
+            conversations_list_model,
             conversation_model,
         }
     }
@@ -460,13 +578,31 @@ impl Window {
         self.gtk_window.present_with_time((glib::monotonic_time() / 1000) as u32);
     }
 
-    pub fn show_conversations(&self, conversations: Vec<models::Message>) {
+    pub fn load_folders(&self, mut folders: Vec<models::Folder>) {
+        folders.sort_by(|a, b| {
+            if (a.folder_name == "INBOX") {
+                std::cmp::Ordering::Less
+            } else {
+                std::cmp::Ordering::Greater
+            }
+        });
+            
+        for folder in folders {
+            let data = models::folders_list::row_data::FolderRowData::new();
+
+            data.set_folder(folder);
+
+            self.folders_list_model.append(&data);
+        }
+    }
+
+    pub fn load_conversations(&self, conversations: Vec<models::Message>) {
         for conversation in conversations {
             let data = models::folder_conversations_list::row_data::ConversationRowData::new();
 
             data.set_conversation(conversation);
 
-            self.folder_model.append(&data);
+            self.conversations_list_model.append(&data);
         }
 
         // public new void grab_focus () {
