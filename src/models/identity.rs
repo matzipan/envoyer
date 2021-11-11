@@ -34,10 +34,7 @@ pub struct Identity {
 }
 
 impl Identity {
-    pub async fn new(
-        bare_identity: models::BareIdentity,
-        database_connection_pool: diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
-    ) -> Identity {
+    pub async fn new(bare_identity: models::BareIdentity, store: Arc<services::Store>) -> Identity {
         info!("Creating identity with address {}", bare_identity.email_address);
 
         //@TODO do the thread token response fetch asynchronously so that the
@@ -66,7 +63,7 @@ impl Identity {
         return Identity {
             bare_identity: Arc::new(bare_identity),
             backend: Arc::new(RwLock::new(imap_backend)),
-            store: Arc::new(services::Store { database_connection_pool }),
+            store,
         };
     }
 
