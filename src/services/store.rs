@@ -7,6 +7,8 @@ use melib::BackendMailbox;
 
 use log::debug;
 use std::convert::TryFrom;
+use std::env;
+use std::fmt;
 
 use diesel::prelude::*;
 
@@ -14,7 +16,93 @@ pub struct Store {
     pub database_connection_pool: diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
 }
 
+impl fmt::Debug for Store {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Store").finish()
+    }
+}
+
+fn get_database_path() -> Option<String> {
+    fn allow_only_absolute(path: std::path::PathBuf) -> Option<std::path::PathBuf> {
+        if path.is_absolute() {
+            Some(path)
+        } else {
+            None
+        }
+    }
+
+    env::var("XDG_DATA_HOME")
+        .ok()
+        .map(std::path::PathBuf::from)
+        .and_then(allow_only_absolute)
+        .or_else(|| {
+            env::var("HOME")
+                .ok()
+                .map(std::path::PathBuf::from)
+                .and_then(allow_only_absolute)
+                .map(|path| path.join(".local/share"))
+        })
+        .map(|path| path.join("db.sqlite"))
+        .map(|path| path.into_os_string().into_string().unwrap())
+}
+
 impl Store {
+    pub fn new() -> Store {
+        let database_path = get_database_path().expect("Unable to determine where to store the database");
+        debug!("Using database path {}", database_path);
+
+        let database_connection_manager = diesel::r2d2::ConnectionManager::<diesel::sqlite::SqliteConnection>::new(database_path);
+        let database_connection_pool = diesel::r2d2::Pool::builder().build(database_connection_manager).unwrap();
+
+        debug!("Created database connection pool");
+
+        Store { database_connection_pool }
+    }
+
+    pub fn initialize_database(&self) -> Result<(), String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        debug!("Set up the migrations table");
+        diesel_migrations::setup_database(&connection).map_err(|e| e.to_string())?;
+
+        diesel_migrations::run_pending_migrations(&connection).map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    pub fn is_account_setup_needed(&self) -> bool {
+        let connection = self
+            .database_connection_pool
+            .get()
+            .expect("Unable to acquire a database connection");
+
+        let identities: i64 = schema::identities::table
+            .select(diesel::dsl::count_star())
+            .first(&connection)
+            .expect("Unable to get the number of identities");
+
+        identities == 0
+    }
+
+    pub fn store_bare_identity(&self, new_bare_identity: &models::NewBareIdentity) -> Result<(), String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        diesel::insert_into(schema::identities::table)
+            .values(new_bare_identity)
+            .execute(&connection)
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    pub fn get_bare_identities(&self) -> Result<Vec<models::BareIdentity>, String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        schema::identities::table
+            .load::<models::BareIdentity>(&connection)
+            .map_err(|e| e.to_string())
+    }
+
     //@TODO spawn database interactions to a different thread and then join await?
     //@TODO maybe async_thread library works for this
     pub fn store_folder_for_mailbox(

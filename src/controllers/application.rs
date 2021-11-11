@@ -3,19 +3,17 @@ use gtk::gio::prelude::*;
 use gtk::glib;
 
 use chrono::prelude::*;
-use diesel::prelude::*;
 use futures::prelude::*;
 
 use log::{error, info};
 
 use crate::google_oauth;
 use crate::models;
-use crate::schema;
+use crate::services;
 
 use crate::ui;
 
 use std::cell::RefCell;
-use std::env;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
@@ -54,32 +52,8 @@ pub struct Application {
     welcome_dialog: Rc<RefCell<ui::WelcomeDialog>>,
     application_message_sender: glib::Sender<ApplicationMessage>,
     context: glib::MainContext,
-    database_connection_pool: diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::sqlite::SqliteConnection>>,
     identities: Arc<Mutex<Vec<models::Identity>>>, //@TODO should probably be arc<identity>
-}
-
-fn get_database_path() -> Option<String> {
-    fn allow_only_absolute(path: std::path::PathBuf) -> Option<std::path::PathBuf> {
-        if path.is_absolute() {
-            Some(path)
-        } else {
-            None
-        }
-    }
-
-    env::var("XDG_DATA_HOME")
-        .ok()
-        .map(std::path::PathBuf::from)
-        .and_then(allow_only_absolute)
-        .or_else(|| {
-            env::var("HOME")
-                .ok()
-                .map(std::path::PathBuf::from)
-                .and_then(allow_only_absolute)
-                .map(|path| path.join(".local/share"))
-        })
-        .map(|path| path.join("db.sqlite"))
-        .map(|path| path.into_os_string().into_string().unwrap())
+    store: Arc<services::Store>,
 }
 
 impl Application {
@@ -107,14 +81,6 @@ impl Application {
         let (application_message_sender, application_message_receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
         let context = glib::MainContext::default();
 
-        let database_path = get_database_path().expect("Unable to determine where to store the database");
-        info!("Using database path {}", database_path);
-
-        let database_connection_manager = diesel::r2d2::ConnectionManager::<diesel::sqlite::SqliteConnection>::new(database_path);
-        let database_connection_pool = diesel::r2d2::Pool::builder().build(database_connection_manager).unwrap();
-
-        info!("Created database connection pool");
-
         let identities = Arc::new(Mutex::new(Vec::<models::Identity>::new()));
 
         let application = Self {
@@ -129,13 +95,13 @@ impl Application {
             welcome_dialog: Rc::new(RefCell::new(ui::WelcomeDialog::new(application_message_sender.clone()))),
             application_message_sender: application_message_sender,
             context: context,
-            database_connection_pool: database_connection_pool,
             identities: identities,
+            store: Arc::new(services::Store::new()),
         };
 
         application.context.push_thread_default();
 
-        let database_connection_pool = application.database_connection_pool.clone();
+        let store_clone = application.store.clone();
         let context_clone = application.context.clone();
         let identities_clone = application.identities.clone();
         let welcome_dialog = application.welcome_dialog.clone();
@@ -166,11 +132,8 @@ impl Application {
                         account_name: &account_name,
                     };
 
-                    let connection = database_connection_pool.get().expect("Unable to acquire a database connection");
-                    diesel::insert_into(schema::identities::table)
-                        .values(&new_bare_identity)
-                        .execute(&connection)
-                        .expect("Error saving new identity");
+                    let store_clone = store_clone.clone();
+                    store_clone.store_bare_identity(&new_bare_identity).map_err(|x| error!("{}", x));
 
                     application_message_sender
                         .send(ApplicationMessage::LoadIdentities { initialize: true })
@@ -180,22 +143,17 @@ impl Application {
                     info!("LoadIdentities with initialize {}", initialize);
 
                     let application_message_sender_clone = application_message_sender.clone();
-                    let database_connection_pool_clone = database_connection_pool.clone();
+                    let store_clone = store_clone.clone();
                     let identities_clone = identities_clone.clone();
 
                     context_clone.spawn(async move {
-                        let connection = database_connection_pool_clone
-                            .get()
-                            .expect("Unable to acquire a database connection");
-
-                        let bare_identities = schema::identities::table
-                            .load::<models::BareIdentity>(&connection)
-                            .expect("Unable to get identities from database");
+                        // @TODO replace the expects with error reporting
+                        let bare_identities = store_clone.get_bare_identities().expect("Unable to acquire a database connection");
 
                         for bare_identity in bare_identities {
-                            let database_connection_pool_clone = database_connection_pool_clone.clone();
+                            let store_clone = store_clone.clone();
 
-                            let identity = models::Identity::new(bare_identity, database_connection_pool_clone).await;
+                            let identity = models::Identity::new(bare_identity, store_clone).await;
 
                             if initialize {
                                 identity.initialize().await.map_err(|x| error!("{}", x));
@@ -298,9 +256,9 @@ impl Application {
     }
 
     fn on_activate(self) {
-        match self.initialize_database() {
+        match self.store.initialize_database() {
             Ok(_) => {
-                if self.is_account_setup_needed() {
+                if self.store.is_account_setup_needed() {
                     self.application_message_sender
                         .send(ApplicationMessage::Setup {})
                         .expect("Unable to send application message");
@@ -315,30 +273,5 @@ impl Application {
                 error!("Error encountered when initializing the database: {}", &e);
             }
         }
-    }
-
-    fn initialize_database(&self) -> Result<(), String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
-
-        info!("Set up the migrations table");
-        diesel_migrations::setup_database(&connection).map_err(|e| e.to_string())?;
-
-        diesel_migrations::run_pending_migrations(&connection).map_err(|e| e.to_string())?;
-
-        Ok(())
-    }
-
-    fn is_account_setup_needed(&self) -> bool {
-        let connection = self
-            .database_connection_pool
-            .get()
-            .expect("Unable to acquire a database connection");
-
-        let identities: i64 = schema::identities::table
-            .select(diesel::dsl::count_star())
-            .first(&connection)
-            .expect("Unable to get the number of identities");
-
-        identities == 0
     }
 }
