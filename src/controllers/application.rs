@@ -38,7 +38,7 @@ pub enum ApplicationMessage {
         folder: models::Folder,
     },
     ShowConversation {
-        conversation: models::Message,
+        conversation: models::MessageSummary,
     },
     OpenGoogleAuthentication {
         email_address: String,

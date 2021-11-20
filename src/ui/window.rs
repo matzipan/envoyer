@@ -93,7 +93,7 @@ pub mod folder_conversation_item {
         // The actual data structure that stores our values. This is not accessible
         // directly from the outside.
         pub struct FolderConversationItem {
-            pub conversation: Rc<RefCell<Option<models::Message>>>,
+            pub conversation: Rc<RefCell<Option<models::MessageSummary>>>,
         }
 
         // Basic declaration of our type for the GObject type system
@@ -124,7 +124,7 @@ pub mod folder_conversation_item {
             glib::Object::new(&[]).expect("Failed to create row data")
         }
 
-        pub fn new_with_conversation(conversation: &models::Message) -> FolderConversationItem {
+        pub fn new_with_conversation(conversation: &models::MessageSummary) -> FolderConversationItem {
             let instance = Self::new();
 
             let self_ = imp::FolderConversationItem::from_instance(&instance);
@@ -134,7 +134,7 @@ pub mod folder_conversation_item {
             instance
         }
 
-        pub fn get_conversation(&self) -> Rc<RefCell<Option<models::Message>>> {
+        pub fn get_conversation(&self) -> Rc<RefCell<Option<models::MessageSummary>>> {
             let self_ = imp::FolderConversationItem::from_instance(self);
             self_.conversation.clone()
         }
@@ -152,7 +152,7 @@ pub mod conversation_message_item {
         // The actual data structure that stores our values. This is not accessible
         // directly from the outside.
         pub struct ConversationMessageItem {
-            pub message: Rc<RefCell<Option<models::Message>>>,
+            pub message: Rc<RefCell<Option<models::MessageSummary>>>,
         }
 
         // Basic declaration of our type for the GObject type system
@@ -183,7 +183,7 @@ pub mod conversation_message_item {
             glib::Object::new(&[]).expect("Failed to create row data")
         }
 
-        pub fn new_with_message(message: &models::Message) -> ConversationMessageItem {
+        pub fn new_with_message(message: &models::MessageSummary) -> ConversationMessageItem {
             let instance = Self::new();
 
             let self_ = imp::ConversationMessageItem::from_instance(&instance);
@@ -193,7 +193,7 @@ pub mod conversation_message_item {
             instance
         }
 
-        pub fn get_message(&self) -> Rc<RefCell<Option<models::Message>>> {
+        pub fn get_message(&self) -> Rc<RefCell<Option<models::MessageSummary>>> {
             let self_ = imp::ConversationMessageItem::from_instance(self);
             self_.message.clone()
         }
@@ -525,11 +525,11 @@ impl Window {
                 subject_label.set_text(&message.subject);
             }
 
-            if (message.to.trim().is_empty()) {
-                to_addresses_grid.hide();
-            } else {
-                to_addresses_list.set_text(&message.to);
-            }
+            // if (message.to.trim().is_empty()) {
+            //     to_addresses_grid.hide();
+            // } else {
+            //     to_addresses_list.set_text(&message.to);
+            // }
 
             if (message.from.trim().is_empty()) {
                 from_addresses_list.hide();
@@ -537,17 +537,17 @@ impl Window {
                 from_addresses_list.set_text(&message.from);
             }
 
-            if (message.cc.trim().is_empty()) {
-                cc_addresses_grid.hide();
-            } else {
-                cc_addresses_list.set_text(&message.cc);
-            }
+            // if (message.cc.trim().is_empty()) {
+            //     cc_addresses_grid.hide();
+            // } else {
+            //     cc_addresses_list.set_text(&message.cc);
+            // }
 
-            if (message.bcc.trim().is_empty()) {
-                bcc_addresses_grid.hide();
-            } else {
-                bcc_addresses_list.set_text(&message.bcc);
-            }
+            // if (message.bcc.trim().is_empty()) {
+            //     bcc_addresses_grid.hide();
+            // } else {
+            //     bcc_addresses_list.set_text(&message.bcc);
+            // }
 
             attachment_indicator.hide();
 
@@ -556,7 +556,7 @@ impl Window {
             //@TODO
             datetime_received_label.set_tooltip_text(Some(&message.time_received.to_string()));
 
-            buffer.set_text(&message.content);
+            // buffer.set_text(&message.content);
             buffer.set_text(&"😊");
 
             box_row.upcast::<gtk::Widget>()

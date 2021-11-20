@@ -102,7 +102,7 @@ pub mod row_data {
         // The actual data structure that stores our values. This is not accessible
         // directly from the outside.
         pub struct MessageRowData {
-            pub message: Rc<RefCell<Option<models::Message>>>,
+            pub message: Rc<RefCell<Option<models::MessageSummary>>>,
         }
 
         // Basic declaration of our type for the GObject type system
@@ -130,11 +130,11 @@ pub mod row_data {
         pub fn new() -> MessageRowData {
             glib::Object::new(&[]).expect("Failed to create row data")
         }
-        pub fn set_message(&self, message: models::Message) {
+        pub fn set_message(&self, message: models::MessageSummary) {
             let self_ = imp::MessageRowData::from_instance(self);
             self_.message.replace(Some(message));
         }
-        pub fn get_message(&self) -> Rc<RefCell<Option<models::Message>>> {
+        pub fn get_message(&self) -> Rc<RefCell<Option<models::MessageSummary>>> {
             let self_ = imp::MessageRowData::from_instance(self);
             self_.message.clone()
         }
