@@ -189,6 +189,18 @@ impl Store {
         }
     }
 
+    pub fn get_message_count_for_folder(&self, folder: &models::Folder) -> Result<u32, String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        schema::messages::table
+            .filter(schema::messages::folder_id.eq(folder.id))
+            .count()
+            .get_result(&connection)
+            // The gtk libraries accept u32, so we don't keep the full range
+            .map(|x: i64| x as u32)
+            .map_err(|e| e.to_string())
+    }
+
     pub fn get_messages_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::Message>, String> {
         let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
 

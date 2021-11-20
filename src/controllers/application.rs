@@ -83,11 +83,18 @@ impl Application {
 
         let identities = Arc::new(Mutex::new(Vec::<models::Identity>::new()));
 
+        let folders_list_model = models::folders_list::model::FolderListModel::new();
+        let conversations_list_model = models::folder_conversations_list::model::FolderModel::new();
+        let conversation_model = models::conversation_messages_list::model::ConversationModel::new();
+
         let application = Self {
             main_window: Rc::new(RefCell::new(ui::Window::new(
                 gtk_application,
                 application_message_sender.clone(),
                 identities.clone(),
+                &folders_list_model,
+                &conversations_list_model,
+                &conversation_model,
             ))),
             // Ideally this dialog would be created only if account setup is
             // needed, but to simplify reference passing right now, we're
@@ -107,6 +114,12 @@ impl Application {
         let welcome_dialog = application.welcome_dialog.clone();
         let main_window = application.main_window.clone();
         let application_message_sender = application.application_message_sender.clone();
+        let folders_list_model_clone = folders_list_model.clone(); //@TODO any onwership by application?
+        let conversations_list_model_clone = conversations_list_model.clone();
+        let conversation_model_clone = conversation_model.clone();
+
+        conversations_list_model.attach_store(application.store.clone());
+
         application_message_receiver.attach(None, move |msg| {
             match msg {
                 ApplicationMessage::Setup {} => {
@@ -177,13 +190,19 @@ impl Application {
                     //@TODO hacky just to get things going
                     let identity = &identities_clone.lock().expect("BLA")[0];
 
-                    let conversations = identity
-                        .get_conversations_for_folder(&identity.get_folders().unwrap().iter().find(|&x| x.folder_name == "INBOX").unwrap())
-                        .expect("BLA");
-                    let folders = identity.get_folders().expect("BLA");
+                    let conversations_list_model_clone = conversations_list_model_clone.clone();
 
-                    main_window.borrow().load_conversations(conversations);
-                    main_window.borrow().load_folders(folders);
+                    conversations_list_model_clone.load_folder(
+                        identity
+                            .get_folders()
+                            .unwrap()
+                            .iter()
+                            .find(|&x| x.folder_name == "INBOX")
+                            .unwrap()
+                            .clone(),
+                    );
+
+                    // main_window.borrow().load_folders(folders);
 
                     welcome_dialog.borrow().hide();
                     main_window.borrow().show();
@@ -197,7 +216,7 @@ impl Application {
                     main_window.borrow().load_conversations(conversations);
                 }
                 ApplicationMessage::ShowConversation { conversation } => {
-                    main_window.borrow().show_conversation(conversation);
+                    // main_window.borrow().show_conversation(conversation);
                 }
                 ApplicationMessage::OpenGoogleAuthentication {
                     email_address,

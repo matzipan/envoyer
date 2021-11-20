@@ -18,9 +18,6 @@ pub struct Window {
     threads_list_box: gtk::ListBox,
     conversation_viewer_list_box: gtk::ListBox,
     identities: Arc<Mutex<Vec<models::Identity>>>,
-    folders_list_model: models::folders_list::model::FolderListModel,
-    conversations_list_model: models::folder_conversations_list::model::FolderModel,
-    conversation_model: models::conversation_messages_list::model::ConversationModel,
 }
 
 pub mod folders_list_item {
@@ -205,6 +202,9 @@ impl Window {
         application: &gtk::Application,
         sender: glib::Sender<ApplicationMessage>,
         identities: Arc<Mutex<Vec<models::Identity>>>,
+        folders_list_model: &models::folders_list::model::FolderListModel,
+        conversations_list_model: &models::folder_conversations_list::model::FolderModel,
+        conversation_model: &models::conversation_messages_list::model::ConversationModel,
     ) -> Window {
         //@TODO set icon
         let gtk_window = gtk::ApplicationWindow::new(application);
@@ -260,10 +260,6 @@ impl Window {
 
         gtk_window.set_child(Some(&main_grid));
 
-        let folders_list_model = models::folders_list::model::FolderListModel::new();
-        let conversations_list_model = models::folder_conversations_list::model::FolderModel::new();
-        let conversation_model = models::conversation_messages_list::model::ConversationModel::new();
-
         let sender_clone = sender.clone();
 
         folders_list_box.connect_row_selected(move |_, row| {
@@ -286,7 +282,7 @@ impl Window {
             }
         });
 
-        folders_list_box.bind_model(Some(&folders_list_model), |item| {
+        folders_list_box.bind_model(Some(folders_list_model), |item| {
             let item = item
                 .downcast_ref::<models::folders_list::row_data::FolderRowData>()
                 .expect("Row data is of wrong type");
@@ -330,7 +326,7 @@ impl Window {
             }
         });
 
-        threads_list_box.bind_model(Some(&conversations_list_model), |item| {
+        threads_list_box.bind_model(Some(conversations_list_model), |item| {
             let item = item
                 .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
                 .expect("Row data is of wrong type");
@@ -415,7 +411,7 @@ impl Window {
             // set_swipe_icon_name ("envoyer-delete-symbolic");
         });
 
-        conversation_viewer_list_box.bind_model(Some(&conversation_model), |item| {
+        conversation_viewer_list_box.bind_model(Some(conversation_model), |item| {
             let item = item
                 .downcast_ref::<models::conversation_messages_list::row_data::MessageRowData>()
                 .expect("Row data is of wrong type");
@@ -567,9 +563,6 @@ impl Window {
             threads_list_box,
             conversation_viewer_list_box,
             identities,
-            folders_list_model,
-            conversations_list_model,
-            conversation_model,
         }
     }
 
@@ -586,24 +579,30 @@ impl Window {
                 std::cmp::Ordering::Greater
             }
         });
-            
-        for folder in folders {
-            let data = models::folders_list::row_data::FolderRowData::new();
 
-            data.set_folder(folder);
+        //@TODO implement drop all
 
-            self.folders_list_model.append(&data);
-        }
+        // for folder in folders {
+        //     let data = models::folders_list::row_data::FolderRowData::new();
+
+        //     data.set_folder(folder);
+
+        //     // self.folders_list_model.append(&data);
+        // }
     }
 
     pub fn load_conversations(&self, conversations: Vec<models::Message>) {
-        for conversation in conversations {
-            let data = models::folder_conversations_list::row_data::ConversationRowData::new();
+        //@TODO implement drop all
 
-            data.set_conversation(conversation);
+        // for conversation in conversations {
+        //     let data =
+        // models::folder_conversations_list::row_data::ConversationRowData::
+        // new();
 
-            self.conversations_list_model.append(&data);
-        }
+        //     data.set_conversation(conversation);
+
+        //     self.conversations_list_model.append(&data);
+        // }
 
         // public new void grab_focus () {
         //     listbox.grab_focus ();
@@ -669,12 +668,13 @@ impl Window {
     }
 
     pub fn show_conversation(&self, conversation: models::Message) {
-        let data = models::conversation_messages_list::row_data::MessageRowData::new();
+        // let data =
+        // models::conversation_messages_list::row_data::MessageRowData::new();
 
-        data.set_message(conversation);
+        // data.set_message(conversation);
 
-        self.conversation_model.remove_all();
+        // self.conversation_model.remove_all();
 
-        self.conversation_model.append(&data);
+        // self.conversation_model.append(&data);
     }
 }
