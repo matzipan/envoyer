@@ -6,6 +6,7 @@ runtime-version: "40"
 sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.llvm12
 command: envoyer
 finish-args:
   - --share=ipc
@@ -15,6 +16,8 @@ finish-args:
   - --talk-name=org.freedesktop.portal.OpenURI
 build-options:
   append-path: "/usr/lib/sdk/rust-stable/bin"
+  prepend-path: "/usr/lib/sdk/llvm12/bin"
+  prepend-ld-library-path: "/usr/lib/sdk/llvm12/lib"
   build-args:
     - --share=network
     - --socket=session-bus
