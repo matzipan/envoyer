@@ -258,15 +258,14 @@ impl Application {
     fn on_activate(self) {
         match self.store.initialize_database() {
             Ok(_) => {
-                if self.store.is_account_setup_needed() {
-                    self.application_message_sender
-                        .send(ApplicationMessage::Setup {})
-                        .expect("Unable to send application message");
-                } else {
-                    self.application_message_sender
-                        .send(ApplicationMessage::LoadIdentities { initialize: false })
-                        .expect("Unable to send application message");
-                }
+                let application_message = match self.store.is_account_setup_needed() {
+                    true => ApplicationMessage::Setup {},
+                    false => ApplicationMessage::LoadIdentities { initialize: false },
+                };
+
+                self.application_message_sender
+                    .send(application_message)
+                    .expect("Unable to send application message");
             }
             Err(e) => {
                 //@TODO show an error dialog
