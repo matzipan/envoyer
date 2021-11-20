@@ -7,8 +7,10 @@ use gtk::subclass::prelude::*;
 
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::models;
+use crate::services;
 
 pub mod model {
     use super::*;
@@ -17,7 +19,11 @@ pub mod model {
         use super::*;
 
         #[derive(Debug)]
-        pub struct FolderModel(pub RefCell<Vec<ConversationRowData>>);
+        pub struct FolderModel {
+            pub store: Rc<RefCell<Option<Arc<services::Store>>>>,
+            pub folder: Rc<RefCell<Option<models::Folder>>>,
+            pub summaries: Rc<RefCell<Option<Vec<models::MessageSummary>>>>,
+        }
         // Basic declaration of our type for the GObject type system
 
         #[glib::object_subclass]
@@ -29,7 +35,11 @@ pub mod model {
 
             // Called once at the very beginning of instantiation
             fn new() -> Self {
-                Self(RefCell::new(Vec::new()))
+                Self {
+                    store: Default::default(),
+                    folder: Default::default(),
+                    summaries: Default::default(),
+                }
             }
         }
         impl ObjectImpl for FolderModel {}
@@ -37,11 +47,34 @@ pub mod model {
             fn item_type(&self, _list_model: &Self::Type) -> glib::Type {
                 ConversationRowData::static_type()
             }
+
             fn n_items(&self, _list_model: &Self::Type) -> u32 {
-                self.0.borrow().len() as u32
+                match &*self.folder.as_ref().borrow() {
+                    Some(folder) => self
+                        .store
+                        .borrow()
+                        .as_ref()
+                        .unwrap()
+                        .get_message_count_for_folder(&folder)
+                        .expect("Unable to get message count"),
+                    None => 0,
+                }
             }
+
             fn item(&self, _list_model: &Self::Type, position: u32) -> Option<glib::Object> {
-                self.0.borrow().get(position as usize).map(|o| o.clone().upcast::<glib::Object>())
+                //@TODO need to make sure needed syncronization is here to make sure the data is
+                //@TODO in a consistent state when something gets updates
+
+                // We use unwrap on folder because if there are items it means n_items didn't
+                // return 0 so there is a folder set.
+                let folder = &*self.folder.borrow();
+                let folder = folder.as_ref().unwrap();
+
+                let data = models::folder_conversations_list::row_data::ConversationRowData::new();
+
+                data.set_conversation(self.summaries.borrow().as_ref().unwrap()[position as usize].clone()); //@TODO should probably be an arc to the item
+
+                Some(data.clone().upcast::<glib::Object>())
             }
         }
     }
@@ -55,24 +88,33 @@ pub mod model {
         pub fn new() -> FolderModel {
             glib::Object::new(&[]).expect("Failed to create FolderModel")
         }
-        pub fn append(&self, obj: &ConversationRowData) {
-            let self_ = imp::FolderModel::from_instance(self);
-            let index = {
-                // Borrow the data only once and ensure the borrow guard is dropped
-                // before we emit the items_changed signal because the view
-                // could call get_item / get_n_item from the signal handler to update its state
-                let mut data = self_.0.borrow_mut();
-                data.push(obj.clone());
-                data.len() - 1
-            };
-            // Emits a signal that 1 item was added, 0 removed at the position index
-            self.items_changed(index as u32, 0, 1);
+
+        pub fn attach_store(self, store: Arc<services::Store>) {
+            let self_ = imp::FolderModel::from_instance(&self);
+
+            self_.store.replace(Some(store));
         }
-        pub fn remove(&self, index: u32) {
-            let self_ = imp::FolderModel::from_instance(self);
-            self_.0.borrow_mut().remove(index as usize);
-            // Emits a signal that 1 item was removed, 0 added at the position index
-            self.items_changed(index, 1, 0);
+
+        pub fn load_folder(self, folder: models::Folder) {
+            let self_ = imp::FolderModel::from_instance(&self);
+
+            let previous_count = self_.n_items(&self);
+
+            self_.summaries.replace(Some(
+                self_
+                    .store
+                    .borrow()
+                    .as_ref()
+                    .unwrap()
+                    .get_message_summaries_for_folder(&folder)
+                    .expect("Unable to get message summary"),
+            ));
+
+            self_.folder.replace(Some(folder));
+
+            let new_count = self_.n_items(&self);
+
+            self.items_changed(0, previous_count, new_count);
         }
     }
 }
