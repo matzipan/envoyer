@@ -199,6 +199,23 @@ impl Store {
             .map_err(|e| e.to_string())
     }
 
+    pub fn get_message_summaries_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::MessageSummary>, String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        schema::messages::table
+            .select((
+                schema::messages::id,
+                schema::messages::message_id,
+                schema::messages::subject,
+                schema::messages::from,
+                schema::messages::time_received,
+            ))
+            .filter(schema::messages::folder_id.eq(folder.id))
+            .order(schema::messages::time_received.desc())
+            .load::<models::MessageSummary>(&connection)
+            .map_err(|e| e.to_string())
+    }
+
     pub fn store_message_for_folder(&self, new_message: &mut models::NewMessage, folder: &models::Folder) -> Result<(), String> {
         let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
 

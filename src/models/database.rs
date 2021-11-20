@@ -105,6 +105,27 @@ impl From<Message> for melib::email::Envelope {
     }
 }
 
+#[derive(Identifiable, Queryable, Associations, Debug, Clone)]
+#[table_name = "messages"]
+pub struct MessageSummary {
+    pub id: i32,
+    pub message_id: String,
+    pub subject: String,
+    pub from: String,
+    pub time_received: chrono::NaiveDateTime,
+}
+
+impl MessageSummary {
+    pub fn get_time_received_utc(&self) -> chrono::DateTime<chrono::Utc> {
+        chrono::DateTime::<chrono::Utc>::from_utc(self.time_received, chrono::Utc)
+    }
+
+    pub fn get_relative_time_ago(&self) -> String {
+        chrono_humanize::HumanTime::from(self.get_time_received_utc())
+            .to_text_en(chrono_humanize::Accuracy::Rough, chrono_humanize::Tense::Past)
+    }
+}
+
 #[derive(AsChangeset, Debug)]
 #[table_name = "messages"]
 pub struct MessageFlags {

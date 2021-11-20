@@ -89,7 +89,7 @@ pub mod row_data {
         // The actual data structure that stores our values. This is not accessible
         // directly from the outside.
         pub struct ConversationRowData {
-            pub conversation: Rc<RefCell<Option<models::Message>>>,
+            pub conversation: Rc<RefCell<Option<models::MessageSummary>>>,
         }
 
         // Basic declaration of our type for the GObject type system
@@ -117,11 +117,11 @@ pub mod row_data {
         pub fn new() -> ConversationRowData {
             glib::Object::new(&[]).expect("Failed to create row data")
         }
-        pub fn set_conversation(&self, conversation: models::Message) {
+        pub fn set_conversation(&self, conversation: models::MessageSummary) {
             let self_ = imp::ConversationRowData::from_instance(self);
             self_.conversation.replace(Some(conversation));
         }
-        pub fn get_conversation(&self) -> Rc<RefCell<Option<models::Message>>> {
+        pub fn get_conversation(&self) -> Rc<RefCell<Option<models::MessageSummary>>> {
             let self_ = imp::ConversationRowData::from_instance(self);
             self_.conversation.clone()
         }
