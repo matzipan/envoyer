@@ -515,7 +515,7 @@ impl Window {
 
             box_row.set_child(Some(&grid));
 
-            if (message.subject.trim().is_empty()) {
+            if message.subject.trim().is_empty() {
                 subject_label.hide();
             } else {
                 subject_label.set_text(&message.subject);
@@ -527,7 +527,7 @@ impl Window {
             //     to_addresses_list.set_text(&message.to);
             // }
 
-            if (message.from.trim().is_empty()) {
+            if message.from.trim().is_empty() {
                 from_addresses_list.hide();
             } else {
                 from_addresses_list.set_text(&message.from);
@@ -573,7 +573,7 @@ impl Window {
 
     pub fn load_folders(&self, mut folders: Vec<models::Folder>) {
         folders.sort_by(|a, b| {
-            if (a.folder_name == "INBOX") {
+            if a.folder_name == "INBOX" {
                 std::cmp::Ordering::Less
             } else {
                 std::cmp::Ordering::Greater
