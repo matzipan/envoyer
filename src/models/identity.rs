@@ -5,7 +5,6 @@ use log::{debug, error, info};
 use gtk::glib;
 
 use melib::{backends::BackendMailbox, BackendEventConsumer};
-use serde_json::error;
 
 use std::boxed::Box;
 use std::collections::HashMap;
