@@ -33,7 +33,9 @@ fn main() {
     let include_path = format!("{}/include", out_path);
 
     // Build litehtml as a CMake library
-    let litehtml_build = cmake::build("vendor/litehtml");
+    let litehtml_build = cmake::Config::new("vendor/litehtml")
+        .define("BUILD_TESTING", "Off")
+        .build();
 
     // Build the litehtml container as a C++ library
     cc::Build::new()
