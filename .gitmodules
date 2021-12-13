@@ -1,0 +1,3 @@
+[submodule "vendor/litehtml"]
+	path = vendor/litehtml
+	url = https://github.com/matzipan/litehtml
