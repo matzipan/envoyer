@@ -172,7 +172,7 @@ pub async fn authenticate(email_address: String) -> Result<AuthenicationResult, 
 }
 
 pub async fn open_browser(email_address: &String, token_receiver_address: &String) -> Result<(), String> {
-    gio::AppInfo::launch_default_for_uri_async_future(
+    gio::AppInfo::launch_default_for_uri_future(
         &format!(
             "https://accounts.google.com/o/oauth2/v2/auth?scope={scope}&login_hint={email_address}&response_type=code&redirect_uri={redirect_uri}&client_id={client_id}",
             scope = OAUTH_SCOPE,

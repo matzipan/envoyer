@@ -106,8 +106,6 @@ impl Application {
             store: Arc::new(services::Store::new()),
         };
 
-        application.context.push_thread_default();
-
         let store_clone = application.store.clone();
         let context_clone = application.context.clone();
         let identities_clone = application.identities.clone();
