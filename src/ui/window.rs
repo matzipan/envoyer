@@ -1,16 +1,15 @@
-use gtk::{gdk, glib, pango};
+use gtk::{gdk, glib, graphene, gsk, pango};
 
 use gtk::prelude::*;
 
-use log::info;
-
-use std::sync::{Arc, Mutex};
-
-use crate::models;
+use log::{debug, info};
 
 use std::cell::RefCell;
+use std::ffi::CString;
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
+use crate::bindings;
 use crate::controllers::ApplicationMessage;
 
 pub struct Window {
@@ -134,6 +133,133 @@ pub mod folder_conversation_item {
         pub fn get_conversation(&self) -> Rc<RefCell<Option<models::MessageSummary>>> {
             let self_ = imp::FolderConversationItem::from_instance(self);
             self_.conversation.clone()
+        }
+    }
+}
+
+pub mod message_view {
+    use super::*;
+
+    use gtk::subclass::prelude::*;
+    // Implementation sub-module of the GObject
+    mod imp {
+        use crate::litehtml_callbacks;
+
+        use super::*;
+
+        // The actual data structure that stores our values. This is not accessible
+        // directly from the outside.
+        pub struct MessageView {
+            pub litehtml_callbacks: Rc<RefCell<litehtml_callbacks::Callbacks>>,
+            pub litehtml_context: Rc<RefCell<*mut core::ffi::c_void>>,
+            pub loaded: Rc<RefCell<bool>>,
+        }
+
+        // Basic declaration of our type for the GObject type system
+        #[glib::object_subclass]
+        impl ObjectSubclass for MessageView {
+            const NAME: &'static str = "MessageView";
+            type Type = super::MessageView;
+            type ParentType = gtk::Widget;
+            // Called once at the very beginning of instantiation of each instance and
+            // creates the data structure that contains all our state
+            fn new() -> Self {
+                Self {
+                    litehtml_callbacks: Rc::new(RefCell::new(litehtml_callbacks::Callbacks::new())),
+                    litehtml_context: Rc::new(RefCell::new(0 as *mut core::ffi::c_void)),
+                    loaded: Rc::new(RefCell::new(false)),
+                }
+            }
+        }
+
+        impl ObjectImpl for MessageView {
+            fn constructed(&self, obj: &Self::Type) {
+                self.parent_constructed(obj);
+
+                obj.set_vexpand(true);
+            }
+        }
+
+        impl WidgetImpl for MessageView {
+            fn snapshot(&self, widget: &Self::Type, snapshot: &gtk::Snapshot) {
+                if !*self.loaded.borrow() {
+                    return;
+                }
+
+                let litehtml_context = self.litehtml_context.borrow_mut();
+
+                let mut callbacks = self.litehtml_callbacks.borrow_mut();
+                callbacks.clear_nodes();
+
+                unsafe {
+                    bindings::setup::draw(*litehtml_context);
+                }
+
+                let nodes = callbacks.nodes();
+
+                let container_node = gsk::ContainerNode::new(&nodes);
+
+                snapshot.append_node(&container_node);
+            }
+
+            fn request_mode(&self, widget: &Self::Type) -> gtk::SizeRequestMode {
+                gtk::SizeRequestMode::HeightForWidth
+            }
+
+            fn measure(&self, widget: &Self::Type, orientation: gtk::Orientation, for_size: i32) -> (i32, i32, i32, i32) {
+                let litehtml_context = self.litehtml_context.borrow_mut();
+
+                match orientation {
+                    gtk::Orientation::Horizontal => (0, 0, -1, -1),
+                    gtk::Orientation::Vertical => {
+                        let height = unsafe { bindings::setup::render(*litehtml_context, for_size * pango::SCALE) } / pango::SCALE;
+
+                        (height, height, -1, -1)
+                    }
+                    _ => unimplemented!(),
+                }
+            }
+
+            fn size_allocate(&self, widget: &Self::Type, width: i32, height: i32, baseline: i32) {
+                let litehtml_context = self.litehtml_context.borrow_mut();
+
+                unsafe { bindings::setup::render(*litehtml_context, width * pango::SCALE) };
+
+                widget.queue_draw();
+            }
+        }
+    }
+
+    // The public part
+    glib::wrapper! {
+        pub struct MessageView(ObjectSubclass<imp::MessageView>) @extends gtk::Widget, @implements gtk::Buildable, gtk::Actionable;
+    }
+    impl MessageView {
+        pub fn new() -> MessageView {
+            glib::Object::new(&[]).expect("Failed to create row data")
+        }
+
+        pub fn load_content(&self, content: &String) {
+            let self_ = imp::MessageView::from_instance(self);
+
+            let master_stylesheet = include_str!("../ui/webview_stylesheet.css");
+            let master_stylesheet = CString::new(master_stylesheet).expect("Could not build master stylesheet CString");
+
+            let s = CString::new(&**content).expect("CString::new failed");
+
+            let mut litehtml_context = self_.litehtml_context.borrow_mut();
+
+            unsafe {
+                *litehtml_context = bindings::setup::setup_litehtml(
+                    master_stylesheet.as_ptr(),
+                    s.as_ptr(),
+                    RefCell::as_ptr(&self_.litehtml_callbacks) as *mut core::ffi::c_void,
+                );
+            }
+
+            *self_.loaded.borrow_mut() = true;
+
+            self.queue_resize();
         }
     }
 }
@@ -507,11 +633,13 @@ impl Window {
             let attachments_list = gtk::Grid::new();
             attachments_list.set_orientation(gtk::Orientation::Vertical);
 
+            let view = message_view::MessageView::new();
+
             let grid = gtk::Grid::new();
             grid.set_orientation(gtk::Orientation::Vertical);
             grid.attach(&message_header, 0, 0, 1, 1);
             grid.attach(&attachments_list, 0, 1, 1, 1);
-            grid.attach(&message_view, 0, 2, 1, 1);
+            grid.attach(&view, 0, 2, 1, 1);
 
             box_row.set_child(Some(&grid));
 
@@ -521,11 +649,11 @@ impl Window {
                 subject_label.set_text(&message.subject);
             }
 
-            // if (message.to.trim().is_empty()) {
-            //     to_addresses_grid.hide();
-            // } else {
-            //     to_addresses_list.set_text(&message.to);
-            // }
+            if message.to.trim().is_empty() {
+                to_addresses_grid.hide();
+            } else {
+                to_addresses_list.set_text(&message.to);
+            }
 
             if message.from.trim().is_empty() {
                 from_addresses_list.hide();
@@ -533,17 +661,17 @@ impl Window {
                 from_addresses_list.set_text(&message.from);
             }
 
-            // if (message.cc.trim().is_empty()) {
-            //     cc_addresses_grid.hide();
-            // } else {
-            //     cc_addresses_list.set_text(&message.cc);
-            // }
+            if message.cc.trim().is_empty() {
+                cc_addresses_grid.hide();
+            } else {
+                cc_addresses_list.set_text(&message.cc);
+            }
 
-            // if (message.bcc.trim().is_empty()) {
-            //     bcc_addresses_grid.hide();
-            // } else {
-            //     bcc_addresses_list.set_text(&message.bcc);
-            // }
+            if message.bcc.trim().is_empty() {
+                bcc_addresses_grid.hide();
+            } else {
+                bcc_addresses_list.set_text(&message.bcc);
+            }
 
             attachment_indicator.hide();
 
@@ -552,8 +680,7 @@ impl Window {
             //@TODO
             datetime_received_label.set_tooltip_text(Some(&message.time_received.to_string()));
 
-            // buffer.set_text(&message.content);
-            buffer.set_text(&"😊");
+            view.load_content(&message.content);
 
             box_row.upcast::<gtk::Widget>()
         });
