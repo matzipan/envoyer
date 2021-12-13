@@ -20,6 +20,7 @@ use std::sync::{Arc, Mutex};
 
 diesel_migrations::embed_migrations!();
 
+#[derive(Debug)]
 pub enum ApplicationMessage {
     Setup {},
     SaveIdentity {
