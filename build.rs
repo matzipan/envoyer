@@ -2,9 +2,34 @@ use cc;
 use cmake;
 
 use std::env;
+use std::path::PathBuf;
 
 fn main() {
     let out_path = env::var("OUT_DIR").unwrap();
+
+    let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+
+    let litehtml_callbacks_header_file = PathBuf::from(&out_path)
+        .join("include")
+        .join("litehtml_rust.hpp")
+        .display()
+        .to_string();
+
+    let mut config: cbindgen::Config = Default::default();
+    config.macro_expansion.bitflags = true;
+
+    cbindgen::Builder::new()
+        .with_config(config)
+        .with_src(format!("{}/src/litehtml_callbacks.rs", crate_dir))
+        .with_namespace("litehtml_rust")
+        // We exclude the Callbacks item and just provide a placeholder
+        // defintion. The methods only use pointers to Callbacks anyway.
+        .exclude_item("Callbacks")
+        .with_header("namespace litehtml_rust {struct Callbacks;}")
+        .generate()
+        .expect("Unable to generate bindings")
+        .write_to_file(&litehtml_callbacks_header_file);
+
     let include_path = format!("{}/include", out_path);
 
     // Build litehtml as a CMake library
@@ -13,6 +38,7 @@ fn main() {
     // Build the litehtml container as a C++ library
     cc::Build::new()
         .file("lib/litehtml_container/container.cpp")
+        .file("lib/litehtml_container/setup.cpp")
         .include(&include_path)
         .compile("litehtml_container");
 
@@ -21,10 +47,7 @@ fn main() {
         // The input header we would like to generate
         // bindings for.
         .header("lib/bindgen_wrapper.hpp")
-        .allowlist_type("litehtml::.*")
-        .allowlist_function("litehtml::.*")
-        .allowlist_type("litehtml_container.*")
-        .allowlist_function("litehtml_container.*")
+        .allowlist_function("setup::.*")
         .opaque_type("std::.*")
         .enable_cxx_namespaces()
         .clang_args(&[
@@ -45,9 +68,17 @@ fn main() {
 
     println!("cargo:rustc-link-search=native={}/lib", litehtml_build.display());
     println!("cargo:rustc-link-lib=static=litehtml");
+    println!("cargo:rustc-link-lib=static=gumbo");
     println!("cargo:rustc-link-lib=static=litehtml_container");
     println!("cargo:rustc-link-lib=dylib=stdc++");
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
+    println!("cargo:rerun-if-changed=lib/setup.hpp");
+    println!("cargo:rerun-if-changed=lib/setup.cpp");
     println!("cargo:rerun-if-changed=lib/bindgen_wrapper.hpp");
+    println!("cargo:rerun-if-changed=lib/litehtml_container/setup.h");
+    println!("cargo:rerun-if-changed=lib/litehtml_container/setup.cpp");
+    println!("cargo:rerun-if-changed=lib/litehtml_container/container.cpp");
+    println!("cargo:rerun-if-changed=lib/litehtml_container/container.h");
+    println!("cargo:rerun-if-changed=src/litehtml_callbacks.rs");
 }

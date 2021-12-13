@@ -7,9 +7,11 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
+mod bindings;
 mod controllers;
 mod google_oauth;
 mod imap;
+mod litehtml_callbacks;
 mod models;
 mod schema;
 mod services;

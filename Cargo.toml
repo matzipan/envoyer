@@ -8,8 +8,10 @@ edition = "2018"
 cmake = "0.1"
 bindgen = "0.59.1"
 cc = "1.0"
+cbindgen = "0.20.0"
 
 [dependencies]
+libc = "0.2"
 async-stream = "0.3.0"
 diesel = { version = "1.4.4", features = ["sqlite", "chrono", "r2d2"] }
 diesel_migrations = "1.4.0"
@@ -29,10 +31,13 @@ futures = "0.3"
 data-encoding = "2.1.1"
 chrono-humanize = "0.1.2"
 rand = "0.8.3"
+bitflags = "1.3.2"
 
 actix-web = "3"
 
 tide = "0.16.0"
+
+pangocairo = { git = "https://github.com/gtk-rs/gtk-rs-core.git", package = "pangocairo" }
 
 [dependencies.gtk]
 package = "gtk4"

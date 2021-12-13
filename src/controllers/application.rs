@@ -8,6 +8,7 @@ use futures::prelude::*;
 use log::{error, info};
 
 use crate::google_oauth;
+use crate::litehtml_callbacks;
 use crate::models;
 use crate::services;
 
