@@ -201,6 +201,15 @@ impl Store {
             .map_err(|e| e.to_string())
     }
 
+    pub fn get_message(&self, id: i32) -> Result<models::Message, String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        schema::messages::table
+            .filter(schema::messages::id.eq(id))
+            .first::<models::Message>(&connection)
+            .map_err(|e| e.to_string())
+    }
+
     pub fn get_messages_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::Message>, String> {
         let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
