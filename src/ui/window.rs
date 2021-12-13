@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::bindings;
 use crate::controllers::ApplicationMessage;
+use crate::models;
 
 pub struct Window {
     pub gtk_window: gtk::ApplicationWindow,
@@ -275,7 +276,7 @@ pub mod conversation_message_item {
         // The actual data structure that stores our values. This is not accessible
         // directly from the outside.
         pub struct ConversationMessageItem {
-            pub message: Rc<RefCell<Option<models::MessageSummary>>>,
+            pub message: Rc<RefCell<Option<models::Message>>>,
         }
 
         // Basic declaration of our type for the GObject type system
@@ -306,7 +307,7 @@ pub mod conversation_message_item {
             glib::Object::new(&[]).expect("Failed to create row data")
         }
 
-        pub fn new_with_message(message: &models::MessageSummary) -> ConversationMessageItem {
+        pub fn new_with_message(message: &models::Message) -> ConversationMessageItem {
             let instance = Self::new();
 
             let self_ = imp::ConversationMessageItem::from_instance(&instance);
@@ -316,7 +317,7 @@ pub mod conversation_message_item {
             instance
         }
 
-        pub fn get_message(&self) -> Rc<RefCell<Option<models::MessageSummary>>> {
+        pub fn get_message(&self) -> Rc<RefCell<Option<models::Message>>> {
             let self_ = imp::ConversationMessageItem::from_instance(self);
             self_.message.clone()
         }

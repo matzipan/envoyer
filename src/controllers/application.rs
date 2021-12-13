@@ -120,6 +120,7 @@ impl Application {
         let conversation_model_clone = conversation_model.clone();
 
         conversations_list_model.attach_store(application.store.clone());
+        conversation_model.attach_store(application.store.clone());
 
         application_message_receiver.attach(None, move |msg| {
             match msg {
@@ -217,7 +218,9 @@ impl Application {
                     main_window.borrow().load_conversations(conversations);
                 }
                 ApplicationMessage::ShowConversation { conversation } => {
-                    // main_window.borrow().show_conversation(conversation);
+                    let conversation_model_clone = conversation_model_clone.clone();
+
+                    conversation_model_clone.load_message(conversation.id);
                 }
                 ApplicationMessage::OpenGoogleAuthentication {
                     email_address,
