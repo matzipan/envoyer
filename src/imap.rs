@@ -15,6 +15,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 use std::convert::TryInto;
+use std::time::Instant;
 
 use log::debug;
 
@@ -386,9 +387,16 @@ impl ImapBackend {
                 match sync_type {
                     SyncType::Fresh => {
                         debug!("Doing a fresh fetch");
+
+                        let now = Instant::now();
+
                         let new_messages = fetch_messages_in_uid_range(&mut *connection, 1, select_response.uidnext - 1).await?;
 
-                        debug!("Finished fresh fetch. Found {} new messages", new_messages.len());
+                        debug!(
+                            "Finished fresh fetch. Found {} new messages. Took {} seconds.",
+                            new_messages.len(),
+                            now.elapsed().as_secs()
+                        );
                         return Ok((select_response.uidvalidity, new_messages, None));
                     }
                     SyncType::Update {
@@ -399,6 +407,8 @@ impl ImapBackend {
                             "Updating with max_uid {}, old uid_validity {} and new uid_validity {}",
                             max_uid, old_uid_validity, select_response.uidvalidity
                         );
+
+                        let now = Instant::now();
 
                         if select_response.uidvalidity != old_uid_validity {
                             debug!("UID Validity mismatch. Going for a fresh fetch");
@@ -417,6 +427,8 @@ impl ImapBackend {
 
                             debug!("Found {} new messages. Fetching flag updates", new_messages.len());
                             let flag_updates = fetch_flags_updates_in_uid_range(&mut *connection, 1, max_uid).await?;
+
+                            debug!("Finished in {} seconds.", now.elapsed().as_secs());
 
                             return Ok((select_response.uidvalidity, new_messages, Some(flag_updates)));
                         }
