@@ -390,7 +390,7 @@ impl ImapBackend {
 
                         let now = Instant::now();
 
-                        let new_messages = fetch_messages_in_uid_range(&mut *connection, 1, select_response.uidnext - 1).await?;
+                        let new_messages = fetch_messages_overview_in_uid_range(&mut *connection, 1, select_response.uidnext - 1).await?;
 
                         debug!(
                             "Finished fresh fetch. Found {} new messages. Took {} seconds.",
@@ -423,7 +423,7 @@ impl ImapBackend {
                         } else {
                             debug!("Fetching new messages");
                             let new_messages =
-                                fetch_messages_in_uid_range(&mut *connection, max_uid + 1, select_response.uidnext - 1).await?;
+                                fetch_messages_overview_in_uid_range(&mut *connection, max_uid + 1, select_response.uidnext - 1).await?;
 
                             debug!("Found {} new messages. Fetching flag updates", new_messages.len());
                             let flag_updates = fetch_flags_updates_in_uid_range(&mut *connection, 1, max_uid).await?;
@@ -471,7 +471,7 @@ async fn fetch_flags_updates_in_uid_range(
     Ok(flag_updates_list)
 }
 
-async fn fetch_messages_in_uid_range(
+async fn fetch_messages_overview_in_uid_range(
     connection: &mut melib::imap::ImapConnection,
     uid_range_start: melib::imap::UID,
     uid_range_end: melib::imap::UID,
@@ -487,7 +487,7 @@ async fn fetch_messages_in_uid_range(
         let mut messages = connection
             .uid_fetch(
                 format!("{}:{}", fetch_range_start, fetch_range_end),
-                "(UID FLAGS ENVELOPE BODY.PEEK[] BODYSTRUCTURE)".to_string(),
+                "(UID FLAGS ENVELOPE)".to_string(),
                 &mut response,
             )
             .await?;
@@ -519,11 +519,6 @@ async fn fetch_messages_in_uid_range(
             new_message.uid = uid.try_into().unwrap();
             //     message_sequence_number: 0,
             //     references: None,
-
-            let builder = melib::AttachmentBuilder::new(message.body.unwrap());
-            let parsed_body = builder.build();
-
-            new_message.content = parsed_body.text();
 
             //@TODO conversion from i64 to u64
             new_message.modification_sequence = message.modseq.unwrap().0.get().try_into().unwrap();
