@@ -34,7 +34,7 @@ pub struct Message {
     pub to: String,
     pub cc: String,
     pub bcc: String,
-    pub content: String,
+    pub content: Option<String>,
     pub references: String,
     pub in_reply_to: String,
     pub uid: i64,

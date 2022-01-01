@@ -38,7 +38,7 @@ CREATE TABLE messages (
     "to" TEXT NOT NULL,
     cc TEXT NOT NULL,
     bcc TEXT NOT NULL,
-    content TEXT NOT NULL,
+    content TEXT,
     "references" TEXT NOT NULL,
     in_reply_to TEXT NOT NULL,
     uid INTEGER NOT NULL,

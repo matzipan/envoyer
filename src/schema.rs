@@ -48,7 +48,7 @@ table! {
         to -> Text,
         cc -> Text,
         bcc -> Text,
-        content -> Text,
+        content -> Nullable<Text>,
         references -> Text,
         in_reply_to -> Text,
         uid -> BigInt,

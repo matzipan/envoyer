@@ -681,7 +681,7 @@ impl Window {
             //@TODO
             datetime_received_label.set_tooltip_text(Some(&message.time_received.to_string()));
 
-            view.load_content(&message.content);
+            view.load_content(message.content.as_ref().unwrap_or(&"".to_string()));
 
             box_row.upcast::<gtk::Widget>()
         });
