@@ -130,6 +130,7 @@ impl Application {
         application_message_receiver.attach(None, move |msg| {
             match msg {
                 ApplicationMessage::Setup {} => {
+                    info!("Setup");
                     welcome_dialog.borrow().show();
                 }
                 ApplicationMessage::SaveIdentity {
@@ -215,6 +216,8 @@ impl Application {
                     main_window.borrow().show();
                 }
                 ApplicationMessage::ShowFolder { folder } => {
+                    info!("ShowFolder for folder with name {}", folder.folder_name);
+
                     //@TODO hacky just to get things going
                     let identity = &identities_clone.lock().expect("BLA")[0];
 
@@ -270,6 +273,8 @@ impl Application {
                     full_name,
                     account_name,
                 } => {
+                    info!("OpenGoogleAuthentication for {}", email_address);
+
                     let application_message_sender = application_message_sender.clone();
 
                     let welcome_dialog_clone = welcome_dialog.clone();
