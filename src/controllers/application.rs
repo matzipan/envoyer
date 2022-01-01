@@ -42,6 +42,9 @@ pub enum ApplicationMessage {
     ShowConversation {
         conversation: models::MessageSummary,
     },
+    ConversationContentLoadFinished {
+        conversation: models::MessageSummary,
+    },
     OpenGoogleAuthentication {
         email_address: String,
         full_name: String,
@@ -56,6 +59,7 @@ pub struct Application {
     context: glib::MainContext,
     identities: Arc<Mutex<Vec<models::Identity>>>, //@TODO should probably be arc<identity>
     store: Arc<services::Store>,
+    current_conversation_id: Rc<RefCell<Option<i32>>>,
 }
 
 impl Application {
@@ -106,11 +110,13 @@ impl Application {
             context: context,
             identities: identities,
             store: Arc::new(services::Store::new()),
+            current_conversation_id: Default::default(),
         };
 
         let store_clone = application.store.clone();
         let context_clone = application.context.clone();
         let identities_clone = application.identities.clone();
+        let mut current_conversation_id_clone = application.current_conversation_id.clone();
         let welcome_dialog = application.welcome_dialog.clone();
         let main_window = application.main_window.clone();
         let application_message_sender = application.application_message_sender.clone();
@@ -217,9 +223,47 @@ impl Application {
                     main_window.borrow().load_conversations(conversations);
                 }
                 ApplicationMessage::ShowConversation { conversation } => {
+                    info!("ShowConversation for conversation with id {}", conversation.id);
+
+                    let application_message_sender = application_message_sender.clone();
+
+                    //@TODO hacky just to get things going
+                    let identity = &identities_clone.lock().expect("BLA")[0];
+
                     let conversation_model_clone = conversation_model_clone.clone();
 
-                    conversation_model_clone.load_message(conversation.id);
+                    current_conversation_id_clone.replace(Some(conversation.id));
+
+                    match identity.is_message_content_downloaded(conversation.id) {
+                        Ok(is_message_content_downloaded) => {
+                            if is_message_content_downloaded {
+                                conversation_model_clone.load_message(conversation.id);
+                            } else {
+                                info!("Message content not found. Triggering download.");
+
+                                conversation_model_clone.set_loading();
+
+                                context_clone.spawn_local(identity.fetch_message_content(conversation.id).and_then(|| async move {
+                                    application_message_sender
+                                        .send(ApplicationMessage::ConversationContentLoadFinished {
+                                            conversation: conversation,
+                                        })
+                                        .map_err(|x| error!("{}", x));
+                                }));
+                            }
+                        }
+                        Err(x) => {}
+                    }
+                }
+                ApplicationMessage::ConversationContentLoadFinished { conversation } => {
+                    info!("ConversationContentLoadFinished for conversation with id {}", conversation.id);
+
+                    // We check to see if the currently open conversation matches the conversation
+                    // whose content just finished loading so that we can update the UI
+
+                    if *current_conversation_id_clone.borrow() == Some(conversation.id) {
+                        conversation_model_clone.load_message(conversation.id);
+                    }
                 }
                 ApplicationMessage::OpenGoogleAuthentication {
                     email_address,
