@@ -155,7 +155,6 @@ pub struct NewMessage {
     pub flagged: bool,
     pub draft: bool,
     pub deleted: bool,
-    pub content: String,
 }
 
 impl From<melib::email::Envelope> for NewMessage {
@@ -183,7 +182,6 @@ impl From<melib::email::Envelope> for NewMessage {
             draft: flags.contains(melib::email::Flag::DRAFT),
             deleted: flags.contains(melib::email::Flag::TRASHED),
             // REPLIED flag?
-            content: "".to_string(),
         }
     }
 }
