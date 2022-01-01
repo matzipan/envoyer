@@ -377,13 +377,41 @@ impl Window {
         conversation_viewer_scroll_box.set_hscrollbar_policy(gtk::PolicyType::Never);
         conversation_viewer_scroll_box.set_child(Some(&conversation_viewer_list_box));
 
+        let spinner = gtk::Spinner::new();
+
+        spinner.set_size_request(40, 40);
+        spinner.set_halign(gtk::Align::Center);
+        spinner.set_valign(gtk::Align::Center);
+
+        let please_wait_label = gtk::Label::new(Some("Please wait"));
+        please_wait_label.style_context().add_class("h1");
+        please_wait_label.set_halign(gtk::Align::Start);
+
+        let loading_label = gtk::Label::new(Some("Loading message contents."));
+        loading_label.set_margin_bottom(40);
+
+        let please_wait_loading_contents_grid = gtk::Grid::new();
+        please_wait_loading_contents_grid.set_orientation(gtk::Orientation::Vertical);
+        please_wait_loading_contents_grid.set_halign(gtk::Align::Center);
+        please_wait_loading_contents_grid.set_valign(gtk::Align::Center);
+        please_wait_loading_contents_grid
+            .style_context()
+            .add_class("please_wait_loading_contents_grid");
+        please_wait_loading_contents_grid.attach(&please_wait_label, 0, 0, 1, 1);
+        please_wait_loading_contents_grid.attach(&loading_label, 0, 1, 1, 1);
+        please_wait_loading_contents_grid.attach(&spinner, 0, 2, 1, 1);
+
+        let conversation_viewer_stack = gtk::Stack::new();
+        conversation_viewer_stack.add_named(&conversation_viewer_scroll_box, Some("conversation-viewer"));
+        conversation_viewer_stack.add_named(&please_wait_loading_contents_grid, Some("loading"));
+
         let main_grid = gtk::Grid::new();
 
         main_grid.set_orientation(gtk::Orientation::Horizontal);
 
         main_grid.attach(&folders_scroll_box, 0, 0, 1, 1);
         main_grid.attach(&folder_conversations_scroll_box, 1, 0, 1, 1);
-        main_grid.attach(&conversation_viewer_scroll_box, 2, 0, 1, 1);
+        main_grid.attach(&conversation_viewer_stack, 2, 0, 1, 1);
 
         gtk_window.set_child(Some(&main_grid));
 
@@ -536,6 +564,20 @@ impl Window {
             box_row.upcast::<gtk::Widget>()
 
             // set_swipe_icon_name ("envoyer-delete-symbolic");
+        });
+
+        conversation_model.connect_is_loading(move |args| {
+            let is_loading = args[1].get::<bool>().expect("The is_loading value needs to be of type `bool`.");
+
+            if is_loading {
+                conversation_viewer_stack.set_visible_child_name("loading");
+                spinner.start();
+            } else {
+                conversation_viewer_stack.set_visible_child_name("conversation-viewer");
+                spinner.stop();
+            }
+
+            None
         });
 
         conversation_viewer_list_box.bind_model(Some(conversation_model), |item| {
