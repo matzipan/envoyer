@@ -251,4 +251,16 @@ impl Store {
 
         Ok(())
     }
+
+    pub fn is_message_content_downloaded(&self, id: i32) -> Result<bool, String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        schema::messages::table
+            .select(diesel::dsl::count_star())
+            .filter(schema::messages::id.eq(id))
+            .filter(schema::messages::content.is_not_null())
+            .first(&connection)
+            .map(|x: i64| x == 1)
+            .map_err(|e| e.to_string())
+    }
 }

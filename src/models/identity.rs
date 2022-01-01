@@ -314,6 +314,10 @@ impl Identity {
         }))
     }
 
+    pub fn is_message_content_downloaded(&self, conversation_id: i32) -> Result<bool, String> {
+        self.store.is_message_content_downloaded(conversation_id)
+    }
+
     pub fn get_folders(&self) -> Result<Vec<models::Folder>, String> {
         self.store.get_folders(&self.bare_identity)
     }
