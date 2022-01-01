@@ -5,12 +5,19 @@ use gtk::prelude::*;
 use glib::subclass::prelude::*;
 use gtk::subclass::prelude::*;
 
+use glib::subclass::Signal;
+use glib::SignalHandlerId;
+use glib::Value;
+
 use std::cell::RefCell;
+use std::ops::Fn;
 use std::rc::Rc;
 use std::sync::Arc;
 
 use crate::models;
 use crate::services;
+
+use once_cell::sync::Lazy;
 
 pub mod model {
     use super::*;
@@ -41,7 +48,23 @@ pub mod model {
             }
         }
 
-        impl ObjectImpl for ConversationModel {}
+        impl ObjectImpl for ConversationModel {
+            fn signals() -> &'static [Signal] {
+                static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
+                    vec![Signal::builder(
+                        // Signal name
+                        "is-loading",
+                        // Types of the values which will be sent to the signal handler
+                        &[bool::static_type().into()],
+                        // Type of the value the signal handler sends back
+                        <()>::static_type().into(),
+                    )
+                    .build()]
+                });
+                SIGNALS.as_ref()
+            }
+        }
+
         impl ListModelImpl for ConversationModel {
             fn item_type(&self, _list_model: &Self::Type) -> glib::Type {
                 MessageRowData::static_type()
@@ -71,13 +94,14 @@ pub mod model {
         pub fn new() -> ConversationModel {
             glib::Object::new(&[]).expect("Failed to create ConversationModel")
         }
+
         pub fn attach_store(self, store: Arc<services::Store>) {
             let self_ = imp::ConversationModel::from_instance(&self);
 
             self_.store.replace(Some(store));
         }
 
-        pub fn load_message(self, id: i32) {
+        pub fn load_message(&self, id: i32) {
             let self_ = imp::ConversationModel::from_instance(&self);
 
             let previous_count = self_.n_items(&self);
@@ -95,6 +119,18 @@ pub mod model {
             let new_count = self_.n_items(&self);
 
             self.items_changed(0, previous_count, new_count);
+            self.emit_by_name::<()>("is-loading", &[&false]);
+        }
+
+        pub fn set_loading(&self) {
+            self.emit_by_name::<()>("is-loading", &[&true]);
+        }
+
+        pub fn connect_is_loading<F>(&self, callback: F) -> SignalHandlerId
+        where
+            F: Fn(&[Value]) -> Option<Value> + 'static,
+        {
+            self.connect_local("is-loading", false, callback)
         }
     }
 }
