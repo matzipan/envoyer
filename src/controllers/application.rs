@@ -230,14 +230,18 @@ impl Application {
 
                     let application_message_sender = application_message_sender.clone();
 
-                    //@TODO hacky just to get things going
-                    let identity = &identities_clone.lock().expect("BLA")[0];
-
                     let conversation_model_clone = conversation_model_clone.clone();
+
+                    let is_message_content_downloaded = {
+                        //@TODO hacky just to get things going
+                        let identity = &identities_clone.lock().expect("BLA")[0];
+
+                        identity.is_message_content_downloaded(conversation.id)
+                    };
 
                     current_conversation_id_clone.replace(Some(conversation.id));
 
-                    match identity.is_message_content_downloaded(conversation.id) {
+                    match is_message_content_downloaded {
                         Ok(is_message_content_downloaded) => {
                             if is_message_content_downloaded {
                                 conversation_model_clone.load_message(conversation.id);
@@ -246,13 +250,34 @@ impl Application {
 
                                 conversation_model_clone.set_loading();
 
-                                context_clone.spawn_local(identity.fetch_message_content(conversation.id).and_then(|| async move {
-                                    application_message_sender
-                                        .send(ApplicationMessage::ConversationContentLoadFinished {
-                                            conversation: conversation,
-                                        })
-                                        .map_err(|x| error!("{}", x));
-                                }));
+                                let identities_clone = identities_clone.clone();
+
+                                context_clone.spawn_local(
+                                    async move {
+                                        //@TODO this lock is not ideal. how do we get rigd of it?
+                                        let identity = &identities_clone.lock().expect("BLA")[0];
+
+                                        identity.fetch_message_content(conversation.id).await?;
+
+                                        Ok(conversation)
+                                    }
+                                    .and_then(|conversation| async move {
+                                        application_message_sender
+                                            .send(ApplicationMessage::ConversationContentLoadFinished { conversation })
+                                            .map_err(|x| x.to_string())?;
+
+                                        Ok(())
+                                    })
+                                    .map(|result: Result<(), String>| {
+                                        match result {
+                                            Err(err) => {
+                                                //@TODO show in UI
+                                                error!("Unable to fetch message content: {}", err);
+                                            }
+                                            _ => {}
+                                        };
+                                    }),
+                                );
                             }
                         }
                         Err(x) => {}
