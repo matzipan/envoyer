@@ -437,6 +437,32 @@ impl ImapBackend {
             }
         }))
     }
+
+    pub fn fetch_message_content(&self, imap_path: &String, uid: i64) -> ResultFuture<String> {
+        let connection_clone = self.connection.clone();
+        let timeout_dur = self.server_conf.timeout;
+        let imap_path_clone = imap_path.clone();
+
+        Ok(Box::pin(async move {
+            let mut connection = timeout(timeout_dur, connection_clone.lock()).await?;
+
+            let select_response = connection.select(imap_path_clone).await?;
+
+            let mut response = Vec::with_capacity(8 * 1024);
+
+            let mut messages = connection
+                .uid_fetch(format!("{}", uid), "(BODY.PEEK[])".to_string(), &mut response)
+                .await?;
+
+            // We only fetch one message from the server
+            let message = &messages[0];
+
+            let builder = melib::AttachmentBuilder::new(message.body.unwrap());
+            let parsed_body = builder.build();
+
+            Ok(parsed_body.text())
+        }))
+    }
 }
 
 async fn fetch_flags_updates_in_uid_range(

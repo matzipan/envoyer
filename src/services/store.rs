@@ -201,6 +201,15 @@ impl Store {
             .map_err(|e| e.to_string())
     }
 
+    pub fn get_folder(&self, id: i32) -> Result<models::Folder, String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        schema::folders::table
+            .filter(schema::folders::id.eq(id))
+            .first::<models::Folder>(&connection)
+            .map_err(|e| e.to_string())
+    }
+
     pub fn get_message(&self, id: i32) -> Result<models::Message, String> {
         let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
@@ -246,6 +255,17 @@ impl Store {
 
         diesel::insert_into(schema::messages::table)
             .values(non_mut_new_message)
+            .execute(&connection)
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    pub fn store_content_for_message(&self, message_content: String, message: &models::Message) -> Result<(), String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        diesel::update(schema::messages::table)
+            .set(schema::messages::content.eq(&message_content))
             .execute(&connection)
             .map_err(|e| e.to_string())?;
 

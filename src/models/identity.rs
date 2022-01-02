@@ -318,6 +318,49 @@ impl Identity {
         self.store.is_message_content_downloaded(conversation_id)
     }
 
+    pub async fn fetch_message_content(&self, conversation_id: i32) -> Result<(), String> {
+        self.fetch_message_content_inner(conversation_id)?.await
+    }
+
+    fn fetch_message_content_inner(&self, conversation_id: i32) -> ResultFuture<()> {
+        let store_clone = self.store.clone();
+
+        //@TODO handle case when this returns error
+        let message = self.store.get_message(conversation_id).expect("Unable to get message");
+        let folder = self.store.get_folder(message.folder_id).expect("Unable to get folder");
+
+        let fetch_message_content_job = self
+            .backend
+            .read()
+            .unwrap()
+            .fetch_message_content(&folder.folder_path, message.uid)
+            .unwrap();
+
+        let online_job = self
+            .backend
+            .read()
+            .map_err(|e| e.to_string())?
+            .is_online()
+            .map_err(|e| e.to_string())?;
+
+        Ok(Box::pin(async move {
+            debug!(
+                "Fetching content for message uid {} in folder {}, checking if online",
+                message.uid, &folder.folder_path
+            );
+
+            online_job.await.map_err(|e| e.to_string())?;
+
+            debug!("Online, fetching");
+
+            let message_content = fetch_message_content_job.await.map_err(|e| e.to_string())?;
+
+            store_clone.store_content_for_message(message_content, &message)?;
+
+            Ok(())
+        }))
+    }
+
     pub fn get_folders(&self) -> Result<Vec<models::Folder>, String> {
         self.store.get_folders(&self.bare_identity)
     }
