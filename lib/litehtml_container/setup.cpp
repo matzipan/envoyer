@@ -20,28 +20,28 @@ void *setup_litehtml(const char *master_stylesheet, const char *document_string,
     auto document = litehtml::document::createFromString(
         document_string, container, litehtml_context);
 
-    bla *x = new bla{
+    auto context = new context_struct{
         .owning_ptr = std::move(document),
     };
 
-    return reinterpret_cast<void *>(x);
+    return reinterpret_cast<void *>(context);
 }
 
-int render(void *bla_pointer, int max_width) {
-    auto x = reinterpret_cast<bla *>(bla_pointer);
+int render(void *context_struct_pointer, int max_width) {
+    auto context = reinterpret_cast<context_struct *>(context_struct_pointer);
 
-    x->owning_ptr->render(max_width);
+    context->owning_ptr->render(max_width);
 
-    return x->owning_ptr->height();
+    return context->owning_ptr->height();
 }
 
-void draw(void *bla_pointer) {
-    auto x = reinterpret_cast<bla *>(bla_pointer);
+void draw(void *context_struct_pointer) {
+    auto context = reinterpret_cast<context_struct *>(context_struct_pointer);
 
-    const auto clip = litehtml::position(0, 0, x->owning_ptr->width(),
-                                         x->owning_ptr->height());
-    x->owning_ptr->draw(reinterpret_cast<litehtml::uint_ptr>(nullptr), 0, 0,
-                        &clip);
+    const auto clip = litehtml::position(0, 0, context->owning_ptr->width(),
+                                         context->owning_ptr->height());
+    context->owning_ptr->draw(reinterpret_cast<litehtml::uint_ptr>(nullptr), 0,
+                              0, &clip);
 }
 
 } // namespace setup
