@@ -5,7 +5,7 @@
 
 namespace setup {
 
-struct bla {
+struct context_struct {
     std::shared_ptr<litehtml::document> owning_ptr;
 };
 
