@@ -317,10 +317,7 @@ impl Identity {
                 }
             };
 
-            debug!(
-                "Finished saving data. Took {} seconds.",
-                now.elapsed().as_millis() as f32 / 1000.0
-            );
+            debug!("Finished saving data. Took {} seconds.", now.elapsed().as_millis() as f32 / 1000.0);
 
             Ok(())
         }))
