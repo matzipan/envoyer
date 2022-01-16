@@ -48,3 +48,7 @@ CREATE TABLE messages (
     draft BOOLEAN NOT NULL,
     deleted BOOLEAN NOT NULL
 );
+
+CREATE INDEX messages_for_folder ON messages (folder_id);
+CREATE INDEX folders_for_identity ON folders (identity_id);
+CREATE INDEX uid_for_messages ON messages (uid, folder_id);
