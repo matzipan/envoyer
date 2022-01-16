@@ -393,8 +393,9 @@ impl ImapBackend {
                         let new_messages = fetch_messages_overview_in_uid_range(&mut *connection, 1, select_response.uidnext - 1).await?;
 
                         debug!(
-                            "Finished fresh fetch. Found {} new messages. Took {} seconds.",
+                            "Finished fresh fetch. Found {} new messages with UID validity {}. Took {} seconds.",
                             new_messages.len(),
+                            select_response.uidvalidity,
                             now.elapsed().as_millis() as f32 / 1000.0
                         );
                         return Ok((select_response.uidvalidity, new_messages, None));
@@ -411,7 +412,10 @@ impl ImapBackend {
                         let now = Instant::now();
 
                         if select_response.uidvalidity != old_uid_validity {
-                            debug!("UID Validity mismatch. Going for a fresh fetch");
+                            debug!(
+                                "UID Validity mismatch between {} and {}. Going for a fresh fetch",
+                                select_response.uidvalidity, old_uid_validity
+                            );
 
                             sync_type = SyncType::Fresh;
                             continue;
