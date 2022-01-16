@@ -25,6 +25,7 @@ pub struct ImapBackend {
     server_conf: ImapServerConf,
 }
 
+#[derive(Debug, Clone)]
 pub enum SyncType {
     // Return all messages in a mailbox
     Fresh,

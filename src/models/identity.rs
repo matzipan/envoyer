@@ -263,7 +263,7 @@ impl Identity {
             .backend
             .read()
             .unwrap()
-            .sync(folder.folder_path.clone(), backend_sync_type)
+            .sync(folder.folder_path.clone(), backend_sync_type.clone())
             .unwrap();
 
         let online_job = self
@@ -287,29 +287,28 @@ impl Identity {
 
             let now = Instant::now();
 
-            match sync_type {
-                SyncType::Fresh => {
+            match backend_sync_type {
+                imap::SyncType::Fresh => {
                     store_clone.store_messages_for_folder(&mut new_messages, &folder_clone, Some(new_uid_validity))?;
                 }
-                SyncType::Update => {
-                    if let Some(current_uid_validity) = store_clone.get_max_uid_and_uid_validity_for_folder(&folder_clone)? {
-                        if new_uid_validity == current_uid_validity.1 {
+                imap::SyncType::Update {
+                    max_uid: _,
+                    uid_validity: current_uid_validity,
+                } => {
+                    if new_uid_validity == current_uid_validity {
                         store_clone.store_messages_for_folder(&mut new_messages, &folder_clone, None)?;
 
-                            if let Some(flag_updates) = flag_updates {
-                                //@TODO
-                                for flag_update in flag_updates.iter() {
-                                    debug!("{}", flag_update.uid);
-                                }
+                        if let Some(flag_updates) = flag_updates {
+                            //@TODO
+                            for flag_update in flag_updates.iter() {
+                                debug!("{}", flag_update.uid);
                             }
-                            //@TODO 2) find out which old messages got expunged; and
-                        } else {
-                            //@TODO delete all mail
-                            //@todo store
-                            //@TODO set new uid_validity on folder
                         }
+                        //@TODO 2) find out which old messages got expunged; and
                     } else {
-                        return Err("Unable to fetch the current max uid and uid validity for the sync".to_string());
+                        //@TODO delete all mail
+                        //@todo store
+                        //@TODO set new uid_validity on folder
                     }
                 }
             };
