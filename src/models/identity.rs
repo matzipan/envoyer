@@ -75,6 +75,10 @@ impl Identity {
         self.sync_folders()?.await?;
 
         for folder in self.store.get_folders(&self.bare_identity)? {
+            if folder.folder_name != "INBOX" {
+                continue;
+            }
+
             self.sync_messages_for_folder(&folder, SyncType::Fresh)?.await?;
         }
 
@@ -288,16 +292,13 @@ impl Identity {
 
             match sync_type {
                 SyncType::Fresh => {
-                    for new_message in new_messages.iter_mut() {
-                        store_clone.store_message_for_folder(new_message, &folder_clone)?;
-                    }
+                    store_clone.store_messages_for_folder(&mut new_messages, &folder_clone)?;
                 }
                 SyncType::Update => {
                     if let Some(current_uid_validity) = store_clone.get_max_uid_and_uid_validity_for_folder(&folder_clone)? {
                         if new_uid_validity == current_uid_validity.1 {
-                            for new_message in new_messages.iter_mut() {
-                                store_clone.store_message_for_folder(new_message, &folder_clone)?;
-                            }
+                            store_clone.store_messages_for_folder(&mut new_messages, &folder_clone)?;
+
                             if let Some(flag_updates) = flag_updates {
                                 //@TODO
                                 for flag_update in flag_updates.iter() {
