@@ -246,8 +246,11 @@ impl Store {
             .map_err(|e| e.to_string())
     }
 
-    pub fn store_message_for_folder(&self, new_message: &mut models::NewMessage, folder: &models::Folder) -> Result<(), String> {
+    pub fn store_messages_for_folder(&self, new_messages: &mut Vec<models::NewMessage>, folder: &models::Folder) -> Result<(), String> {
         let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        connection.transaction::<(), diesel::result::Error, _>(|| {
+            for new_message in new_messages.iter_mut() {
 
         new_message.folder_id = folder.id;
 
@@ -255,8 +258,11 @@ impl Store {
 
         diesel::insert_into(schema::messages::table)
             .values(non_mut_new_message)
-            .execute(&connection)
-            .map_err(|e| e.to_string())?;
+                    .execute(&connection)?;
+            }
+        
+            Ok(())
+        }).map_err(|e| e.to_string())?;
 
         Ok(())
     }
