@@ -9,6 +9,8 @@ use melib::{backends::BackendMailbox, BackendEventConsumer};
 use std::boxed::Box;
 use std::collections::HashMap;
 use std::pin::Pin;
+use std::time::Instant;
+
 use std::sync::{Arc, RwLock};
 
 use async_stream;
@@ -280,6 +282,10 @@ impl Identity {
 
             // @TODO asyncstream while let Some(bla) = x.next().await { }
 
+            debug!("Saving fetched data to store");
+
+            let now = Instant::now();
+
             match sync_type {
                 SyncType::Fresh => {
                     for new_message in new_messages.iter_mut() {
@@ -309,6 +315,11 @@ impl Identity {
                     }
                 }
             };
+
+            debug!(
+                "Finished saving data. Took {} seconds.",
+                now.elapsed().as_millis() as f32 / 1000.0
+            );
 
             Ok(())
         }))
