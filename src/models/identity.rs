@@ -289,12 +289,12 @@ impl Identity {
 
             match sync_type {
                 SyncType::Fresh => {
-                    store_clone.store_messages_for_folder(&mut new_messages, &folder_clone)?;
+                    store_clone.store_messages_for_folder(&mut new_messages, &folder_clone, Some(new_uid_validity))?;
                 }
                 SyncType::Update => {
                     if let Some(current_uid_validity) = store_clone.get_max_uid_and_uid_validity_for_folder(&folder_clone)? {
                         if new_uid_validity == current_uid_validity.1 {
-                            store_clone.store_messages_for_folder(&mut new_messages, &folder_clone)?;
+                        store_clone.store_messages_for_folder(&mut new_messages, &folder_clone, None)?;
 
                             if let Some(flag_updates) = flag_updates {
                                 //@TODO

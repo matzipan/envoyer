@@ -246,7 +246,21 @@ impl Store {
             .map_err(|e| e.to_string())
     }
 
-    pub fn store_messages_for_folder(&self, new_messages: &mut Vec<models::NewMessage>, folder: &models::Folder) -> Result<(), String> {
+    /// Stores a vector of new messages for a folder
+    ///
+    /// # Arguments
+    ///
+    /// * `new_messages` - The messages to store
+    /// * `folder` - The folder to save for
+    /// * `new_uid_validity` - The new UID validity to set for the folder. A
+    ///   value of `None` indicates that the value currently stored in the
+    ///   database should not be changed.
+    pub fn store_messages_for_folder(
+        &self,
+        new_messages: &mut Vec<models::NewMessage>,
+        folder: &models::Folder,
+        new_uid_validity: Option<u32>,
+    ) -> Result<(), String> {
         let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         connection
@@ -258,6 +272,14 @@ impl Store {
 
                     diesel::insert_into(schema::messages::table)
                         .values(non_mut_new_message)
+                        .execute(&connection)?;
+                }
+
+                // This function accepts new_uid_validity as None to mean do not change the
+                // already existing UID validity
+                if let Some(new_uid_validity) = new_uid_validity {
+                    diesel::update(folder)
+                        .set(schema::folders::uid_validity.eq(Some(new_uid_validity as i64)))
                         .execute(&connection)?;
                 }
 
