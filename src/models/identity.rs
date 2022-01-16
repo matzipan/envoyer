@@ -252,10 +252,7 @@ impl Identity {
             SyncType::Fresh => imap::SyncType::Fresh,
             SyncType::Update => {
                 if let Some((max_uid, uid_validity)) = self.store.get_max_uid_and_uid_validity_for_folder(folder)? {
-                    imap::SyncType::Update {
-                        max_uid: max_uid,
-                        uid_validity: uid_validity,
-                    }
+                    imap::SyncType::Update { max_uid, uid_validity }
                 } else {
                     imap::SyncType::Fresh
                 }
