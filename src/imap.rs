@@ -395,7 +395,7 @@ impl ImapBackend {
                         debug!(
                             "Finished fresh fetch. Found {} new messages. Took {} seconds.",
                             new_messages.len(),
-                            now.elapsed().as_secs()
+                            now.elapsed().as_millis() as f32 / 1000.0
                         );
                         return Ok((select_response.uidvalidity, new_messages, None));
                     }
