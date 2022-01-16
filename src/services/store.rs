@@ -271,11 +271,10 @@ impl Store {
     pub fn store_content_for_message(&self, message_content: String, message: &models::Message) -> Result<(), String> {
         let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
-        diesel::update(schema::messages::table)
+        diesel::update(message)
             .set(schema::messages::content.eq(&message_content))
             .execute(&connection)
             .map_err(|e| e.to_string())?;
-        //@TODO where message id
 
         Ok(())
     }
