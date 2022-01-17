@@ -218,13 +218,6 @@ impl Application {
                 }
                 ApplicationMessage::ShowFolder { folder } => {
                     info!("ShowFolder for folder with name {}", folder.folder_name);
-
-                    //@TODO hacky just to get things going
-                    let identity = &identities_clone.lock().expect("BLA")[0];
-
-                    let conversations = identity.get_conversations_for_folder(&folder).expect("BLA");
-
-                    main_window.borrow().load_conversations(conversations);
                 }
                 ApplicationMessage::ShowConversation { conversation } => {
                     info!("ShowConversation for conversation with id {}", conversation.id);
