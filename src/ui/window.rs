@@ -741,91 +741,57 @@ impl Window {
         self.gtk_window.present_with_time((glib::monotonic_time() / 1000) as u32);
     }
 
+    // public new void grab_focus () {
+    //     listbox.grab_focus ();
+    // }
 
-    pub fn load_conversations(&self, conversations: Vec<models::Message>) {
-        //@TODO implement drop all
+    //     public void show_app () {
+    //         show ();
+    //       present ();
 
-        // for conversation in conversations {
-        //     let data =
-        // models::folder_conversations_list::row_data::ConversationRowData::
-        // new();
+    //       folder_conversations_list.grab_focus ();
+    //   }
 
-        //     data.set_conversation(conversation);
+    // let (roots, threads, envelopes) =
+    // self.identities.lock().expect("Unable to acquire identities lock")[0]
+    //     .clone()
+    //     .fetch_threads();
 
-        //     self.conversations_list_model.append(&data);
-        // }
+    // let iter = roots.into_iter();
+    // for thread in iter {
+    //     let thread_node =
+    // &threads.thread_nodes()[&threads.thread_ref(thread).root()];
+    //     let root_envelope_hash = if let Some(h) =
+    // thread_node.message().or_else(|| {         if
+    // thread_node.children().is_empty() {             return None;
+    //         }
+    //         let mut iter_ptr = thread_node.children()[0];
+    //         while threads.thread_nodes()[&iter_ptr].message().is_none() {
+    //             if
+    // threads.thread_nodes()[&iter_ptr].children().is_empty() {
+    //                 return None;
+    //             }
+    //             iter_ptr =
+    // threads.thread_nodes()[&iter_ptr].children()[0];         }
+    //         threads.thread_nodes()[&iter_ptr].message()
+    //     }) {
+    //         h
+    //     } else {
+    //         continue;
+    //     };
 
-        // public new void grab_focus () {
-        //     listbox.grab_focus ();
-        // }
-        // public void load_folder_handler (IFolder folder) {
-        //     current_folder = folder;
+    //     let row_data = FolderConversationRowData::new(&"Subject
+    // placeholder");     unsafe {
+    //         (*row_data.as_ptr()).get_impl().subject.replace(Some(
+    //
+    // threads.thread_nodes()[&threads.thread_ref(thread).root()]
+    //                 .message()
+    //                 .as_ref()
+    //                 .map(|m|
+    // envelopes.read().unwrap()[m].subject().to_string())
+    //                 .unwrap_or_else(|| "None".to_string()),
+    //         ));
+    //     }
 
-        //     listbox.bind_model (folder.conversations_list_model,
-        // walk_model_items);
-        //     grab_focus ();
-        //     // @TODO listbox.select_row (item);
-        // }
-
-        //     public void show_app () {
-        //         show ();
-        //       present ();
-
-        //       folder_conversations_list.grab_focus ();
-        //   }
-
-        // let (roots, threads, envelopes) =
-        // self.identities.lock().expect("Unable to acquire identities lock")[0]
-        //     .clone()
-        //     .fetch_threads();
-
-        // let iter = roots.into_iter();
-        // for thread in iter {
-        //     let thread_node =
-        // &threads.thread_nodes()[&threads.thread_ref(thread).root()];
-        //     let root_envelope_hash = if let Some(h) =
-        // thread_node.message().or_else(|| {         if
-        // thread_node.children().is_empty() {             return None;
-        //         }
-        //         let mut iter_ptr = thread_node.children()[0];
-        //         while threads.thread_nodes()[&iter_ptr].message().is_none() {
-        //             if
-        // threads.thread_nodes()[&iter_ptr].children().is_empty() {
-        //                 return None;
-        //             }
-        //             iter_ptr =
-        // threads.thread_nodes()[&iter_ptr].children()[0];         }
-        //         threads.thread_nodes()[&iter_ptr].message()
-        //     }) {
-        //         h
-        //     } else {
-        //         continue;
-        //     };
-
-        //     let row_data = FolderConversationRowData::new(&"Subject
-        // placeholder");     unsafe {
-        //         (*row_data.as_ptr()).get_impl().subject.replace(Some(
-        //
-        // threads.thread_nodes()[&threads.thread_ref(thread).root()]
-        //                 .message()
-        //                 .as_ref()
-        //                 .map(|m|
-        // envelopes.read().unwrap()[m].subject().to_string())
-        //                 .unwrap_or_else(|| "None".to_string()),
-        //         ));
-        //     }
-
-        //     self.threads_model.append(&row_data)
-    }
-
-    pub fn show_conversation(&self, conversation: models::Message) {
-        // let data =
-        // models::conversation_messages_list::row_data::MessageRowData::new();
-
-        // data.set_message(conversation);
-
-        // self.conversation_model.remove_all();
-
-        // self.conversation_model.append(&data);
-    }
+    //     self.threads_model.append(&row_data)
 }
