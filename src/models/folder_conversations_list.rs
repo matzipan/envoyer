@@ -21,7 +21,6 @@ pub mod model {
         #[derive(Debug)]
         pub struct FolderModel {
             pub store: Rc<RefCell<Option<Arc<services::Store>>>>,
-            pub folder: Rc<RefCell<Option<models::Folder>>>,
             pub summaries: Rc<RefCell<Option<Vec<models::MessageSummary>>>>,
         }
         // Basic declaration of our type for the GObject type system
@@ -37,7 +36,6 @@ pub mod model {
             fn new() -> Self {
                 Self {
                     store: Default::default(),
-                    folder: Default::default(),
                     summaries: Default::default(),
                 }
             }
@@ -49,28 +47,14 @@ pub mod model {
             }
 
             fn n_items(&self, _list_model: &Self::Type) -> u32 {
-                match &*self.folder.as_ref().borrow() {
-                    Some(folder) => self
-                        .store
-                        .borrow()
-                        .as_ref()
-                        .unwrap()
-                        .get_message_count_for_folder(&folder)
-                        .expect("Unable to get message count"),
+                match self.summaries.borrow().as_ref() {
+                    Some(summaries) => summaries.len() as u32,
                     None => 0,
                 }
             }
 
             fn item(&self, _list_model: &Self::Type, position: u32) -> Option<glib::Object> {
-                //@TODO need to make sure needed syncronization is here to make sure the data is
-                //@TODO in a consistent state when something gets updates
-
-                // We use unwrap on folder because if there are items it means n_items didn't
-                // return 0 so there is a folder set.
-                let folder = &*self.folder.borrow();
-                let folder = folder.as_ref().unwrap();
-
-                let data = models::folder_conversations_list::row_data::ConversationRowData::new();
+                let data = ConversationRowData::new();
 
                 data.set_conversation(self.summaries.borrow().as_ref().unwrap()[position as usize].clone()); //@TODO should probably be an arc to the item
 
@@ -109,8 +93,6 @@ pub mod model {
                     .get_message_summaries_for_folder(&folder)
                     .expect("Unable to get message summary"),
             ));
-
-            self_.folder.replace(Some(folder));
 
             let new_count = self_.n_items(&self);
 
