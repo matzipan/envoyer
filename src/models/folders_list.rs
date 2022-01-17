@@ -7,8 +7,10 @@ use gtk::subclass::prelude::*;
 
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::models;
+use crate::services;
 
 pub mod model {
     use super::*;
@@ -17,7 +19,12 @@ pub mod model {
         use super::*;
 
         #[derive(Debug)]
-        pub struct FolderListModel(pub RefCell<Vec<FolderRowData>>);
+        pub struct FolderListModel {
+            pub store: Rc<RefCell<Option<Arc<services::Store>>>>,
+            pub folders: Rc<RefCell<Vec<models::Folder>>>,
+            pub bare_identities: Rc<RefCell<Vec<models::BareIdentity>>>,
+        }
+
         // Basic declaration of our type for the GObject type system
 
         #[glib::object_subclass]
@@ -29,7 +36,11 @@ pub mod model {
 
             // Called once at the very beginning of instantiation
             fn new() -> Self {
-                Self(RefCell::new(Vec::new()))
+                Self {
+                    store: Default::default(),
+                    folders: Default::default(),
+                    bare_identities: Default::default(),
+                }
             }
         }
         impl ObjectImpl for FolderListModel {}
@@ -38,10 +49,14 @@ pub mod model {
                 FolderRowData::static_type()
             }
             fn n_items(&self, _list_model: &Self::Type) -> u32 {
-                self.0.borrow().len() as u32
+                self.folders.borrow().len() as u32
             }
             fn item(&self, _list_model: &Self::Type, position: u32) -> Option<glib::Object> {
-                self.0.borrow().get(position as usize).map(|o| o.clone().upcast::<glib::Object>())
+                let data = FolderRowData::new();
+
+                data.set_folder(self.folders.borrow()[position as usize].clone()); //@TODO should probably be an arc to the item
+
+                Some(data.clone().upcast::<glib::Object>())
             }
         }
     }
@@ -55,30 +70,48 @@ pub mod model {
         pub fn new() -> FolderListModel {
             glib::Object::new(&[]).expect("Failed to create FolderListModel")
         }
-        pub fn append(&self, obj: &FolderRowData) {
-            let self_ = imp::FolderListModel::from_instance(self);
-            let index = {
-                // Borrow the data only once and ensure the borrow guard is dropped
-                // before we emit the items_changed signal because the view
-                // could call get_item / get_n_item from the signal handler to update its state
-                let mut data = self_.0.borrow_mut();
-                data.push(obj.clone());
-                data.len() - 1
-            };
-            // Emits a signal that 1 item was added, 0 removed at the position index
-            self.items_changed(index as u32, 0, 1);
+
+        pub fn attach_store(self, store: Arc<services::Store>) {
+            let self_ = imp::FolderListModel::from_instance(&self);
+
+            self_.store.replace(Some(store));
         }
-        pub fn remove(&self, index: u32) {
+
+        pub fn load(&self) {
             let self_ = imp::FolderListModel::from_instance(self);
-            self_.0.borrow_mut().remove(index as usize);
-            // Emits a signal that 1 item was removed, 0 added at the position index
-            self.items_changed(index, 1, 0);
+
+            let previous_count = self_.n_items(&self);
+
+            self_.bare_identities.replace(
+                self_
+                    .store
+                    .borrow()
+                    .as_ref()
+                    .unwrap()
+                    .get_bare_identities()
+                    .expect("Unable to get bare identities"),
+            );
+
+            // @TODO add support for multiple identities
+            self_.folders.replace(
+                self_
+                    .store
+                    .borrow()
+                    .as_ref()
+                    .unwrap()
+                    .get_folders(&self_.bare_identities.borrow()[0])
+                    .expect("Unable to get folders"),
+            );
+
+            let new_count = self_.n_items(&self);
+
+            self.items_changed(0, previous_count, new_count);
         }
     }
 }
 
-// This row data wrapper is needed because the FolderListModel get_item_type method
-// needs to have a GObject type to return to the bind_model method
+// This row data wrapper is needed because the FolderListModel get_item_type
+// method needs to have a GObject type to return to the bind_model method
 pub mod row_data {
     use super::*;
 

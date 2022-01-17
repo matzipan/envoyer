@@ -741,25 +741,6 @@ impl Window {
         self.gtk_window.present_with_time((glib::monotonic_time() / 1000) as u32);
     }
 
-    pub fn load_folders(&self, mut folders: Vec<models::Folder>) {
-        folders.sort_by(|a, b| {
-            if a.folder_name == "INBOX" {
-                std::cmp::Ordering::Less
-            } else {
-                std::cmp::Ordering::Greater
-            }
-        });
-
-        //@TODO implement drop all
-
-        // for folder in folders {
-        //     let data = models::folders_list::row_data::FolderRowData::new();
-
-        //     data.set_folder(folder);
-
-        //     // self.folders_list_model.append(&data);
-        // }
-    }
 
     pub fn load_conversations(&self, conversations: Vec<models::Message>) {
         //@TODO implement drop all

@@ -126,6 +126,7 @@ impl Application {
 
         conversations_list_model.attach_store(application.store.clone());
         conversation_model.attach_store(application.store.clone());
+        folders_list_model.attach_store(application.store.clone());
 
         application_message_receiver.attach(None, move |msg| {
             match msg {
@@ -210,7 +211,7 @@ impl Application {
                             .clone(),
                     );
 
-                    // main_window.borrow().load_folders(folders);
+                    folders_list_model_clone.load();
 
                     welcome_dialog.borrow().hide();
                     main_window.borrow().show();
