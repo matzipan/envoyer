@@ -2,7 +2,7 @@ use gtk::{gdk, glib, graphene, gsk, pango};
 
 use gtk::prelude::*;
 
-use log::{debug, info};
+use log::info;
 
 use std::cell::RefCell;
 use std::ffi::CString;
@@ -350,15 +350,41 @@ impl Window {
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
 
-        let folders_list_box = gtk::ListBox::new();
-        folders_list_box.set_activate_on_single_click(false);
-        folders_list_box.set_selection_mode(gtk::SelectionMode::Single);
-        folders_list_box.style_context().add_class("folders_sidebar");
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_bind(move |_factory, list_item| {
+            let item = list_item.item().unwrap();
+
+            let folder_row_data = item
+                .downcast_ref::<models::folders_list::row_data::FolderRowData>()
+                .expect("Row data is of wrong type");
+
+            let folder_rc = folder_row_data.get_folder();
+            let folder_borrow = folder_rc.borrow();
+            let folder = folder_borrow.as_ref().expect("Model contents invalid");
+
+            let box_item = folders_list_item::FoldersListItem::new_with_folder(&folder);
+
+            box_item.style_context().add_class("folders_list_item");
+
+            let name_label = gtk::Label::new(None);
+
+            name_label.set_text(&folder.folder_name);
+            name_label.set_halign(gtk::Align::Start);
+
+            box_item.append(&name_label);
+
+            list_item.set_child(Some(&box_item));
+        });
+
+        let selection_model = gtk::NoSelection::new(Some(folders_list_model));
+        let folders_list_view = gtk::ListView::new(Some(&selection_model), Some(&factory));
+        folders_list_view.style_context().add_class("folders_sidebar");
+        folders_list_view.set_single_click_activate(true);
 
         let folders_scroll_box = gtk::ScrolledWindow::new();
         folders_scroll_box.set_vexpand(true);
         folders_scroll_box.set_size_request(200, -1);
-        folders_scroll_box.set_child(Some(&folders_list_box));
+        folders_scroll_box.set_child(Some(&folders_list_view));
 
         let threads_list_box = gtk::ListBox::new();
         threads_list_box.set_activate_on_single_click(false);
@@ -417,13 +443,16 @@ impl Window {
 
         let sender_clone = sender.clone();
 
-        folders_list_box.connect_row_selected(move |_, row| {
-            if let Some(row) = row {
-                let row = row
-                    .downcast_ref::<folders_list_item::FoldersListItem>()
+        folders_list_view.connect_activate(move |list_view, position| {
+            let model = list_view.model().unwrap();
+            let item = model.item(position);
+
+            if let Some(item) = item {
+                let item = item
+                    .downcast_ref::<models::folders_list::row_data::FolderRowData>()
                     .expect("List box row is of wrong type");
 
-                let folder_rc = row.get_folder();
+                let folder_rc = item.get_folder();
                 let folder_borrow = folder_rc.borrow();
                 let folder = folder_borrow.as_ref().expect("Model contents invalid");
 
@@ -435,28 +464,6 @@ impl Window {
             } else {
                 // application.unload_current_folder ();
             }
-        });
-
-        folders_list_box.bind_model(Some(folders_list_model), |item| {
-            let item = item
-                .downcast_ref::<models::folders_list::row_data::FolderRowData>()
-                .expect("Row data is of wrong type");
-
-            let folder_rc = item.get_folder();
-            let folder_borrow = folder_rc.borrow();
-            let folder = folder_borrow.as_ref().expect("Model contents invalid");
-
-            let box_row = folders_list_item::FoldersListItem::new_with_folder(&folder);
-
-            box_row.style_context().add_class("folders_list_item");
-
-            let name_label = gtk::Label::new(None);
-
-            name_label.set_text(&folder.folder_name);
-            name_label.set_halign(gtk::Align::Start);
-
-            box_row.set_child(Some(&name_label));
-            box_row.upcast::<gtk::Widget>()
         });
 
         let sender_clone = sender.clone();

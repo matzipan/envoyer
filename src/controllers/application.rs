@@ -196,21 +196,6 @@ impl Application {
                         identity.start_session();
                     }
 
-                    //@TODO hacky just to get things going
-                    let identity = &identities_clone.lock().expect("BLA")[0];
-
-                    let conversations_list_model_clone = conversations_list_model_clone.clone();
-
-                    conversations_list_model_clone.load_folder(
-                        identity
-                            .get_folders()
-                            .unwrap()
-                            .iter()
-                            .find(|&x| x.folder_name == "INBOX")
-                            .unwrap()
-                            .clone(),
-                    );
-
                     folders_list_model_clone.load();
 
                     welcome_dialog.borrow().hide();
@@ -218,6 +203,10 @@ impl Application {
                 }
                 ApplicationMessage::ShowFolder { folder } => {
                     info!("ShowFolder for folder with name {}", folder.folder_name);
+
+                    let conversations_list_model_clone = conversations_list_model_clone.clone();
+
+                    conversations_list_model_clone.load_folder(folder);
                 }
                 ApplicationMessage::ShowConversation { conversation } => {
                     info!("ShowConversation for conversation with id {}", conversation.id);
