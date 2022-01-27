@@ -192,11 +192,27 @@ impl Application {
                 ApplicationMessage::SetupDone {} => {
                     info!("SetupDone");
 
+                    let application_message_sender_clone = application_message_sender.clone();
+
                     for identity in &*identities_clone.lock().expect("Unable to access identities") {
                         identity.start_session();
                     }
 
                     folders_list_model_clone.load();
+
+                    let identity = &identities_clone.lock().expect("BLA")[0];
+
+                    application_message_sender_clone
+                        .send(ApplicationMessage::ShowFolder {
+                            folder: identity
+                                .get_folders()
+                                .unwrap()
+                                .iter()
+                                .find(|&x| x.folder_name == "INBOX")
+                                .unwrap()
+                                .clone(),
+                        })
+                        .expect("Unable to send application message");
 
                     welcome_dialog.borrow().hide();
                     main_window.borrow().show();
