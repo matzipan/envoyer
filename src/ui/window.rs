@@ -39,7 +39,7 @@ pub mod folders_list_item {
         impl ObjectSubclass for FoldersListItem {
             const NAME: &'static str = "FoldersListItem";
             type Type = super::FoldersListItem;
-            type ParentType = gtk::ListBoxRow;
+            type ParentType = gtk::Box;
             // Called once at the very beginning of instantiation of each instance and
             // creates the data structure that contains all our state
             fn new() -> Self {
@@ -49,13 +49,13 @@ pub mod folders_list_item {
             }
         }
         impl ObjectImpl for FoldersListItem {}
-        impl ListBoxRowImpl for FoldersListItem {}
+        impl BoxImpl for FoldersListItem {}
         impl WidgetImpl for FoldersListItem {}
     }
 
     // The public part
     glib::wrapper! {
-        pub struct FoldersListItem(ObjectSubclass<imp::FoldersListItem>) @extends gtk::ListBoxRow, gtk::Widget, @implements gtk::Buildable, gtk::Actionable;
+        pub struct FoldersListItem(ObjectSubclass<imp::FoldersListItem>) @extends gtk::Widget, gtk::Box;
     }
     impl FoldersListItem {
         pub fn new() -> FoldersListItem {
