@@ -52,11 +52,13 @@ pub mod model {
                 self.folders.borrow().len() as u32
             }
             fn item(&self, _list_model: &Self::Type, position: u32) -> Option<glib::Object> {
-                let data = FolderRowData::new();
+                self.folders.borrow().get(position as usize).map(|x| {
+                    let data = FolderRowData::new();
 
-                data.set_folder(self.folders.borrow()[position as usize].clone()); //@TODO should probably be an arc to the item
+                    data.set_folder(x.clone()); //@TODO should probably be an arc to the item
 
-                Some(data.clone().upcast::<glib::Object>())
+                    data.clone().upcast::<glib::Object>()
+                })
             }
         }
     }
