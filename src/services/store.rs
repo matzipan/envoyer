@@ -194,23 +194,23 @@ impl Store {
                         // transformation and not worry about errors.
                         let uid_validity = melib::backends::imap::UID::try_from(uid_validity).unwrap();
 
-        match schema::messages::table
-            .select(diesel::dsl::max(schema::messages::uid))
-            .filter(schema::messages::folder_id.eq(folder.id))
-            .first::<Option<i64>>(&connection)
-        {
+                        match schema::messages::table
+                            .select(diesel::dsl::max(schema::messages::uid))
+                            .filter(schema::messages::folder_id.eq(folder.id))
+                            .first::<Option<i64>>(&connection)
+                        {
                             Ok(Some(max_uid)) => {
-                // max_uid is u32 according th the IMAP RFC but we're storing it as i64 since
-                // SQLite doesn't have unsigned data_types. Therefore, we're
-                // safe to do this transformation and not worry about any errors.
-                let max_uid = melib::backends::imap::UID::try_from(max_uid).unwrap();
+                                // max_uid is u32 according th the IMAP RFC but we're storing it as i64 since
+                                // SQLite doesn't have unsigned data_types. Therefore, we're
+                                // safe to do this transformation and not worry about any errors.
+                                let max_uid = melib::backends::imap::UID::try_from(max_uid).unwrap();
 
-                Ok(Some((max_uid, uid_validity)))
-            }
-            Ok(None) => Ok(None),
-            Err(diesel::NotFound) => Ok(None),
-            Err(e) => Err(e.to_string()),
-        }
+                                Ok(Some((max_uid, uid_validity)))
+                            }
+                            Ok(None) => Ok(None),
+                            Err(diesel::NotFound) => Ok(None),
+                            Err(e) => Err(e.to_string()),
+                        }
                     }
                 }
             })
