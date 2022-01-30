@@ -1,3 +1,6 @@
+// Copyright 2019 Manos Pitsidianakis - meli
+// Copyright 2021 Andrei Zisu - envoyer
+
 use crate::models;
 
 use melib;
@@ -213,6 +216,25 @@ mod uid_fetch_iterator_tests {
     }
 }
 
+fn create_connection(server_conf: &ImapServerConf, event_consumer: BackendEventConsumer) -> ImapConnection {
+    ImapConnection {
+        stream: Err(MeliError::new("Offline".to_string())),
+        server_conf: server_conf.clone(),
+        sync_policy: SyncPolicy::Basic,
+        uid_store: Arc::new(UIDStore::new(
+            0,
+            Arc::new("123".to_string()),
+            BackendEventConsumer::new(Arc::new(|_, _| {})),
+            server_conf.timeout,
+        )),
+        account_hash: 0,
+        account_name: Arc::new("123".to_string()),
+        capabilities: Default::default(),
+        is_online: Arc::new(Mutex::new((SystemTime::now(), Err(MeliError::new("Account is uninitialised."))))),
+        event_consumer,
+    }
+}
+
 impl ImapBackend {
     pub fn new(
         server_hostname: String,
@@ -235,7 +257,7 @@ impl ImapBackend {
             danger_accept_invalid_certs,
             protocol: ImapProtocol {
                 extension_use: ImapExtensionUse {
-                    idle: true,
+                    idle: true, // This value is ignored anyway
                     condstore: true,
                     oauth2: use_oauth2,
                 },
@@ -244,22 +266,7 @@ impl ImapBackend {
         };
 
         Ok(Box::new(ImapBackend {
-            connection: Arc::new(FutureMutex::new(ImapConnection {
-                stream: Err(MeliError::new("Offline".to_string())),
-                server_conf: server_conf.clone(),
-                sync_policy: SyncPolicy::Basic,
-                uid_store: Arc::new(UIDStore::new(
-                    0,
-                    Arc::new("123".to_string()),
-                    BackendEventConsumer::new(Arc::new(|_, _| {})),
-                    server_conf.timeout,
-                )),
-                account_hash: 0,
-                account_name: Arc::new("123".to_string()),
-                capabilities: Default::default(),
-                is_online: Arc::new(Mutex::new((SystemTime::now(), Err(MeliError::new("Account is uninitialised."))))),
-                event_consumer: event_consumer,
-            })),
+            connection: Arc::new(FutureMutex::new(create_connection(&server_conf, event_consumer))),
             server_conf,
         }))
     }
@@ -277,6 +284,65 @@ impl ImapBackend {
                     }
                 },
                 Err(err) => Err(err),
+            }
+        }))
+    }
+
+    pub fn watch(&self) -> ResultFuture<()> {
+        let server_conf = self.server_conf.clone();
+        let timeout_dur = self.server_conf.timeout;
+        let connection = self.connection.clone();
+
+        Ok(Box::pin(async move {
+            let has_idle = {
+                let conn = connection.lock().await;
+
+                conn.has_capability("IDLE".to_string())
+            };
+
+            let has_idle = true; //@TODO capabiltiies are not updated proberly
+
+            if !has_idle {
+                debug!("Server does not support IDLE");
+
+                debug!("IDLE-less support not implemented yet");
+
+                return Ok(());
+            }
+
+            loop {
+                debug!("Server supports IDLE");
+                match idle(
+                    create_connection(&server_conf, BackendEventConsumer::new(Arc::new(|_, _| {}))),
+                    std::time::Duration::from_secs(5 * 60),
+                )
+                .await
+                {
+                    Ok(IdleReturnReason::Updates) => {
+                        debug!("IDLE return reason: Updates");
+                    }
+                    Ok(IdleReturnReason::Timeout) => {
+                        debug!("IDLE return reason: Timeout");
+                        //@TODO check other folders
+                    }
+                    Err(network_error) if network_error.kind.is_network() => {
+                        debug!("Watch network failure: {}", network_error.to_string());
+
+                        let mut main_conn_lck = timeout(timeout_dur, connection.lock()).await?;
+
+                        match timeout(timeout_dur, main_conn_lck.connect()).await.and_then(|res| res) {
+                            Err(reconnect_error) => {
+                                debug!("Watch reconnect attempt failed: {}", reconnect_error.to_string());
+                                return Err(reconnect_error);
+                            }
+                            Ok(()) => {
+                                debug!("Watch reconnect attempt succesful");
+                                continue;
+                            }
+                        }
+                    }
+                    Err(err) => return Err(err),
+                }
             }
         }))
     }
@@ -559,4 +625,95 @@ async fn fetch_messages_overview_in_uid_range(
     }
 
     Ok(messages_list)
+}
+
+#[derive(Debug)]
+pub enum IdleReturnReason {
+    Timeout,
+    Updates,
+}
+
+async fn idle(connection: ImapConnection, timeout_duration: std::time::Duration) -> Result<IdleReturnReason, MeliError> {
+    /* Idle on a given mailbox. Timeout after a specified duration. */
+    let mut response = Vec::with_capacity(8 * 1024);
+
+    let mut blocking_connection_wrapper = melib::backends::imap::ImapBlockingConnection::from(connection);
+    blocking_connection_wrapper.conn.connect().await?;
+
+    debug!("Sending IDLE");
+
+    blocking_connection_wrapper.conn.send_command(b"SELECT INBOX").await?;
+    blocking_connection_wrapper
+        .conn
+        .read_response(&mut response, RequiredResponses::empty())
+        .await?;
+
+    blocking_connection_wrapper.conn.send_command(b"IDLE").await?;
+
+    loop {
+        debug!("Waiting");
+        match timeout(Some(timeout_duration), blocking_connection_wrapper.as_stream()).await {
+            Ok(Some(lines)) => {
+                debug!("Received responses after IDLE, processing");
+
+                if lines
+                    .split_rn()
+                    .filter(|l| {
+                        !l.starts_with(b"+ ")
+                            && !l.starts_with(b"* ok")
+                            && !l.starts_with(b"* ok")
+                            && !l.starts_with(b"* Ok")
+                            && !l.starts_with(b"* OK")
+                    })
+                    .count()
+                    == 0
+                {
+                    debug!("Responses where only command confirmations and continuation marks. Ignoring");
+
+                    continue;
+                }
+                {
+                    blocking_connection_wrapper.conn.send_raw(b"DONE").await?;
+                    blocking_connection_wrapper
+                        .conn
+                        .read_response(&mut response, RequiredResponses::empty())
+                        .await?;
+                    for l in lines.split_rn().chain(response.split_rn()) {
+                        debug!("Process IDLE response line {}", std::str::from_utf8(&l).unwrap().trim());
+                        if l.starts_with(b"+ ")
+                            || l.starts_with(b"* ok")
+                            || l.starts_with(b"* ok")
+                            || l.starts_with(b"* Ok")
+                            || l.starts_with(b"* OK")
+                        {
+                            debug!("Ignore command confirmation and continuation mark");
+                            continue;
+                        }
+                        //@TODO we need our own process untagged
+                        // blockn.conn.process_untagged(l).await?;
+                        return Ok(IdleReturnReason::Updates);
+                    }
+                }
+            }
+            Ok(None) => {
+                debug!("IDLE connection dropped: {:?}", &blocking_connection_wrapper.err());
+                // blockn.conn.connect().await?;
+                // let mut main_conn_lck = timeout(uid_store.timeout,
+                // main_conn.lock()).await?; main_conn_lck.connect().
+                // await?; continue;
+                return Err(MeliError::new("Connection dropped").set_kind(melib::error::ErrorKind::None));
+            }
+            Err(_) => {
+                debug!("Timing out IDLE");
+
+                blocking_connection_wrapper.conn.send_raw(b"DONE").await?;
+                blocking_connection_wrapper
+                    .conn
+                    .read_response(&mut response, RequiredResponses::empty())
+                    .await?;
+
+                return Ok(IdleReturnReason::Timeout);
+            }
+        };
+    }
 }

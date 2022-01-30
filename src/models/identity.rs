@@ -109,6 +109,11 @@ impl Identity {
                 //@TODO show in UI
                 error!("{}", e);
             });
+
+        self.backend.unwrap().watch().unwrap().await.map_err(|e| {
+            //@TODO show in UI
+            error!("{}", e);
+        });
     }
 
     async fn fetch_folders(self: Arc<Self>) -> Result<Vec<Box<melib::backends::imap::ImapMailbox>>, String> {
@@ -342,14 +347,4 @@ impl Identity {
     pub fn get_conversations_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::Message>, String> {
         self.store.get_messages_for_folder(folder)
     }
-
-    // fn start_listening_for_updates(&self) {
-    //     let mailboxes_job = self.backend.read().unwrap().mailboxes().unwrap();
-    //     let watch_job = self.backend.read().unwrap().watch().unwrap();
-
-    //     let online_job = self.backend.read().unwrap().is_online().unwrap();
-    //     let context = glib::MainContext::default();
-
-    //     context.spawn(online_job.and_then(|_| mailboxes_job).and_then(|_|
-    // watch_job).map(move |_| ())); }
 }
