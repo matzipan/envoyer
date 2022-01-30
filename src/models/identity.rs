@@ -89,11 +89,13 @@ impl Identity {
 
         // @TODO sync other folders than inbox
 
+        info!("Syncing folders");
         self.clone().sync_folders().await.map_err(|e| {
             //@TODO show in UI
             error!("{}", e);
         });
 
+        info!("Syncing messages");
         self.clone()
             .sync_messages_for_folder(
                 self.store
@@ -110,10 +112,29 @@ impl Identity {
                 error!("{}", e);
             });
 
-        self.backend.unwrap().watch().unwrap().await.map_err(|e| {
-            //@TODO show in UI
-            error!("{}", e);
-        });
+        let watch_job = self.backend.watch(std::time::Duration::from_secs(5 * 60));
+
+        info!("Watching for changes");
+        loop {
+            let watch_return_reason = watch_job.watch().await;
+
+            match watch_return_reason {
+                Ok(imap::WatchReturnReason::Updates(_)) => {
+                    info!("Watching found updates on INBOX");
+
+                    //@TODO sync
+                }
+                Ok(imap::WatchReturnReason::Timeout) => {
+                    info!("Watching timed out with no updates");
+
+                    //@TODO check other folders
+                }
+                Err(e) => {
+                    //@TODO show in UI
+                    error!("{}", e);
+                }
+            }
+        }
     }
 
     async fn fetch_folders(self: Arc<Self>) -> Result<Vec<Box<melib::backends::imap::ImapMailbox>>, String> {
