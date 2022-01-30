@@ -3,12 +3,13 @@
 
 use crate::models;
 
+use futures::Future;
 use melib;
 use melib::backends::imap::{
     list_mailbox_result, status_response, ImapConnection, ImapExtensionUse, ImapLineSplit, ImapMailbox, ImapProtocol::IMAP as ImapProtocol,
     ImapServerConf, MessageSequenceNumber, ModSequence, RequiredResponses, SyncPolicy, UIDStore,
 };
-use melib::backends::{BackendEventConsumer, MailboxHash, ResultFuture};
+use melib::backends::{BackendEventConsumer, MailboxHash};
 use melib::connections::timeout;
 use melib::{BackendMailbox, MeliError};
 
@@ -18,6 +19,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 use std::convert::TryInto;
+use std::pin::Pin;
 use std::time::Instant;
 
 use log::debug;
@@ -235,6 +237,81 @@ fn create_connection(server_conf: &ImapServerConf, event_consumer: BackendEventC
     }
 }
 
+pub type ResultFuture<T> = Result<Pin<Box<dyn Future<Output = Result<T, MeliError>> + Send + 'static>>, MeliError>;
+
+#[derive(Debug)]
+pub enum WatchReturnReason {
+    Timeout,
+    //@TODO this should be likely less IMAP dependent (no EXISTS or EXPUNGE responses), but it'll do for now
+    Updates(Vec<UntaggedResponse>),
+}
+
+pub struct WatchJob {
+    server_conf: ImapServerConf,
+    reconnect_timeout_duration: Option<Duration>,
+    idle_timeout_duration: Duration,
+    connection: Arc<futures::lock::Mutex<ImapConnection>>,
+}
+
+impl WatchJob {
+    pub fn watch<'a>(&'a self) -> impl Future<Output = Result<WatchReturnReason, MeliError>> + 'a {
+        async move {
+            let has_idle = {
+                let conn = self.connection.lock().await;
+
+                conn.has_capability("IDLE".to_string())
+            };
+
+            let has_idle = true; //@TODO capabiltiies are not updated proberly
+
+            if !has_idle {
+                debug!("Server does not support IDLE");
+
+                debug!("IDLE-less support not implemented yet");
+
+                return Err(MeliError::new("Non-IDLE servers not supported").set_kind(melib::error::ErrorKind::None));
+            }
+
+            loop {
+                debug!("Server supports IDLE");
+                match idle(
+                    create_connection(&self.server_conf, BackendEventConsumer::new(Arc::new(|_, _| {}))),
+                    self.idle_timeout_duration,
+                )
+                .await
+                {
+                    Ok(IdleReturnReason::Updates(updates)) => {
+                        return Ok(WatchReturnReason::Updates(updates));
+                    }
+                    Ok(IdleReturnReason::Timeout) => {
+                        return Ok(WatchReturnReason::Timeout);
+                    }
+                    Err(network_error) if network_error.kind.is_network() => {
+                        debug!("Watch network failure: {}", network_error.to_string());
+
+                        let mut main_conn_lck = timeout(self.reconnect_timeout_duration, self.connection.lock()).await?;
+
+                        match timeout(self.reconnect_timeout_duration, main_conn_lck.connect())
+                            .await
+                            .and_then(|res| res)
+                        {
+                            Err(reconnect_error) => {
+                                debug!("Watch reconnect attempt failed: {}", reconnect_error.to_string());
+                                return Err(reconnect_error);
+                            }
+                            Ok(()) => {
+                                debug!("Watch reconnect attempt succesful");
+                                continue;
+                            }
+                        }
+                    }
+                    Err(err) => return Err(err),
+                }
+            }
+        }
+    }
+}
+
 impl ImapBackend {
     pub fn new(
         server_hostname: String,
@@ -288,63 +365,13 @@ impl ImapBackend {
         }))
     }
 
-    pub fn watch(&self) -> ResultFuture<()> {
-        let server_conf = self.server_conf.clone();
-        let timeout_dur = self.server_conf.timeout;
-        let connection = self.connection.clone();
-
-        Ok(Box::pin(async move {
-            let has_idle = {
-                let conn = connection.lock().await;
-
-                conn.has_capability("IDLE".to_string())
-            };
-
-            let has_idle = true; //@TODO capabiltiies are not updated proberly
-
-            if !has_idle {
-                debug!("Server does not support IDLE");
-
-                debug!("IDLE-less support not implemented yet");
-
-                return Ok(());
-            }
-
-            loop {
-                debug!("Server supports IDLE");
-                match idle(
-                    create_connection(&server_conf, BackendEventConsumer::new(Arc::new(|_, _| {}))),
-                    std::time::Duration::from_secs(5 * 60),
-                )
-                .await
-                {
-                    Ok(IdleReturnReason::Updates) => {
-                        debug!("IDLE return reason: Updates");
-                    }
-                    Ok(IdleReturnReason::Timeout) => {
-                        debug!("IDLE return reason: Timeout");
-                        //@TODO check other folders
-                    }
-                    Err(network_error) if network_error.kind.is_network() => {
-                        debug!("Watch network failure: {}", network_error.to_string());
-
-                        let mut main_conn_lck = timeout(timeout_dur, connection.lock()).await?;
-
-                        match timeout(timeout_dur, main_conn_lck.connect()).await.and_then(|res| res) {
-                            Err(reconnect_error) => {
-                                debug!("Watch reconnect attempt failed: {}", reconnect_error.to_string());
-                                return Err(reconnect_error);
-                            }
-                            Ok(()) => {
-                                debug!("Watch reconnect attempt succesful");
-                                continue;
-                            }
-                        }
-                    }
-                    Err(err) => return Err(err),
-                }
-            }
-        }))
+    pub fn watch(&self, timeout_duration: std::time::Duration) -> WatchJob {
+        WatchJob {
+            server_conf: self.server_conf.clone(),
+            reconnect_timeout_duration: self.server_conf.timeout,
+            idle_timeout_duration: timeout_duration,
+            connection: self.connection.clone(),
+        }
     }
 
     pub fn mailboxes(&self) -> ResultFuture<HashMap<MailboxHash, Box<ImapMailbox>>> {
@@ -630,7 +657,15 @@ async fn fetch_messages_overview_in_uid_range(
 #[derive(Debug)]
 pub enum IdleReturnReason {
     Timeout,
-    Updates,
+    Updates(Vec<UntaggedResponse>),
+}
+
+fn is_continuation_or_confirmation(line: &[u8]) -> bool {
+    line.starts_with(b"+ ")
+        || line.starts_with(b"* ok")
+        || line.starts_with(b"* ok")
+        || line.starts_with(b"* Ok")
+        || line.starts_with(b"* OK")
 }
 
 async fn idle(connection: ImapConnection, timeout_duration: std::time::Duration) -> Result<IdleReturnReason, MeliError> {
@@ -656,44 +691,44 @@ async fn idle(connection: ImapConnection, timeout_duration: std::time::Duration)
             Ok(Some(lines)) => {
                 debug!("Received responses after IDLE, processing");
 
-                if lines
-                    .split_rn()
-                    .filter(|l| {
-                        !l.starts_with(b"+ ")
-                            && !l.starts_with(b"* ok")
-                            && !l.starts_with(b"* ok")
-                            && !l.starts_with(b"* Ok")
-                            && !l.starts_with(b"* OK")
-                    })
-                    .count()
-                    == 0
-                {
+                if lines.split_rn().filter(|line| !is_continuation_or_confirmation(line)).count() == 0 {
                     debug!("Responses where only command confirmations and continuation marks. Ignoring");
 
                     continue;
                 }
-                {
-                    blocking_connection_wrapper.conn.send_raw(b"DONE").await?;
-                    blocking_connection_wrapper
-                        .conn
-                        .read_response(&mut response, RequiredResponses::empty())
-                        .await?;
-                    for l in lines.split_rn().chain(response.split_rn()) {
-                        debug!("Process IDLE response line {}", std::str::from_utf8(&l).unwrap().trim());
-                        if l.starts_with(b"+ ")
-                            || l.starts_with(b"* ok")
-                            || l.starts_with(b"* ok")
-                            || l.starts_with(b"* Ok")
-                            || l.starts_with(b"* OK")
-                        {
-                            debug!("Ignore command confirmation and continuation mark");
-                            continue;
+
+                blocking_connection_wrapper.conn.send_raw(b"DONE").await?;
+                blocking_connection_wrapper
+                    .conn
+                    .read_response(&mut response, RequiredResponses::empty())
+                    .await?;
+
+                let untagged_responses: Result<Vec<_>, _> = lines
+                    .split_rn()
+                    .chain(response.split_rn())
+                    .filter(|line| {
+                        let should_drop = is_continuation_or_confirmation(line);
+
+                        if should_drop {
+                            debug!(
+                                "Dropping command confirmation or continuation: {}",
+                                std::str::from_utf8(&line).unwrap().trim()
+                            );
                         }
-                        //@TODO we need our own process untagged
-                        // blockn.conn.process_untagged(l).await?;
-                        return Ok(IdleReturnReason::Updates);
-                    }
-                }
+
+                        !should_drop
+                    })
+                    .map(process_untagged_line)
+                    .filter_map(|untagged_response| match untagged_response {
+                        // @TODO This match here is ugly and unnecessary but melib doesn't parse all the possible untagged responses right
+                        // now
+                        Err(x) => Some(Err(x)),
+                        Ok(None) => None,
+                        Ok(Some(x)) => Some(Ok(x)),
+                    })
+                    .collect();
+
+                return Ok(IdleReturnReason::Updates(untagged_responses?));
             }
             Ok(None) => {
                 debug!("IDLE connection dropped: {:?}", &blocking_connection_wrapper.err());
@@ -715,5 +750,34 @@ async fn idle(connection: ImapConnection, timeout_duration: std::time::Duration)
                 return Ok(IdleReturnReason::Timeout);
             }
         };
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum UntaggedResponse {
+    Expunge(melib::backends::imap::MessageSequenceNumber),
+    Exists(melib::backends::imap::ImapNum),
+    Recent(melib::backends::imap::ImapNum),
+    //@TODO
+    Fetch,
+    Bye(String),
+}
+
+fn process_untagged_line(line: &[u8]) -> Result<Option<UntaggedResponse>, String> {
+    debug!("Processing untagged line: {}", std::str::from_utf8(&line).unwrap().trim());
+    match melib::backends::imap::untagged_responses(line).map(|(_, v, _)| v) {
+        Ok(None) => Ok(None),
+        Err(_) => {
+            // @TODO this should also be an error but melib parser can't parse strings like
+            // "M5 OK IDLE terminated (Success)"
+            Ok(None)
+        }
+        Ok(Some(parsed_response)) => match parsed_response {
+            melib::backends::imap::UntaggedResponse::Expunge(x) => Ok(Some(UntaggedResponse::Expunge(x))),
+            melib::backends::imap::UntaggedResponse::Exists(x) => Ok(Some(UntaggedResponse::Exists(x))),
+            melib::backends::imap::UntaggedResponse::Recent(x) => Ok(Some(UntaggedResponse::Recent(x))),
+            melib::backends::imap::UntaggedResponse::Fetch(_) => Ok(Some(UntaggedResponse::Fetch)),
+            melib::backends::imap::UntaggedResponse::Bye { reason } => Ok(Some(UntaggedResponse::Bye(reason.to_string()))),
+        },
     }
 }
