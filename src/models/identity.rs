@@ -16,7 +16,7 @@ use std::sync::Arc;
 use async_stream;
 
 use crate::google_oauth;
-use crate::imap;
+use crate::backends::imap;
 use crate::models;
 use crate::services;
 

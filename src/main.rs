@@ -10,7 +10,7 @@ extern crate diesel_migrations;
 mod bindings;
 mod controllers;
 mod google_oauth;
-mod imap;
+mod backends;
 mod litehtml_callbacks;
 mod models;
 mod schema;
