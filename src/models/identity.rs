@@ -15,8 +15,8 @@ use std::sync::Arc;
 
 use async_stream;
 
-use crate::google_oauth;
 use crate::backends::imap;
+use crate::google_oauth;
 use crate::models;
 use crate::services;
 
@@ -274,7 +274,6 @@ impl Identity {
         };
 
         debug!("Syncing messages for folder {}, checking if online", folder.folder_name);
-
         self.backend
             .is_online()
             .map_err(|e| e.to_string())?
@@ -282,19 +281,14 @@ impl Identity {
             .map_err(|e| e.to_string())?;
 
         debug!("Online, syncing");
-        let (new_uid_validity, mut new_messages, flag_updates) = self
-            .backend
-            .sync(folder.folder_path.clone(), backend_sync_type.clone())
-            .map_err(|e| e.to_string())?
-            .await
-            .map_err(|e| e.to_string())?;
-
         // @TODO asyncstream while let Some(bla) = x.next().await { }
 
-        debug!("Saving fetched data to store");
+        let sync_job = self.backend.sync(folder.folder_path.clone(), backend_sync_type.clone());
+        let (new_uid_validity, mut new_messages, flag_updates) = sync_job.sync().await.map_err(|e| e.to_string())?;
 
         let now = Instant::now();
 
+        debug!("Saving fetched data to store");
         match backend_sync_type {
             imap::SyncType::Fresh => {
                 self.store
