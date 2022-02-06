@@ -97,7 +97,6 @@ impl Application {
             main_window: Rc::new(RefCell::new(ui::Window::new(
                 gtk_application,
                 application_message_sender.clone(),
-                identities.clone(),
                 &folders_list_model,
                 &conversations_list_model,
                 &conversation_model,
