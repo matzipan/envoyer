@@ -85,9 +85,14 @@ impl Identity {
     }
 
     pub async fn start_session(self: Arc<Self>) {
-        // @TODO self.start_listening_for_updates();
-
-        // @TODO sync other folders than inbox
+        let inbox_folder = self
+            .store
+            .get_folders(&self.bare_identity)
+            .unwrap()
+            .iter()
+            .find(|&x| x.folder_name == "INBOX")
+            .unwrap()
+            .clone();
 
         info!("Syncing folders");
         self.clone().sync_folders().await.map_err(|e| {
@@ -97,20 +102,13 @@ impl Identity {
 
         info!("Syncing messages");
         self.clone()
-            .sync_messages_for_folder(
-                self.store
-                    .get_folders(&self.bare_identity)
-                    .unwrap()
-                    .iter()
-                    .find(|&x| x.folder_name == "INBOX")
-                    .unwrap(),
-                SyncType::Update,
-            )
+            .sync_messages_for_folder(&inbox_folder, SyncType::Update)
             .await
             .map_err(|e| {
                 //@TODO show in UI
                 error!("{}", e);
             });
+        // @TODO sync other folders than inbox
 
         info!("Watching for changes");
         loop {
@@ -120,7 +118,13 @@ impl Identity {
                 Ok(imap::WatchReturnReason::Updates(_)) => {
                     info!("Watching found updates on INBOX");
 
-                    //@TODO sync
+                    self.clone()
+                        .sync_messages_for_folder(&inbox_folder, SyncType::Update)
+                        .await
+                        .map_err(|e| {
+                            //@TODO show in UI
+                            error!("{}", e);
+                        });
                 }
                 Ok(imap::WatchReturnReason::Timeout) => {
                     info!("Watching timed out with no updates");
