@@ -57,7 +57,7 @@ pub struct Application {
     welcome_dialog: Rc<RefCell<ui::WelcomeDialog>>,
     application_message_sender: glib::Sender<ApplicationMessage>,
     context: glib::MainContext,
-    identities: Arc<Mutex<Vec<models::Identity>>>, //@TODO should probably be arc<identity>
+    identities: Arc<Mutex<Vec<Arc<models::Identity>>>>,
     store: Arc<services::Store>,
     current_conversation_id: Rc<RefCell<Option<i32>>>,
 }
@@ -87,7 +87,7 @@ impl Application {
         let (application_message_sender, application_message_receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
         let context = glib::MainContext::default();
 
-        let identities = Arc::new(Mutex::new(Vec::<models::Identity>::new()));
+        let identities = Arc::new(Mutex::new(Vec::<Arc<models::Identity>>::new()));
 
         let folders_list_model = models::folders_list::model::FolderListModel::new();
         let conversations_list_model = models::folder_conversations_list::model::FolderModel::new();
@@ -174,7 +174,7 @@ impl Application {
                         for bare_identity in bare_identities {
                             let store_clone = store_clone.clone();
 
-                            let identity = models::Identity::new(bare_identity, store_clone).await;
+                            let identity = Arc::new(models::Identity::new(bare_identity, store_clone).await);
 
                             if initialize {
                                 identity.initialize().await.map_err(|x| error!("{}", x));
