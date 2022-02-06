@@ -29,8 +29,10 @@ pub struct WatchJob {
     pub connection: Arc<futures::lock::Mutex<ImapConnection>>,
 }
 
-impl WatchJob {
-    pub async fn watch<'a>(&'a self) -> Result<WatchReturnReason, MeliError> {
+impl ImapBackend {
+    pub async fn watch(&self, idle_timeout_duration: std::time::Duration) -> Result<WatchReturnReason, MeliError> {
+        let reconnect_timeout_duration = self.server_conf.timeout;
+
         let has_idle = {
             let conn = self.connection.lock().await;
 
@@ -51,7 +53,7 @@ impl WatchJob {
             debug!("Server supports IDLE");
             match idle(
                 create_connection(&self.server_conf, BackendEventConsumer::new(Arc::new(|_, _| {}))),
-                self.idle_timeout_duration,
+                idle_timeout_duration,
             )
             .await
             {
@@ -64,9 +66,9 @@ impl WatchJob {
                 Err(network_error) if network_error.kind.is_network() => {
                     debug!("Watch network failure: {}", network_error.to_string());
 
-                    let mut main_conn_lck = timeout(self.reconnect_timeout_duration, self.connection.lock()).await?;
+                    let mut main_conn_lck = timeout(reconnect_timeout_duration, self.connection.lock()).await?;
 
-                    match timeout(self.reconnect_timeout_duration, main_conn_lck.connect())
+                    match timeout(reconnect_timeout_duration, main_conn_lck.connect())
                         .await
                         .and_then(|res| res)
                     {
