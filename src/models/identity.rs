@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::pin::Pin;
 use std::time::Instant;
 
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use async_stream;
 
@@ -19,8 +19,6 @@ use crate::google_oauth;
 use crate::imap;
 use crate::models;
 use crate::services;
-
-pub type ResultFuture<T> = Result<Pin<Box<dyn Future<Output = Result<T, String>> + Send + 'static>>, String>;
 
 pub enum SyncType {
     Fresh,
@@ -30,7 +28,7 @@ pub enum SyncType {
 #[derive(Clone)]
 pub struct Identity {
     bare_identity: Arc<models::BareIdentity>,
-    backend: Arc<RwLock<Box<imap::ImapBackend>>>,
+    backend: Arc<Box<imap::ImapBackend>>,
     store: Arc<services::Store>,
 }
 
@@ -63,34 +61,40 @@ impl Identity {
         info!("Identity for {} created", bare_identity.email_address);
         return Identity {
             bare_identity: Arc::new(bare_identity),
-            backend: Arc::new(RwLock::new(imap_backend)),
+            backend: Arc::new(imap_backend),
             store,
         };
     }
 
-    pub async fn initialize(&self) -> Result<(), String> {
+    pub async fn initialize(self: Arc<Self>) -> Result<(), String> {
         info!("Initializing identity with address {}", self.bare_identity.email_address);
 
         //@TODO how does LSUB come into play/ only filter for subscribed?
-        self.sync_folders()?.await?;
+        self.clone().sync_folders().await?;
 
         for folder in self.store.get_folders(&self.bare_identity)? {
             if folder.folder_name != "INBOX" {
                 continue;
             }
 
-            self.sync_messages_for_folder(&folder, SyncType::Fresh)?.await?;
+            self.clone().sync_messages_for_folder(&folder, SyncType::Fresh).await?;
         }
 
         info!("Finished identity initialization for {}", self.bare_identity.email_address);
         Ok(())
     }
 
-    pub fn start_session(&self) {
+    pub async fn start_session(self: Arc<Self>) {
         // @TODO self.start_listening_for_updates();
 
-        let sync_folder_job = self.sync_folders().expect("BLA");
-        let sync_messages_for_index_job = self
+        // @TODO sync other folders than inbox
+
+        self.clone().sync_folders().await.map_err(|e| {
+            //@TODO show in UI
+            error!("{}", e);
+        });
+
+        self.clone()
             .sync_messages_for_folder(
                 self.store
                     .get_folders(&self.bare_identity)
@@ -100,110 +104,97 @@ impl Identity {
                     .unwrap(),
                 SyncType::Update,
             )
-            .expect("BLA");
-        // @TODO sync other folders than inbox
-
-        let context = glib::MainContext::default();
-        context.spawn(async move {
-            sync_folder_job.await.map_err(|e| {
+            .await
+            .map_err(|e| {
                 //@TODO show in UI
                 error!("{}", e);
             });
-            sync_messages_for_index_job.await.map_err(|e| {
-                //@TODO show in UI
-                error!("{}", e);
-            });
-        });
     }
 
-    fn fetch_folders(&self) -> ResultFuture<Vec<Box<melib::backends::imap::ImapMailbox>>> {
-        let mailboxes_job = self
-            .backend
-            .read()
-            .map_err(|e| e.to_string())?
-            .mailboxes()
-            .map_err(|e| e.to_string())?;
-
-        let online_job = self
-            .backend
-            .read()
-            .map_err(|e| e.to_string())?
+    async fn fetch_folders(self: Arc<Self>) -> Result<Vec<Box<melib::backends::imap::ImapMailbox>>, String> {
+        self.backend
             .is_online()
+            .map_err(|e| e.to_string())?
+            .await
             .map_err(|e| e.to_string())?;
 
-        Ok(Box::pin(async move {
-            online_job.await.map_err(|e| e.to_string())?;
-            mailboxes_job.await.map_err(|e| e.to_string()).map(|mailboxes| {
-                // for mailbox in mailboxes.values_mut() {
-                //     //@TODO
-                //     let mailbox_usage = if mailbox.special_usage() !=
-                // SpecialUsageMailbox::Normal {         Some(mailbox.
-                // special_usage())     } else {
-                //         let tmp = SpecialUsageMailbox::detect_usage(mailbox.name());
-                //         if tmp != Some(SpecialUsageMailbox::Normal) && tmp != None {
-                //             let _ = mailbox.set_special_usage(tmp.unwrap());
-                //         }
-                //         tmp
-                //     };
-                // }
+        let mailboxes = self
+            .backend
+            .mailboxes()
+            .map_err(|e| e.to_string())?
+            .await
+            .map_err(|e| e.to_string())?;
 
-                mailboxes
-                    .values()
-                    .filter(|x| !x.no_select)
-                    .cloned()
-                    .collect::<Vec<Box<melib::backends::imap::ImapMailbox>>>()
-            })
-        }))
+        // for mailbox in mailboxes.values_mut() {
+        //     //@TODO
+        //     let mailbox_usage = if mailbox.special_usage() !=
+        // SpecialUsageMailbox::Normal {         Some(mailbox.
+        // special_usage())     } else {
+        //         let tmp =
+        // SpecialUsageMailbox::detect_usage(mailbox.name());
+        //         if tmp != Some(SpecialUsageMailbox::Normal) && tmp !=
+        // None {             let _ =
+        // mailbox.set_special_usage(tmp.unwrap());
+        //         }
+        //         tmp
+        //     };
+        // }
+
+        let folders = mailboxes
+            .values()
+            .filter(|x| !x.no_select)
+            .cloned()
+            .collect::<Vec<Box<melib::backends::imap::ImapMailbox>>>();
+
+        Ok(folders)
     }
 
-    fn sync_folders(&self) -> ResultFuture<()> {
-        let fetch_folders_job = self.fetch_folders();
-        let store_clone = self.store.clone();
-        let bare_identity_clone = self.bare_identity.clone();
+    async fn sync_folders(self: Arc<Self>) -> Result<(), String> {
+        let mailboxes = self.clone().fetch_folders().await?; //@TODO rename to fetch mailboxes
 
-        Ok(Box::pin(async move {
-            let mailboxes = fetch_folders_job?.await?; //@TODO rename to fetch mailboxes
+        // This is used to detect local folders removed from the server
+        let mut leftover_folders_store: HashMap<_, _> = self
+            .store
+            .get_folders(self.bare_identity.as_ref())?
+            .into_iter()
+            .map(|folder| (folder.folder_path.clone(), folder))
+            .collect();
 
-            // This is used to detect local folders removed from the server
-            let mut leftover_folders_store: HashMap<_, _> = store_clone
-                .get_folders(&bare_identity_clone)?
-                .into_iter()
-                .map(|folder| (folder.folder_path.clone(), folder))
-                .collect();
+        for mailbox_value in mailboxes.iter() {
+            let mailbox_path = mailbox_value.path().to_string();
 
-            for mailbox_value in mailboxes.iter() {
-                let mailbox_path = mailbox_value.path().to_string();
-
-                match leftover_folders_store.get(&mailbox_path) {
-                    Some(_) => {
-                        debug!(
-                            "Found folder {} locally for identity {}. Removing from leftover set",
-                            &mailbox_path, &bare_identity_clone.email_address
-                        );
-                        leftover_folders_store.remove(&mailbox_path);
-                    }
-                    None => {
-                        debug!(
-                            "Did not find folder {} locally for identity {}. Inserting in database",
-                            &mailbox_path, &bare_identity_clone.email_address
-                        );
-                        store_clone.store_folder_for_mailbox(&bare_identity_clone, &mailbox_value)?;
-                    }
+            match leftover_folders_store.get(&mailbox_path) {
+                Some(_) => {
+                    debug!(
+                        "Found folder {} locally for identity {}. Removing from leftover set",
+                        &mailbox_path,
+                        self.bare_identity.as_ref().email_address
+                    );
+                    leftover_folders_store.remove(&mailbox_path);
+                }
+                None => {
+                    debug!(
+                        "Did not find folder {} locally for identity {}. Inserting in database",
+                        &mailbox_path,
+                        self.bare_identity.as_ref().email_address
+                    );
+                    self.store.store_folder_for_mailbox(self.bare_identity.as_ref(), &mailbox_value)?;
                 }
             }
+        }
 
-            for (folder_path, folder_value) in leftover_folders_store.iter() {
-                debug!(
-                    "Detected that folder {} for identity {} is not on the server. Removing from database",
-                    &folder_path, &bare_identity_clone.email_address
-                );
-                store_clone.remove_folder(&bare_identity_clone, &folder_value)?;
-            }
+        for (folder_path, folder_value) in leftover_folders_store.iter() {
+            debug!(
+                "Detected that folder {} for identity {} is not on the server. Removing from database",
+                &folder_path,
+                self.bare_identity.as_ref().email_address
+            );
+            self.store.remove_folder(self.bare_identity.as_ref(), &folder_value)?;
+        }
 
-            //@TODO trigger application event to reload folders
+        //@TODO trigger application event to reload folders
 
-            Ok(())
-        }))
+        Ok(())
     }
 
     // fn fetch_messages_for_folder(
@@ -244,10 +235,7 @@ impl Identity {
     //     // }))
     // }
 
-    fn sync_messages_for_folder(&self, folder: &models::Folder, sync_type: SyncType) -> ResultFuture<()> {
-        let folder_clone = folder.clone();
-        let store_clone = self.store.clone();
-
+    async fn sync_messages_for_folder(&self, folder: &models::Folder, sync_type: SyncType) -> Result<(), String> {
         let backend_sync_type = match sync_type {
             SyncType::Fresh => imap::SyncType::Fresh,
             SyncType::Update => {
@@ -259,111 +247,92 @@ impl Identity {
             }
         };
 
-        let sync_job = self
-            .backend
-            .read()
-            .unwrap()
-            .sync(folder.folder_path.clone(), backend_sync_type.clone())
-            .unwrap();
+        debug!("Syncing messages for folder {}, checking if online", folder.folder_name);
 
-        let online_job = self
-            .backend
-            .read()
-            .map_err(|e| e.to_string())?
+        self.backend
             .is_online()
+            .map_err(|e| e.to_string())?
+            .await
             .map_err(|e| e.to_string())?;
 
-        Ok(Box::pin(async move {
-            debug!("Syncing messages for folder {}, checking if online", folder_clone.folder_name);
+        debug!("Online, syncing");
+        let (new_uid_validity, mut new_messages, flag_updates) = self
+            .backend
+            .sync(folder.folder_path.clone(), backend_sync_type.clone())
+            .map_err(|e| e.to_string())?
+            .await
+            .map_err(|e| e.to_string())?;
 
-            online_job.await.map_err(|e| e.to_string())?;
+        // @TODO asyncstream while let Some(bla) = x.next().await { }
 
-            debug!("Online, syncing");
-            let (new_uid_validity, mut new_messages, flag_updates) = sync_job.await.map_err(|e| e.to_string())?;
+        debug!("Saving fetched data to store");
 
-            // @TODO asyncstream while let Some(bla) = x.next().await { }
+        let now = Instant::now();
 
-            debug!("Saving fetched data to store");
+        match backend_sync_type {
+            imap::SyncType::Fresh => {
+                self.store
+                    .store_messages_for_folder(&mut new_messages, folder, Some(new_uid_validity))?;
+            }
+            imap::SyncType::Update {
+                max_uid: _,
+                uid_validity: current_uid_validity,
+            } => {
+                if new_uid_validity == current_uid_validity {
+                    self.store.store_messages_for_folder(&mut new_messages, folder, None)?;
 
-            let now = Instant::now();
-
-            match backend_sync_type {
-                imap::SyncType::Fresh => {
-                    store_clone.store_messages_for_folder(&mut new_messages, &folder_clone, Some(new_uid_validity))?;
-                }
-                imap::SyncType::Update {
-                    max_uid: _,
-                    uid_validity: current_uid_validity,
-                } => {
-                    if new_uid_validity == current_uid_validity {
-                        store_clone.store_messages_for_folder(&mut new_messages, &folder_clone, None)?;
-
-                        if let Some(flag_updates) = flag_updates {
-                            //@TODO
-                            for flag_update in flag_updates.iter() {
-                                debug!("{}", flag_update.uid);
-                            }
+                    if let Some(flag_updates) = flag_updates {
+                        //@TODO
+                        for flag_update in flag_updates.iter() {
+                            debug!("{}", flag_update.uid);
                         }
-                        //@TODO 2) find out which old messages got expunged; and
-                    } else {
-                        //@TODO delete all mail
-                        //@todo store
-                        //@TODO set new uid_validity on folder
                     }
+                    //@TODO 2) find out which old messages got expunged; and
+                } else {
+                    //@TODO delete all mail
+                    //@todo store
+                    //@TODO set new uid_validity on folder
                 }
-            };
+            }
+        };
 
-            debug!("Finished saving data. Took {} seconds.", now.elapsed().as_millis() as f32 / 1000.0);
+        debug!("Finished saving data. Took {} seconds.", now.elapsed().as_millis() as f32 / 1000.0);
 
-            Ok(())
-        }))
+        Ok(())
     }
 
     pub fn is_message_content_downloaded(&self, conversation_id: i32) -> Result<bool, String> {
         self.store.is_message_content_downloaded(conversation_id)
     }
 
-    pub async fn fetch_message_content(&self, conversation_id: i32) -> Result<(), String> {
-        self.fetch_message_content_inner(conversation_id)?.await
-    }
-
-    fn fetch_message_content_inner(&self, conversation_id: i32) -> ResultFuture<()> {
-        let store_clone = self.store.clone();
-
+    pub async fn fetch_message_content(self: Arc<Self>, conversation_id: i32) -> Result<(), String> {
         //@TODO handle case when this returns error
         let message = self.store.get_message(conversation_id).expect("Unable to get message");
         let folder = self.store.get_folder(message.folder_id).expect("Unable to get folder");
 
-        let fetch_message_content_job = self
-            .backend
-            .read()
-            .unwrap()
-            .fetch_message_content(&folder.folder_path, message.uid)
-            .unwrap();
+        debug!(
+            "Fetching content for message uid {} in folder {}, checking if online",
+            message.uid, &folder.folder_path
+        );
 
-        let online_job = self
-            .backend
-            .read()
-            .map_err(|e| e.to_string())?
+        self.backend
             .is_online()
+            .map_err(|e| e.to_string())?
+            .await
             .map_err(|e| e.to_string())?;
 
-        Ok(Box::pin(async move {
-            debug!(
-                "Fetching content for message uid {} in folder {}, checking if online",
-                message.uid, &folder.folder_path
-            );
+        debug!("Online, fetching");
 
-            online_job.await.map_err(|e| e.to_string())?;
+        let message_content = self
+            .backend
+            .fetch_message_content(&folder.folder_path, message.uid)
+            .map_err(|e| e.to_string())?
+            .await
+            .map_err(|e| e.to_string())?;
 
-            debug!("Online, fetching");
+        self.store.store_content_for_message(message_content, &message)?;
 
-            let message_content = fetch_message_content_job.await.map_err(|e| e.to_string())?;
-
-            store_clone.store_content_for_message(message_content, &message)?;
-
-            Ok(())
-        }))
+        Ok(())
     }
 
     pub fn get_folders(&self) -> Result<Vec<models::Folder>, String> {
