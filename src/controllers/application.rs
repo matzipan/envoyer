@@ -177,7 +177,7 @@ impl Application {
                             let identity = Arc::new(models::Identity::new(bare_identity, store_clone).await);
 
                             if initialize {
-                                identity.initialize().await.map_err(|x| error!("{}", x));
+                                identity.clone().initialize().await.map_err(|x| error!("{}", x));
                             }
 
                             identities_clone.lock().expect("Unable to access identities").push(identity);
@@ -194,7 +194,7 @@ impl Application {
                     let application_message_sender_clone = application_message_sender.clone();
 
                     for identity in &*identities_clone.lock().expect("Unable to access identities") {
-                        identity.start_session();
+                        context_clone.spawn(identity.clone().start_session());
                     }
 
                     folders_list_model_clone.load();
@@ -248,13 +248,10 @@ impl Application {
 
                                 conversation_model_clone.set_loading();
 
-                                let identities_clone = identities_clone.clone();
+                                let identity = identities_clone.lock().expect("BLA")[0].clone();
 
-                                context_clone.spawn_local(
+                                context_clone.spawn(
                                     async move {
-                                        //@TODO this lock is not ideal. how do we get rigd of it?
-                                        let identity = &identities_clone.lock().expect("BLA")[0];
-
                                         identity.fetch_message_content(conversation.id).await?;
 
                                         Ok(conversation)
