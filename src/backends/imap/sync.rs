@@ -2,8 +2,6 @@ use super::*;
 
 use crate::models;
 
-use melib::backends::imap::ImapConnection;
-
 use melib::connections::timeout;
 
 use melib::MeliError;
@@ -11,20 +9,13 @@ use melib::MeliError;
 use log::debug;
 
 use std::convert::TryInto;
-use std::sync::Arc;
-use std::time::Duration;
 use std::time::Instant;
 
-pub struct SyncJob {
-    pub imap_path: String,
-    pub initial_sync_type: SyncType,
-    pub connect_timeout_duration: Option<Duration>,
-    pub connection: Arc<futures::lock::Mutex<ImapConnection>>,
-}
-
-impl SyncJob {
-    pub async fn sync<'a>(
-        &'a self,
+impl ImapBackend {
+    pub async fn sync(
+        &self,
+        imap_path: String,
+        initial_sync_type: SyncType,
     ) -> Result<
         (
             melib::backends::imap::UIDVALIDITY,
@@ -33,11 +24,15 @@ impl SyncJob {
         ),
         MeliError,
     > {
-        let mut connection = timeout(self.connect_timeout_duration, self.connection.lock()).await?;
+        let connect_timeout_duration = self.server_conf.timeout;
 
-        let select_response = connection.select(self.imap_path.clone()).await?;
+        let connection = self.connection.clone();
 
-        let mut sync_type = self.initial_sync_type.clone();
+        let mut connection = timeout(connect_timeout_duration, connection.lock()).await?;
+
+        let select_response = connection.select(imap_path.clone()).await?;
+
+        let mut sync_type = initial_sync_type.clone();
 
         loop {
             match sync_type {
