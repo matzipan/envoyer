@@ -26,8 +26,8 @@ use log::debug;
 
 #[derive(Debug)]
 pub struct ImapBackend {
-    connection: Arc<FutureMutex<ImapConnection>>,
-    server_conf: ImapServerConf,
+    pub connection: Arc<FutureMutex<ImapConnection>>,
+    pub server_conf: ImapServerConf,
 }
 
 #[derive(Debug, Clone)]
@@ -290,15 +290,6 @@ impl ImapBackend {
                 Err(err) => Err(err),
             }
         }))
-    }
-
-    pub fn watch(&self, timeout_duration: std::time::Duration) -> WatchJob {
-        WatchJob {
-            server_conf: self.server_conf.clone(),
-            reconnect_timeout_duration: self.server_conf.timeout,
-            idle_timeout_duration: timeout_duration,
-            connection: self.connection.clone(),
-        }
     }
 
     pub fn mailboxes(&self) -> ResultFuture<HashMap<MailboxHash, Box<ImapMailbox>>> {

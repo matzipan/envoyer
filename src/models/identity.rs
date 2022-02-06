@@ -112,11 +112,9 @@ impl Identity {
                 error!("{}", e);
             });
 
-        let watch_job = self.backend.watch(std::time::Duration::from_secs(5 * 60));
-
         info!("Watching for changes");
         loop {
-            let watch_return_reason = watch_job.watch().await;
+            let watch_return_reason = self.backend.watch(std::time::Duration::from_secs(5 * 60)).await;
 
             match watch_return_reason {
                 Ok(imap::WatchReturnReason::Updates(_)) => {
