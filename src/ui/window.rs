@@ -17,7 +17,6 @@ pub struct Window {
     pub gtk_window: gtk::ApplicationWindow,
     threads_list_box: gtk::ListBox,
     conversation_viewer_list_box: gtk::ListBox,
-    identities: Arc<Mutex<Vec<models::Identity>>>,
 }
 
 pub mod folders_list_item {
@@ -328,7 +327,6 @@ impl Window {
     pub fn new(
         application: &gtk::Application,
         sender: glib::Sender<ApplicationMessage>,
-        identities: Arc<Mutex<Vec<models::Identity>>>,
         folders_list_model: &models::folders_list::model::FolderListModel,
         conversations_list_model: &models::folder_conversations_list::model::FolderModel,
         conversation_model: &models::conversation_messages_list::model::ConversationModel,
@@ -739,7 +737,6 @@ impl Window {
             gtk_window,
             threads_list_box,
             conversation_viewer_list_box,
-            identities,
         }
     }
 
