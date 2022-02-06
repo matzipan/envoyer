@@ -12,7 +12,6 @@ use melib::MeliError;
 
 use log::debug;
 
-use futures::Future;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -31,59 +30,57 @@ pub struct WatchJob {
 }
 
 impl WatchJob {
-    pub fn watch<'a>(&'a self) -> impl Future<Output = Result<WatchReturnReason, MeliError>> + 'a {
-        async move {
-            let has_idle = {
-                let conn = self.connection.lock().await;
+    pub async fn watch<'a>(&'a self) -> Result<WatchReturnReason, MeliError> {
+        let has_idle = {
+            let conn = self.connection.lock().await;
 
-                conn.has_capability("IDLE".to_string())
-            };
+            conn.has_capability("IDLE".to_string())
+        };
 
-            let has_idle = true; //@TODO capabiltiies are not updated proberly
+        let has_idle = true; //@TODO capabiltiies are not updated proberly
 
-            if !has_idle {
-                debug!("Server does not support IDLE");
+        if !has_idle {
+            debug!("Server does not support IDLE");
 
-                debug!("IDLE-less support not implemented yet");
+            debug!("IDLE-less support not implemented yet");
 
-                return Err(MeliError::new("Non-IDLE servers not supported").set_kind(melib::error::ErrorKind::None));
-            }
+            return Err(MeliError::new("Non-IDLE servers not supported").set_kind(melib::error::ErrorKind::None));
+        }
 
-            loop {
-                debug!("Server supports IDLE");
-                match idle(
-                    create_connection(&self.server_conf, BackendEventConsumer::new(Arc::new(|_, _| {}))),
-                    self.idle_timeout_duration,
-                )
-                .await
-                {
-                    Ok(IdleReturnReason::Updates(updates)) => {
-                        return Ok(WatchReturnReason::Updates(updates));
-                    }
-                    Ok(IdleReturnReason::Timeout) => {
-                        return Ok(WatchReturnReason::Timeout);
-                    }
-                    Err(network_error) if network_error.kind.is_network() => {
-                        debug!("Watch network failure: {}", network_error.to_string());
+        loop {
+            debug!("Server supports IDLE");
+            match idle(
+                create_connection(&self.server_conf, BackendEventConsumer::new(Arc::new(|_, _| {}))),
+                self.idle_timeout_duration,
+            )
+            .await
+            {
+                Ok(IdleReturnReason::Updates(updates)) => {
+                    return Ok(WatchReturnReason::Updates(updates));
+                }
+                Ok(IdleReturnReason::Timeout) => {
+                    return Ok(WatchReturnReason::Timeout);
+                }
+                Err(network_error) if network_error.kind.is_network() => {
+                    debug!("Watch network failure: {}", network_error.to_string());
 
-                        let mut main_conn_lck = timeout(self.reconnect_timeout_duration, self.connection.lock()).await?;
+                    let mut main_conn_lck = timeout(self.reconnect_timeout_duration, self.connection.lock()).await?;
 
-                        match timeout(self.reconnect_timeout_duration, main_conn_lck.connect())
-                            .await
-                            .and_then(|res| res)
-                        {
-                            Err(reconnect_error) => {
-                                debug!("Watch reconnect attempt failed: {}", reconnect_error.to_string());
-                                return Err(reconnect_error);
-                            }
-                            Ok(()) => {
-                                debug!("Watch reconnect attempt succesful");
-                                continue;
-                            }
+                    match timeout(self.reconnect_timeout_duration, main_conn_lck.connect())
+                        .await
+                        .and_then(|res| res)
+                    {
+                        Err(reconnect_error) => {
+                            debug!("Watch reconnect attempt failed: {}", reconnect_error.to_string());
+                            return Err(reconnect_error);
+                        }
+                        Ok(()) => {
+                            debug!("Watch reconnect attempt succesful");
+                            continue;
                         }
                     }
-                    Err(err) => return Err(err),
                 }
+                Err(err) => return Err(err),
             }
         }
     }
