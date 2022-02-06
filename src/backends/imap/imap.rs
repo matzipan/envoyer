@@ -376,15 +376,6 @@ impl ImapBackend {
         }))
     }
 
-    pub fn sync(&self, imap_path: String, sync_type: SyncType) -> SyncJob {
-        SyncJob {
-            imap_path,
-            initial_sync_type: sync_type,
-            connect_timeout_duration: self.server_conf.timeout,
-            connection: self.connection.clone(),
-        }
-    }
-
     pub fn fetch_message_content(&self, imap_path: &String, uid: i64) -> ResultFuture<String> {
         let connection_clone = self.connection.clone();
         let timeout_dur = self.server_conf.timeout;

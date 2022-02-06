@@ -281,8 +281,11 @@ impl Identity {
         debug!("Online, syncing");
         // @TODO asyncstream while let Some(bla) = x.next().await { }
 
-        let sync_job = self.backend.sync(folder.folder_path.clone(), backend_sync_type.clone());
-        let (new_uid_validity, mut new_messages, flag_updates) = sync_job.sync().await.map_err(|e| e.to_string())?;
+        let (new_uid_validity, mut new_messages, flag_updates) = self
+            .backend
+            .sync(folder.folder_path.clone(), backend_sync_type.clone())
+            .await
+            .map_err(|e| e.to_string())?;
 
         let now = Instant::now();
 
