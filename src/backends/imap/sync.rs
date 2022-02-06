@@ -10,8 +10,6 @@ use melib::MeliError;
 
 use log::debug;
 
-use futures::Future;
-
 use std::convert::TryInto;
 use std::sync::Arc;
 use std::time::Duration;
@@ -25,81 +23,77 @@ pub struct SyncJob {
 }
 
 impl SyncJob {
-    pub fn sync<'a>(
+    pub async fn sync<'a>(
         &'a self,
-    ) -> impl Future<
-        Output = Result<
-            (
-                melib::backends::imap::UIDVALIDITY,
-                Vec<models::NewMessage>,
-                Option<Vec<MessageFlagUpdate>>,
-            ),
-            MeliError,
-        >,
-    > + 'a {
-        async move {
-            let mut connection = timeout(self.connect_timeout_duration, self.connection.lock()).await?;
+    ) -> Result<
+        (
+            melib::backends::imap::UIDVALIDITY,
+            Vec<models::NewMessage>,
+            Option<Vec<MessageFlagUpdate>>,
+        ),
+        MeliError,
+    > {
+        let mut connection = timeout(self.connect_timeout_duration, self.connection.lock()).await?;
 
-            let select_response = connection.select(self.imap_path.clone()).await?;
+        let select_response = connection.select(self.imap_path.clone()).await?;
 
-            let mut sync_type = self.initial_sync_type.clone();
+        let mut sync_type = self.initial_sync_type.clone();
 
-            loop {
-                match sync_type {
-                    SyncType::Fresh => {
-                        debug!("Doing a fresh fetch");
+        loop {
+            match sync_type {
+                SyncType::Fresh => {
+                    debug!("Doing a fresh fetch");
 
-                        let now = Instant::now();
+                    let now = Instant::now();
 
-                        let new_messages = fetch_messages_overview_in_uid_range(&mut *connection, 1, select_response.uidnext - 1).await?;
+                    let new_messages = fetch_messages_overview_in_uid_range(&mut *connection, 1, select_response.uidnext - 1).await?;
 
+                    debug!(
+                        "Finished fresh fetch. Found {} new messages with UID validity {}. Took {} seconds.",
+                        new_messages.len(),
+                        select_response.uidvalidity,
+                        now.elapsed().as_millis() as f32 / 1000.0
+                    );
+                    return Ok((select_response.uidvalidity, new_messages, None));
+                }
+                SyncType::Update {
+                    max_uid,
+                    uid_validity: old_uid_validity,
+                } => {
+                    debug!(
+                        "Updating with max_uid {}, old uid_validity {} and new uid_validity {}",
+                        max_uid, old_uid_validity, select_response.uidvalidity
+                    );
+
+                    let now = Instant::now();
+
+                    if select_response.uidvalidity != old_uid_validity {
                         debug!(
-                            "Finished fresh fetch. Found {} new messages with UID validity {}. Took {} seconds.",
-                            new_messages.len(),
-                            select_response.uidvalidity,
-                            now.elapsed().as_millis() as f32 / 1000.0
-                        );
-                        return Ok((select_response.uidvalidity, new_messages, None));
-                    }
-                    SyncType::Update {
-                        max_uid,
-                        uid_validity: old_uid_validity,
-                    } => {
-                        debug!(
-                            "Updating with max_uid {}, old uid_validity {} and new uid_validity {}",
-                            max_uid, old_uid_validity, select_response.uidvalidity
+                            "UID Validity mismatch between {} and {}. Going for a fresh fetch",
+                            select_response.uidvalidity, old_uid_validity
                         );
 
-                        let now = Instant::now();
+                        sync_type = SyncType::Fresh;
+                        continue;
+                    } else if select_response.exists == 0 {
+                        debug!("No messages in the mailbox");
 
-                        if select_response.uidvalidity != old_uid_validity {
-                            debug!(
-                                "UID Validity mismatch between {} and {}. Going for a fresh fetch",
-                                select_response.uidvalidity, old_uid_validity
-                            );
+                        //@TODO return response
+                        return Ok((select_response.uidvalidity, Vec::new(), None));
+                    } else {
+                        debug!("Fetching new messages");
+                        let new_messages =
+                            fetch_messages_overview_in_uid_range(&mut *connection, max_uid + 1, select_response.uidnext - 1).await?;
 
-                            sync_type = SyncType::Fresh;
-                            continue;
-                        } else if select_response.exists == 0 {
-                            debug!("No messages in the mailbox");
+                        debug!("Found {} new messages. Fetching flag updates", new_messages.len());
+                        let flag_updates = fetch_flags_updates_in_uid_range(&mut *connection, 1, max_uid).await?;
 
-                            //@TODO return response
-                            return Ok((select_response.uidvalidity, Vec::new(), None));
-                        } else {
-                            debug!("Fetching new messages");
-                            let new_messages =
-                                fetch_messages_overview_in_uid_range(&mut *connection, max_uid + 1, select_response.uidnext - 1).await?;
+                        debug!("Finished in {} seconds.", now.elapsed().as_secs());
 
-                            debug!("Found {} new messages. Fetching flag updates", new_messages.len());
-                            let flag_updates = fetch_flags_updates_in_uid_range(&mut *connection, 1, max_uid).await?;
-
-                            debug!("Finished in {} seconds.", now.elapsed().as_secs());
-
-                            return Ok((select_response.uidvalidity, new_messages, Some(flag_updates)));
-                        }
+                        return Ok((select_response.uidvalidity, new_messages, Some(flag_updates)));
                     }
-                };
-            }
+                }
+            };
         }
     }
 }
