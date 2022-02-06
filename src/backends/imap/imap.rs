@@ -3,8 +3,6 @@
 
 use crate::models;
 
-use super::*;
-
 use futures::Future;
 use melib;
 use melib::backends::imap::{
@@ -21,8 +19,6 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 use std::pin::Pin;
-
-use log::debug;
 
 #[derive(Debug)]
 pub struct ImapBackend {
