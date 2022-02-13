@@ -1,3 +1,4 @@
+use crate::backends;
 use crate::models;
 use crate::schema;
 
@@ -307,6 +308,30 @@ impl Store {
                 if let Some(new_uid_validity) = new_uid_validity {
                     diesel::update(folder)
                         .set(schema::folders::uid_validity.eq(Some(new_uid_validity as i64)))
+                        .execute(&connection)?;
+                }
+
+                Ok(())
+            })
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    /// Stores a vector of message flag updates for a folder
+    ///
+    /// # Arguments
+    ///
+    /// * `flag_updates` - The flag updates to store
+    pub fn store_message_flag_updates_for_folder(&self, flag_updates: &Vec<backends::imap::MessageFlagUpdate>) -> Result<(), String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        connection
+            .transaction::<(), diesel::result::Error, _>(|| {
+                for flag_update in flag_updates.iter() {
+                    diesel::update(schema::messages::table)
+                        .filter(schema::messages::uid.eq(flag_update.uid as i64))
+                        .set(flag_update.flags)
                         .execute(&connection)?;
                 }
 

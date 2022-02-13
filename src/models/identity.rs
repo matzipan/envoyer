@@ -306,12 +306,10 @@ impl Identity {
                 if new_uid_validity == current_uid_validity {
                     self.store.store_messages_for_folder(&mut new_messages, folder, None)?;
 
-                    if let Some(flag_updates) = flag_updates {
-                        //@TODO
-                        for flag_update in flag_updates.iter() {
-                            debug!("{}", flag_update.uid);
-                        }
-                    }
+                    flag_updates
+                        .map(|flag_updates| self.store.store_message_flag_updates_for_folder(&flag_updates))
+                        .transpose()?;
+
                     //@TODO 2) find out which old messages got expunged; and
                 } else {
                     //@TODO delete all mail
