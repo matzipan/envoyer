@@ -126,7 +126,7 @@ impl MessageSummary {
     }
 }
 
-#[derive(AsChangeset, Debug)]
+#[derive(AsChangeset, Debug, Clone)]
 #[table_name = "messages"]
 pub struct MessageFlags {
     pub seen: bool,
