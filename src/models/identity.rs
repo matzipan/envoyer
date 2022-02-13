@@ -306,11 +306,12 @@ impl Identity {
                 if new_uid_validity == current_uid_validity {
                     self.store.store_messages_for_folder(&mut new_messages, folder, None)?;
 
-                    flag_updates
-                        .map(|flag_updates| self.store.store_message_flag_updates_for_folder(&flag_updates))
-                        .transpose()?;
+                    flag_updates.map(|flag_updates| {
+                        self.store.store_message_flag_updates_for_folder(&flag_updates);
 
-                    //@TODO 2) find out which old messages got expunged; and
+                        self.store
+                            .keep_only_uids_for_folder(&flag_updates.iter().map(|x| x.uid).collect::<_>(), folder);
+                    });
                 } else {
                     //@TODO delete all mail
                     //@todo store

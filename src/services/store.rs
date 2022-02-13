@@ -7,6 +7,7 @@ use crate::schema;
 use melib::BackendMailbox;
 
 use log::debug;
+use std::collections::{HashMap, HashSet};
 use std::convert::TryFrom;
 use std::env;
 use std::fmt;
@@ -337,6 +338,55 @@ impl Store {
 
                 Ok(())
             })
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    /// Removes from the store UIDs that do not belong to the set
+    ///
+    /// # Arguments
+    ///
+    /// * `server_uid_set` - A hash set containing the UIDs that should be kept
+    ///   in the database
+    /// * `folder` - The folder to filter the UIDs for
+    pub fn keep_only_uids_for_folder(
+        &self,
+        server_uid_set: &HashSet<melib::backends::imap::UID>,
+        folder: &models::Folder,
+    ) -> Result<(), String> {
+        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        // The key is the UID and the value is the database primary key
+        let mut store_folder_uids: HashMap<_, _> = schema::messages::table
+            .select((schema::messages::uid, schema::messages::id))
+            .filter(schema::messages::folder_id.eq(folder.id))
+            .load::<(i64, i32)>(&connection)
+            .map_err(|e| e.to_string())?
+            .into_iter()
+            .collect();
+
+        debug!(
+            "Total in store: {}. Total on server: {}",
+            store_folder_uids.len(),
+            server_uid_set.len(),
+        );
+
+        let ids_not_on_server: Vec<_> = store_folder_uids
+            // We use drain_filter to avoid an extra copy to gain ownership
+            .drain_filter(|uid, _| !server_uid_set.contains(&(*uid as u32)))
+            .map(|(_, id)| id)
+            .collect();
+
+        debug!(
+            "Keys not on server {:?}. Total not on server: {}",
+            ids_not_on_server,
+            ids_not_on_server.len()
+        );
+
+        diesel::delete(schema::messages::table)
+            .filter(schema::messages::id.eq_any(ids_not_on_server))
+            .execute(&connection)
             .map_err(|e| e.to_string())?;
 
         Ok(())

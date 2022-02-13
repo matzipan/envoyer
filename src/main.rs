@@ -1,3 +1,5 @@
+#![feature(hash_drain_filter)]
+
 #[macro_use]
 extern crate serde_derive;
 
@@ -7,10 +9,10 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
 
+mod backends;
 mod bindings;
 mod controllers;
 mod google_oauth;
-mod backends;
 mod litehtml_callbacks;
 mod models;
 mod schema;
