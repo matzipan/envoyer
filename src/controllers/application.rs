@@ -1,4 +1,5 @@
 use gtk;
+use gtk::gio;
 use gtk::gio::prelude::*;
 use gtk::glib;
 
@@ -44,6 +45,10 @@ pub enum ApplicationMessage {
     },
     ConversationContentLoadFinished {
         conversation: models::MessageSummary,
+    },
+    NewMessages {
+        new_messages: Vec<models::NewMessage>,
+        identity: Arc<models::Identity>,
     },
     OpenGoogleAuthentication {
         email_address: String,
@@ -174,7 +179,8 @@ impl Application {
                         for bare_identity in bare_identities {
                             let store_clone = store_clone.clone();
 
-                            let identity = Arc::new(models::Identity::new(bare_identity, store_clone).await);
+                            let identity =
+                                Arc::new(models::Identity::new(bare_identity, store_clone, application_message_sender_clone.clone()).await);
 
                             if initialize {
                                 identity.clone().initialize().await.map_err(|x| error!("{}", x));
@@ -334,6 +340,17 @@ impl Application {
                                 };
                             }),
                     );
+                }
+                ApplicationMessage::NewMessages { new_messages, identity } => {
+                    info!(
+                        "New messages received for {}: {}",
+                        identity.bare_identity.email_address,
+                        new_messages.len()
+                    );
+
+                    for new_message in new_messages {
+                        info!("New message {} ", new_message.subject)
+                    }
                 }
             }
             // Returning false here would close the receiver and have senders
