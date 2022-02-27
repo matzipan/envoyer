@@ -304,14 +304,17 @@ impl Identity {
                 uid_validity: current_uid_validity,
             } => {
                 if new_uid_validity == current_uid_validity {
-                    self.store.store_messages_for_folder(&mut new_messages, folder, None)?;
-
                     flag_updates.map(|flag_updates| {
                         self.store.store_message_flag_updates_for_folder(&flag_updates);
 
+                        // We use this to filter out expunged messages, but we need to run this before
+                        // storing new messages. Otherwise we'll just delete the newly added messages
                         self.store
                             .keep_only_uids_for_folder(&flag_updates.iter().map(|x| x.uid).collect::<_>(), folder);
                     });
+
+                    // This needs to happen before the call to "Keep only uids for folder"
+                    self.store.store_messages_for_folder(&mut new_messages, folder, None)?;
                 } else {
                     //@TODO delete all mail
                     //@todo store
