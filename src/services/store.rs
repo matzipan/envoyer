@@ -332,7 +332,7 @@ impl Store {
                 for flag_update in flag_updates.iter() {
                     diesel::update(schema::messages::table)
                         .filter(schema::messages::uid.eq(flag_update.uid as i64))
-                        .set(flag_update.flags)
+                        .set(flag_update.flags.clone())
                         .execute(&connection)?;
                 }
 
