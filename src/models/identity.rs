@@ -16,6 +16,7 @@ use std::sync::Arc;
 use async_stream;
 
 use crate::backends::imap;
+use crate::controllers::ApplicationMessage;
 use crate::google_oauth;
 use crate::models;
 use crate::services;
@@ -25,15 +26,20 @@ pub enum SyncType {
     Update,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Identity {
-    bare_identity: Arc<models::BareIdentity>,
+    pub bare_identity: Arc<models::BareIdentity>,
     backend: Arc<Box<imap::ImapBackend>>,
     store: Arc<services::Store>,
+    application_message_sender: glib::Sender<ApplicationMessage>,
 }
 
 impl Identity {
-    pub async fn new(bare_identity: models::BareIdentity, store: Arc<services::Store>) -> Identity {
+    pub async fn new(
+        bare_identity: models::BareIdentity,
+        store: Arc<services::Store>,
+        application_message_sender: glib::Sender<ApplicationMessage>,
+    ) -> Identity {
         info!("Creating identity with address {}", bare_identity.email_address);
 
         //@TODO do the thread token response fetch asynchronously so that the
@@ -63,6 +69,7 @@ impl Identity {
             bare_identity: Arc::new(bare_identity),
             backend: Arc::new(imap_backend),
             store,
+            application_message_sender,
         };
     }
 
@@ -263,7 +270,11 @@ impl Identity {
     //     // }))
     // }
 
-    async fn sync_messages_for_folder(&self, folder: &models::Folder, sync_type: SyncType) -> Result<(), String> {
+    async fn sync_messages_for_folder(
+        self: Arc<Self>,
+        folder: &models::Folder,
+        sync_type: SyncType,
+    ) -> Result<Option<Vec<models::NewMessage>>, String> {
         let backend_sync_type = match sync_type {
             SyncType::Fresh => imap::SyncType::Fresh,
             SyncType::Update => {
@@ -294,10 +305,12 @@ impl Identity {
         let now = Instant::now();
 
         debug!("Saving fetched data to store");
-        match backend_sync_type {
+        let new_messages = match backend_sync_type {
             imap::SyncType::Fresh => {
                 self.store
                     .store_messages_for_folder(&mut new_messages, folder, Some(new_uid_validity))?;
+
+                None
             }
             imap::SyncType::Update {
                 max_uid: _,
@@ -317,19 +330,22 @@ impl Identity {
 
                     // This needs to happen before the call to "Keep only uids for folder"
                     self.store.store_messages_for_folder(&mut new_messages, folder, None)?;
+
+                    Some(new_messages)
                 } else {
                     debug!("UID validity mismatch");
 
                     //@TODO delete all mail
                     //@todo store
                     //@TODO set new uid_validity on folder
+                    None
                 }
             }
         };
 
         debug!("Finished saving data. Took {} seconds.", now.elapsed().as_millis() as f32 / 1000.0);
 
-        Ok(())
+        Ok(new_messages)
     }
 
     pub fn is_message_content_downloaded(&self, conversation_id: i32) -> Result<bool, String> {
