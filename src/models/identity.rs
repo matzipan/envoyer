@@ -80,10 +80,6 @@ impl Identity {
         self.clone().sync_folders().await?;
 
         for folder in self.store.get_folders(&self.bare_identity)? {
-            if folder.folder_name != "INBOX" {
-                continue;
-            }
-
             self.clone().sync_messages_for_folder(&folder, SyncType::Fresh).await?;
         }
 
