@@ -108,13 +108,10 @@ impl Identity {
         });
 
         info!("Syncing messages");
-        self.clone()
-            .sync_messages_for_folder(&inbox_folder, SyncType::Update)
-            .await
-            .map_err(|e| {
-                //@TODO show in UI
-                error!("{}", e);
-            });
+
+        let sync_result = self.clone().sync_messages_for_folder(&inbox_folder, SyncType::Update).await;
+
+        self.clone().handle_sync_messages_for_folder_result(&inbox_folder, sync_result);
         // @TODO sync other folders than inbox
 
         info!("Watching for changes");
@@ -125,13 +122,9 @@ impl Identity {
                 Ok(imap::WatchReturnReason::Updates(_)) => {
                     info!("Watching found updates on INBOX");
 
-                    self.clone()
-                        .sync_messages_for_folder(&inbox_folder, SyncType::Update)
-                        .await
-                        .map_err(|e| {
-                            //@TODO show in UI
-                            error!("{}", e);
-                        });
+                    let sync_result = self.clone().sync_messages_for_folder(&inbox_folder, SyncType::Update).await;
+
+                    self.clone().handle_sync_messages_for_folder_result(&inbox_folder, sync_result);
                 }
                 Ok(imap::WatchReturnReason::Timeout) => {
                     info!("Watching timed out with no updates");
@@ -143,6 +136,29 @@ impl Identity {
                     error!("{}", e);
                 }
             }
+        }
+    }
+
+    fn handle_sync_messages_for_folder_result(
+        self: Arc<Self>,
+        sync_folder: &models::Folder,
+        sync_result: Result<Option<Vec<models::NewMessage>>, String>,
+    ) {
+        match sync_result {
+            Err(e) => {
+                //@TODO show in UI
+                error!("{}", e);
+            }
+            Ok(Some(new_messages)) => {
+                self.application_message_sender
+                    .send(ApplicationMessage::NewMessages {
+                        new_messages,
+                        folder: sync_folder.clone(),
+                        identity: self.clone(),
+                    })
+                    .expect("Unable to send application message");
+            }
+            Ok(None) => {}
         }
     }
 

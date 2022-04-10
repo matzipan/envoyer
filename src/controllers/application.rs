@@ -48,6 +48,7 @@ pub enum ApplicationMessage {
     },
     NewMessages {
         new_messages: Vec<models::NewMessage>,
+        folder: models::Folder,
         identity: Arc<models::Identity>,
     },
     OpenGoogleAuthentication {
@@ -341,7 +342,11 @@ impl Application {
                             }),
                     );
                 }
-                ApplicationMessage::NewMessages { new_messages, identity } => {
+                ApplicationMessage::NewMessages {
+                    new_messages,
+                    folder,
+                    identity,
+                } => {
                     info!(
                         "New messages received for {}: {}",
                         identity.bare_identity.email_address,
