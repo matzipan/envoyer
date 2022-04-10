@@ -110,7 +110,11 @@ impl Identity {
         let sync_result = self.clone().sync_messages_for_folder(&inbox_folder, SyncType::Update).await;
 
         self.clone().handle_sync_messages_for_folder_result(&inbox_folder, sync_result);
-        // @TODO sync other folders than inbox
+
+        self.clone().sync_non_inbox_folders().await.map_err(|e| {
+            //@TODO show in UI
+            error!("{}", e);
+        });
 
         info!("Watching for changes");
         loop {
@@ -127,7 +131,16 @@ impl Identity {
                 Ok(imap::WatchReturnReason::Timeout) => {
                     info!("Watching timed out with no updates");
 
-                    //@TODO check other folders
+                    info!("Syncing folders");
+                    self.clone().sync_folders().await.map_err(|e| {
+                        //@TODO show in UI
+                        error!("{}", e);
+                    });
+
+                    self.clone().sync_non_inbox_folders().await.map_err(|e| {
+                        //@TODO show in UI
+                        error!("{}", e);
+                    });
                 }
                 Err(e) => {
                     //@TODO show in UI
@@ -135,6 +148,20 @@ impl Identity {
                 }
             }
         }
+    }
+
+    async fn sync_non_inbox_folders(self: Arc<Self>) -> Result<(), String> {
+        let folders = self.store.get_folders(&self.bare_identity)?;
+
+        for folder in folders.iter().filter(|x| x.folder_name != "INBOX") {
+            // @TODO if the folders changed in the meanwhile and the last sync somehow
+            // failed, we need to check if the folder actually exists
+            let sync_result = self.clone().sync_messages_for_folder(&folder, SyncType::Update).await;
+
+            self.clone().handle_sync_messages_for_folder_result(&folder, sync_result);
+        }
+
+        Ok(())
     }
 
     fn handle_sync_messages_for_folder_result(
