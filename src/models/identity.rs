@@ -94,6 +94,8 @@ impl Identity {
             error!("{}", e);
         });
 
+        // @TODO if sync_folders failed twice (init and start_session), then there can
+        // be no INBOX folder
         let inbox_folder = self
             .store
             .get_folders(&self.bare_identity)
