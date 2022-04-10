@@ -92,6 +92,12 @@ impl Identity {
     }
 
     pub async fn start_session(self: Arc<Self>) {
+        info!("Syncing folders");
+        self.clone().sync_folders().await.map_err(|e| {
+            //@TODO show in UI
+            error!("{}", e);
+        });
+
         let inbox_folder = self
             .store
             .get_folders(&self.bare_identity)
@@ -100,12 +106,6 @@ impl Identity {
             .find(|&x| x.folder_name == "INBOX")
             .unwrap()
             .clone();
-
-        info!("Syncing folders");
-        self.clone().sync_folders().await.map_err(|e| {
-            //@TODO show in UI
-            error!("{}", e);
-        });
 
         info!("Syncing messages");
 
