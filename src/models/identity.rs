@@ -360,14 +360,17 @@ impl Identity {
                 if new_uid_validity == current_uid_validity {
                     debug!("UID validity match");
 
-                    flag_updates.map(|flag_updates| {
-                        self.store.store_message_flag_updates_for_folder(&flag_updates);
+                    match flag_updates {
+                        Some(flag_updates) => {
+                            self.store.store_message_flag_updates_for_folder(&flag_updates)?;
 
-                        // We use this to filter out expunged messages, but we need to run this before
-                        // storing new messages. Otherwise we'll just delete the newly added messages
-                        self.store
-                            .keep_only_uids_for_folder(&flag_updates.iter().map(|x| x.uid).collect::<_>(), folder);
-                    });
+                            // We use this to filter out expunged messages, but we need to run this before
+                            // storing new messages. Otherwise we'll just delete the newly added messages
+                            self.store
+                                .keep_only_uids_for_folder(&flag_updates.iter().map(|x| x.uid).collect::<_>(), folder)?;
+                        }
+                        None => {}
+                    };
 
                     // This needs to happen before the call to "Keep only uids for folder"
                     self.store
