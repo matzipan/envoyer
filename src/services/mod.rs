@@ -3,3 +3,4 @@ mod store;
 
 pub use authorization_code_receiver::AuthorizationCodeReceiver;
 pub use store::Store;
+pub use store::StoreType;

@@ -11,8 +11,14 @@ use std::collections::{HashMap, HashSet};
 use std::convert::TryFrom;
 use std::env;
 use std::fmt;
+use std::ptr::eq;
 
 use diesel::prelude::*;
+
+pub enum StoreType {
+    Fresh { new_uid_validity: u32 },
+    Incremental,
+}
 
 pub struct Store {
     pub database_connection_pool: diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<diesel::SqliteConnection>>,
@@ -281,19 +287,33 @@ impl Store {
     ///
     /// * `new_messages` - The messages to store
     /// * `folder` - The folder to save for
-    /// * `new_uid_validity` - The new UID validity to set for the folder. A
-    ///   value of `None` indicates that the value currently stored in the
-    ///   database should not be changed.
+    /// * `store_type` - A fresh update deletes the existing messages in the
+    ///   folder and sets the value of uid_validity for this folder.
     pub fn store_messages_for_folder(
         &self,
         new_messages: &mut Vec<models::NewMessage>,
         folder: &models::Folder,
-        new_uid_validity: Option<u32>,
+        store_type: StoreType,
     ) -> Result<(), String> {
         let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         connection
             .transaction::<(), diesel::result::Error, _>(|| {
+                match store_type {
+                    StoreType::Fresh { new_uid_validity } => {
+                        debug!("Doing store messages of type fresh with new UID validity {}", new_uid_validity);
+
+                        diesel::delete(schema::messages::table)
+                            .filter(schema::messages::folder_id.eq(folder.id))
+                            .execute(&connection)?;
+
+                        diesel::update(folder)
+                            .set(schema::folders::uid_validity.eq(Some(new_uid_validity as i64)))
+                            .execute(&connection)?;
+                    }
+                    StoreType::Incremental => {}
+                };
+
                 for new_message in new_messages.iter_mut() {
                     new_message.folder_id = folder.id;
 
@@ -301,14 +321,6 @@ impl Store {
 
                     diesel::insert_into(schema::messages::table)
                         .values(non_mut_new_message)
-                        .execute(&connection)?;
-                }
-
-                // This function accepts new_uid_validity as None to mean do not change the
-                // already existing UID validity
-                if let Some(new_uid_validity) = new_uid_validity {
-                    diesel::update(folder)
-                        .set(schema::folders::uid_validity.eq(Some(new_uid_validity as i64)))
                         .execute(&connection)?;
                 }
 

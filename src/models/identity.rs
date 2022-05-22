@@ -349,7 +349,7 @@ impl Identity {
         let new_messages = match backend_sync_type {
             imap::SyncType::Fresh => {
                 self.store
-                    .store_messages_for_folder(&mut new_messages, folder, Some(new_uid_validity))?;
+                    .store_messages_for_folder(&mut new_messages, folder, services::StoreType::Fresh { new_uid_validity })?;
 
                 None
             }
@@ -370,15 +370,16 @@ impl Identity {
                     });
 
                     // This needs to happen before the call to "Keep only uids for folder"
-                    self.store.store_messages_for_folder(&mut new_messages, folder, None)?;
+                    self.store
+                        .store_messages_for_folder(&mut new_messages, folder, services::StoreType::Incremental)?;
 
                     Some(new_messages)
                 } else {
                     debug!("UID validity mismatch");
 
-                    //@TODO delete all mail
-                    //@todo store
-                    //@TODO set new uid_validity on folder
+                    self.store
+                        .store_messages_for_folder(&mut new_messages, folder, services::StoreType::Fresh { new_uid_validity })?;
+
                     None
                 }
             }
