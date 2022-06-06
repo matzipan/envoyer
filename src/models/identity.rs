@@ -111,7 +111,7 @@ impl Identity {
 
         self.clone().handle_sync_messages_for_folder_result(&inbox_folder, sync_result);
 
-        self.clone().sync_non_inbox_folders().await.map_err(|e| {
+        self.clone().sync_messages_for_non_inbox_folders().await.map_err(|e| {
             //@TODO show in UI
             error!("{}", e);
         });
@@ -137,7 +137,7 @@ impl Identity {
                         error!("{}", e);
                     });
 
-                    self.clone().sync_non_inbox_folders().await.map_err(|e| {
+                    self.clone().sync_messages_for_non_inbox_folders().await.map_err(|e| {
                         //@TODO show in UI
                         error!("{}", e);
                     });
@@ -150,7 +150,7 @@ impl Identity {
         }
     }
 
-    async fn sync_non_inbox_folders(self: Arc<Self>) -> Result<(), String> {
+    async fn sync_messages_for_non_inbox_folders(self: Arc<Self>) -> Result<(), String> {
         let folders = self.store.get_folders(&self.bare_identity)?;
 
         for folder in folders.iter().filter(|x| x.folder_name != "INBOX") {
