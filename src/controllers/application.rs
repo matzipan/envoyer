@@ -353,6 +353,10 @@ impl Application {
                         new_messages.len()
                     );
 
+                    let conversations_list_model_clone = conversations_list_model_clone.clone();
+
+                    conversations_list_model_clone.handle_new_messages_for_folder(&folder);
+
                     for new_message in new_messages {
                         info!("New message {} ", new_message.subject)
                     }
