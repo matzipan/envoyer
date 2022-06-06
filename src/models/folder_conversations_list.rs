@@ -22,6 +22,7 @@ pub mod model {
         pub struct FolderModel {
             pub store: Rc<RefCell<Option<Arc<services::Store>>>>,
             pub summaries: Rc<RefCell<Option<Vec<models::MessageSummary>>>>,
+            pub currently_loaded_folder: Rc<RefCell<Option<models::Folder>>>,
         }
         // Basic declaration of our type for the GObject type system
 
@@ -37,6 +38,7 @@ pub mod model {
                 Self {
                     store: Default::default(),
                     summaries: Default::default(),
+                    currently_loaded_folder: Default::default(),
                 }
             }
         }
@@ -82,21 +84,43 @@ pub mod model {
         pub fn load_folder(self, folder: models::Folder) {
             let self_ = imp::FolderModel::from_instance(&self);
 
-            let previous_count = self_.n_items(&self);
+            self_.currently_loaded_folder.replace(Some(folder));
 
-            self_.summaries.replace(Some(
-                self_
-                    .store
-                    .borrow()
-                    .as_ref()
-                    .unwrap()
-                    .get_message_summaries_for_folder(&folder)
-                    .expect("Unable to get message summary"),
-            ));
+            self.update_list();
+        }
 
-            let new_count = self_.n_items(&self);
+        fn update_list(&self) {
+            let self_ = imp::FolderModel::from_instance(self);
 
-            self.items_changed(0, previous_count, new_count);
+            if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
+                let previous_count = self_.n_items(self);
+
+                self_.summaries.replace(Some(
+                    self_
+                        .store
+                        .borrow()
+                        .as_ref()
+                        .unwrap()
+                        .get_message_summaries_for_folder(currently_loaded_folder)
+                        .expect("Unable to get message summary"),
+                ));
+
+                let new_count = self_.n_items(self);
+
+                self.items_changed(0, previous_count, new_count);
+            }
+        }
+
+        pub fn handle_new_messages_for_folder(self, folder: &models::Folder) {
+            let self_ = imp::FolderModel::from_instance(&self);
+
+            if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
+                if currently_loaded_folder.folder_name == folder.folder_name && currently_loaded_folder.identity_id == folder.identity_id {
+                    // This creates ugly flicker and loss of selection. Should
+                    // be fixed with issue #227
+                    // self.update_list();
+                }
+            }
         }
     }
 }
