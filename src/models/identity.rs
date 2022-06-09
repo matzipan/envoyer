@@ -118,7 +118,10 @@ impl Identity {
 
         info!("Watching for changes");
         loop {
-            let watch_return_reason = self.backend.watch(std::time::Duration::from_secs(5 * 60)).await;
+            let watch_return_reason = self
+                .backend
+                .watch_folder(&inbox_folder, std::time::Duration::from_secs(5 * 60))
+                .await;
 
             match watch_return_reason {
                 Ok(imap::WatchReturnReason::Updates(_)) => {

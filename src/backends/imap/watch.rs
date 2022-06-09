@@ -1,6 +1,8 @@
 // Copyright 2019 Manos Pitsidianakis - meli
 // Copyright 2021 Andrei Zisu - envoyer
 
+use crate::models;
+
 use super::*;
 
 use melib::backends::imap::{ImapConnection, ImapLineSplit, ImapServerConf, RequiredResponses};
@@ -30,7 +32,11 @@ pub struct WatchJob {
 }
 
 impl ImapBackend {
-    pub async fn watch(&self, idle_timeout_duration: std::time::Duration) -> Result<WatchReturnReason, MeliError> {
+    pub async fn watch_folder(
+        &self,
+        folder: &models::Folder,
+        idle_timeout_duration: std::time::Duration,
+    ) -> Result<WatchReturnReason, MeliError> {
         let reconnect_timeout_duration = self.server_conf.timeout;
 
         let has_idle = {
@@ -53,6 +59,7 @@ impl ImapBackend {
             debug!("Server supports IDLE");
             match idle(
                 create_connection(&self.server_conf, BackendEventConsumer::new(Arc::new(|_, _| {}))),
+                folder,
                 idle_timeout_duration,
             )
             .await
@@ -131,7 +138,11 @@ fn is_continuation_or_confirmation(line: &[u8]) -> bool {
         || line.starts_with(b"* OK")
 }
 
-async fn idle(connection: ImapConnection, timeout_duration: std::time::Duration) -> Result<IdleReturnReason, MeliError> {
+async fn idle(
+    connection: ImapConnection,
+    folder: &models::Folder,
+    timeout_duration: std::time::Duration,
+) -> Result<IdleReturnReason, MeliError> {
     /* Idle on a given mailbox. Timeout after a specified duration. */
     let mut response = Vec::with_capacity(8 * 1024);
 
@@ -140,7 +151,10 @@ async fn idle(connection: ImapConnection, timeout_duration: std::time::Duration)
 
     debug!("Sending IDLE");
 
-    blocking_connection_wrapper.conn.send_command(b"SELECT INBOX").await?;
+    blocking_connection_wrapper
+        .conn
+        .send_command(format!("SELECT {}", folder.folder_name).as_bytes())
+        .await?;
     blocking_connection_wrapper
         .conn
         .read_response(&mut response, RequiredResponses::empty())
