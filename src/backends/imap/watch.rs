@@ -45,7 +45,7 @@ impl ImapBackend {
             conn.has_capability("IDLE".to_string())
         };
 
-        let has_idle = true; //@TODO capabiltiies are not updated proberly
+        let has_idle = true; //@TODO capabiltiies are not updated properly
 
         if !has_idle {
             debug!("Server does not support IDLE");
@@ -84,7 +84,7 @@ impl ImapBackend {
                             return Err(reconnect_error);
                         }
                         Ok(()) => {
-                            debug!("Watch reconnect attempt succesful");
+                            debug!("Watch reconnect attempt successful");
                             continue;
                         }
                     }

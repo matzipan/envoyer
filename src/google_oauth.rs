@@ -35,7 +35,7 @@ pub struct GoogleTokenRefreshResponse {
 }
 
 #[derive(Clone, Debug)]
-pub struct AuthenicationResult {
+pub struct AuthenticationResult {
     pub authorization_code: String,
     pub redirect_uri: String,
 }
@@ -94,7 +94,7 @@ pub struct GoogleTokensResponse {
     pub refresh_token: String,
 }
 
-pub async fn request_tokens(authentication_result: AuthenicationResult) -> Result<GoogleTokensResponse, String> {
+pub async fn request_tokens(authentication_result: AuthenticationResult) -> Result<GoogleTokensResponse, String> {
     let client = HttpClient::new().map_err(|e| e.to_string())?;
 
     let request = GoogleTokensRequest {
@@ -118,7 +118,7 @@ pub async fn request_tokens(authentication_result: AuthenicationResult) -> Resul
     Ok(tokens_response)
 }
 
-pub async fn authenticate(email_address: String) -> Result<AuthenicationResult, String> {
+pub async fn authenticate(email_address: String) -> Result<AuthenticationResult, String> {
     let (authorization_code_sender, mut authorization_code_receiver) = futures::channel::mpsc::channel(1);
     let (mut address_sender, mut address_receiver) = futures::channel::mpsc::channel(1);
     let (instance_sender, instance_receiver) = std::sync::mpsc::channel();
@@ -165,7 +165,7 @@ pub async fn authenticate(email_address: String) -> Result<AuthenicationResult, 
 
     receiver.stop().await;
 
-    Ok(AuthenicationResult {
+    Ok(AuthenticationResult {
         authorization_code,
         redirect_uri: token_receiver_address,
     })
