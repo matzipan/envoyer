@@ -125,7 +125,7 @@ impl Application {
         let welcome_dialog = application.welcome_dialog.clone();
         let main_window = application.main_window.clone();
         let application_message_sender = application.application_message_sender.clone();
-        let folders_list_model_clone = folders_list_model.clone(); //@TODO any onwership by application?
+        let folders_list_model_clone = folders_list_model.clone(); //@TODO any ownership by application?
         let conversations_list_model_clone = conversations_list_model.clone();
         let conversation_model_clone = conversation_model.clone();
 

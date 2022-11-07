@@ -56,7 +56,7 @@ async fn get_token(
             // The only error kinds for try_send are whether the channel is full or
             // disconnected. Disconnection is not expected to happen because the scope which
             // owns this channel is blocking on the channel itself. We are currently not
-            // doing any error prevention for the chanel full case, so there's a chance that
+            // doing any error prevention for the channel full case, so there's a chance that
             // it might happen. There's a task to limit the number of times that this action
             // can get called to exactly one.
             error!("Unable to send the authorization code");

@@ -23,7 +23,7 @@ fn main() {
         .with_src(format!("{}/src/litehtml_callbacks.rs", crate_dir))
         .with_namespace("litehtml_rust")
         // We exclude the Callbacks item and just provide a placeholder
-        // defintion. The methods only use pointers to Callbacks anyway.
+        // definition. The methods only use pointers to Callbacks anyway.
         .exclude_item("Callbacks")
         .with_header("namespace litehtml_rust {struct Callbacks;}")
         .generate()
