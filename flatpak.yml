@@ -2,7 +2,7 @@ id: com.github.matzipan.envoyer
 tags:
   - "nightly"
 runtime: org.gnome.Platform
-runtime-version: "40"
+runtime-version: "43"
 sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-nightly
