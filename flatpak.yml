@@ -6,7 +6,7 @@ runtime-version: "43"
 sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-nightly
-  - org.freedesktop.Sdk.Extension.llvm12
+  - org.freedesktop.Sdk.Extension.llvm14
 command: envoyer
 finish-args:
   - --share=ipc
@@ -16,8 +16,8 @@ finish-args:
   - --talk-name=org.freedesktop.portal.OpenURI
 build-options:
   append-path: "/usr/lib/sdk/rust-nightly/bin"
-  prepend-path: "/usr/lib/sdk/llvm12/bin"
-  prepend-ld-library-path: "/usr/lib/sdk/llvm12/lib"  
+  prepend-path: "/usr/lib/sdk/llvm14/bin"
+  prepend-ld-library-path: "/usr/lib/sdk/llvm14/lib"  
   build-args:
     - --share=network
     - --socket=session-bus
