@@ -22,7 +22,7 @@ jobs:
       with:
         submodules: 'true'
     - name: Build
-      uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
+      uses: flatpak/flatpak-github-actions/flatpak-builder@v3
       with:
         bundle: com.github.matzipan.envoyer.flatpak
         manifest-path: ./flatpak.yml
