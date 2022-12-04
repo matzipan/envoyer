@@ -50,32 +50,23 @@ pub mod model {
 
         impl ObjectImpl for ConversationModel {
             fn signals() -> &'static [Signal] {
-                static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
-                    vec![Signal::builder(
-                        // Signal name
-                        "is-loading",
-                        // Types of the values which will be sent to the signal handler
-                        &[bool::static_type().into()],
-                        // Type of the value the signal handler sends back
-                        <()>::static_type().into(),
-                    )
-                    .build()]
-                });
+                static SIGNALS: Lazy<Vec<Signal>> =
+                    Lazy::new(|| vec![Signal::builder("is-loading").param_types(Some(bool::static_type())).build()]);
                 SIGNALS.as_ref()
             }
         }
 
         impl ListModelImpl for ConversationModel {
-            fn item_type(&self, _list_model: &Self::Type) -> glib::Type {
+            fn item_type(&self) -> glib::Type {
                 MessageRowData::static_type()
             }
-            fn n_items(&self, _list_model: &Self::Type) -> u32 {
+            fn n_items(&self) -> u32 {
                 match &*self.message.as_ref().borrow() {
                     Some(_) => 1,
                     None => 0,
                 }
             }
-            fn item(&self, _list_model: &Self::Type, position: u32) -> Option<glib::Object> {
+            fn item(&self, position: u32) -> Option<glib::Object> {
                 let data = models::conversation_messages_list::row_data::MessageRowData::new();
 
                 data.set_message(self.message.borrow().as_ref().unwrap().clone()); //@TODO should probably be an arc to the item
@@ -92,7 +83,7 @@ pub mod model {
     impl ConversationModel {
         #[allow(clippy::new_without_default)]
         pub fn new() -> ConversationModel {
-            glib::Object::new(&[]).expect("Failed to create ConversationModel")
+            glib::Object::new::<ConversationModel>(&[])
         }
 
         pub fn attach_store(self, store: Arc<services::Store>) {
@@ -104,7 +95,7 @@ pub mod model {
         pub fn load_message(&self, id: i32) {
             let self_ = imp::ConversationModel::from_instance(&self);
 
-            let previous_count = self_.n_items(&self);
+            let previous_count = self_.n_items();
 
             self_.message.replace(Some(
                 self_
@@ -116,7 +107,7 @@ pub mod model {
                     .expect("Unable to get message"),
             ));
 
-            let new_count = self_.n_items(&self);
+            let new_count = self_.n_items();
 
             self.items_changed(0, previous_count, new_count);
             self.emit_by_name::<()>("is-loading", &[&false]);
@@ -173,7 +164,7 @@ pub mod row_data {
     }
     impl MessageRowData {
         pub fn new() -> MessageRowData {
-            glib::Object::new(&[]).expect("Failed to create row data")
+            glib::Object::new::<MessageRowData>(&[])
         }
         pub fn set_message(&self, message: models::Message) {
             let self_ = imp::MessageRowData::from_instance(self);
