@@ -44,18 +44,18 @@ pub mod model {
         }
         impl ObjectImpl for FolderModel {}
         impl ListModelImpl for FolderModel {
-            fn item_type(&self, _list_model: &Self::Type) -> glib::Type {
+            fn item_type(&self) -> glib::Type {
                 ConversationRowData::static_type()
             }
 
-            fn n_items(&self, _list_model: &Self::Type) -> u32 {
+            fn n_items(&self) -> u32 {
                 match self.summaries.borrow().as_ref() {
                     Some(summaries) => summaries.len() as u32,
                     None => 0,
                 }
             }
 
-            fn item(&self, _list_model: &Self::Type, position: u32) -> Option<glib::Object> {
+            fn item(&self, position: u32) -> Option<glib::Object> {
                 let data = ConversationRowData::new();
 
                 data.set_conversation(self.summaries.borrow().as_ref().unwrap()[position as usize].clone()); //@TODO should probably be an arc to the item
@@ -72,7 +72,7 @@ pub mod model {
     impl FolderModel {
         #[allow(clippy::new_without_default)]
         pub fn new() -> FolderModel {
-            glib::Object::new(&[]).expect("Failed to create FolderModel")
+            glib::Object::new::<FolderModel>(&[])
         }
 
         pub fn attach_store(self, store: Arc<services::Store>) {
@@ -93,7 +93,7 @@ pub mod model {
             let self_ = imp::FolderModel::from_instance(self);
 
             if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
-                let previous_count = self_.n_items(self);
+                let previous_count = self_.n_items();
 
                 self_.summaries.replace(Some(
                     self_
@@ -105,7 +105,7 @@ pub mod model {
                         .expect("Unable to get message summary"),
                 ));
 
-                let new_count = self_.n_items(self);
+                let new_count = self_.n_items();
 
                 self.items_changed(0, previous_count, new_count);
             }
@@ -163,7 +163,7 @@ pub mod row_data {
     }
     impl ConversationRowData {
         pub fn new() -> ConversationRowData {
-            glib::Object::new(&[]).expect("Failed to create row data")
+            glib::Object::new::<ConversationRowData>(&[])
         }
         pub fn set_conversation(&self, conversation: models::MessageSummary) {
             let self_ = imp::ConversationRowData::from_instance(self);

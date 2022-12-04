@@ -87,8 +87,8 @@ impl Callbacks {
         if let Some(font_description) = self.font_description_map.get(&font) {
             debug!("Font found");
 
-            let font_map = pangocairo::FontMap::default().unwrap();
-            let context = font_map.create_context().unwrap();
+            let font_map = pangocairo::FontMap::default();
+            let context = font_map.create_context();
 
             let font = context.load_font(&font_description).unwrap();
 
@@ -97,7 +97,7 @@ impl Callbacks {
             layout.set_text(c_str.to_str().unwrap());
             layout.set_font_description(Some(font_description));
 
-            let mut layout_iter = layout.iter().unwrap();
+            let mut layout_iter = layout.iter();
 
             let glyph_item = layout_iter.run().unwrap();
 
@@ -125,9 +125,9 @@ impl Callbacks {
     pub fn populate_font_metrics(&self, font_description_key: &usize, font_metrics: *mut FontMetrics) {
         let font_description = self.font_description_map.get(font_description_key).unwrap();
 
-        let font_map = pangocairo::FontMap::default().unwrap();
-        let context = font_map.create_context().unwrap();
-        context.set_font_description(&font_description);
+        let font_map = pangocairo::FontMap::default();
+        let context = font_map.create_context();
+        context.set_font_description(Some(&font_description));
 
         let font = context.load_font(&font_description).unwrap();
 
@@ -209,8 +209,8 @@ impl Callbacks {
         if let Some(font_description) = self.font_description_map.get(&font) {
             debug!("Font found");
 
-            let font_map = pangocairo::FontMap::default().unwrap();
-            let context = font_map.create_context().unwrap();
+            let font_map = pangocairo::FontMap::default();
+            let context = font_map.create_context();
 
             let layout = pango::Layout::new(&context);
 

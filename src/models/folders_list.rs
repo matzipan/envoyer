@@ -45,13 +45,13 @@ pub mod model {
         }
         impl ObjectImpl for FolderListModel {}
         impl ListModelImpl for FolderListModel {
-            fn item_type(&self, _list_model: &Self::Type) -> glib::Type {
+            fn item_type(&self) -> glib::Type {
                 FolderRowData::static_type()
             }
-            fn n_items(&self, _list_model: &Self::Type) -> u32 {
+            fn n_items(&self) -> u32 {
                 self.folders.borrow().len() as u32
             }
-            fn item(&self, _list_model: &Self::Type, position: u32) -> Option<glib::Object> {
+            fn item(&self, position: u32) -> Option<glib::Object> {
                 self.folders.borrow().get(position as usize).map(|x| {
                     let data = FolderRowData::new();
 
@@ -70,7 +70,7 @@ pub mod model {
     impl FolderListModel {
         #[allow(clippy::new_without_default)]
         pub fn new() -> FolderListModel {
-            glib::Object::new(&[]).expect("Failed to create FolderListModel")
+            glib::Object::new(&[])
         }
 
         pub fn attach_store(self, store: Arc<services::Store>) {
@@ -82,7 +82,7 @@ pub mod model {
         pub fn load(&self) {
             let self_ = imp::FolderListModel::from_instance(self);
 
-            let previous_count = self_.n_items(&self);
+            let previous_count = self_.n_items();
 
             self_.bare_identities.replace(
                 self_
@@ -105,7 +105,7 @@ pub mod model {
                     .expect("Unable to get folders"),
             );
 
-            let new_count = self_.n_items(&self);
+            let new_count = self_.n_items();
 
             self.items_changed(0, previous_count, new_count);
         }
@@ -150,7 +150,7 @@ pub mod row_data {
     }
     impl FolderRowData {
         pub fn new() -> FolderRowData {
-            glib::Object::new(&[]).expect("Failed to create row data")
+            glib::Object::new::<FolderRowData>(&[])
         }
         pub fn set_folder(&self, folder: models::Folder) {
             let self_ = imp::FolderRowData::from_instance(self);

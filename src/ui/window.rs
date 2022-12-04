@@ -58,7 +58,7 @@ pub mod folders_list_item {
     }
     impl FoldersListItem {
         pub fn new() -> FoldersListItem {
-            glib::Object::new(&[]).expect("Failed to create row data")
+            glib::Object::new::<FoldersListItem>(&[])
         }
 
         pub fn new_with_folder(folder: &models::Folder) -> FoldersListItem {
@@ -117,7 +117,7 @@ pub mod folder_conversation_item {
     }
     impl FolderConversationItem {
         pub fn new() -> FolderConversationItem {
-            glib::Object::new(&[]).expect("Failed to create row data")
+            glib::Object::new::<FolderConversationItem>(&[])
         }
 
         pub fn new_with_conversation(conversation: &models::MessageSummary) -> FolderConversationItem {
@@ -173,15 +173,16 @@ pub mod message_view {
         }
 
         impl ObjectImpl for MessageView {
-            fn constructed(&self, obj: &Self::Type) {
-                self.parent_constructed(obj);
+            fn constructed(&self) {
+                self.parent_constructed();
 
+                let obj = self.obj();
                 obj.set_vexpand(true);
             }
         }
 
         impl WidgetImpl for MessageView {
-            fn snapshot(&self, widget: &Self::Type, snapshot: &gtk::Snapshot) {
+            fn snapshot(&self, snapshot: &gtk::Snapshot) {
                 if !*self.loaded.borrow() {
                     return;
                 }
@@ -202,11 +203,11 @@ pub mod message_view {
                 snapshot.append_node(&container_node);
             }
 
-            fn request_mode(&self, widget: &Self::Type) -> gtk::SizeRequestMode {
+            fn request_mode(&self) -> gtk::SizeRequestMode {
                 gtk::SizeRequestMode::HeightForWidth
             }
 
-            fn measure(&self, widget: &Self::Type, orientation: gtk::Orientation, for_size: i32) -> (i32, i32, i32, i32) {
+            fn measure(&self, orientation: gtk::Orientation, for_size: i32) -> (i32, i32, i32, i32) {
                 let litehtml_context = self.litehtml_context.borrow_mut();
 
                 match orientation {
@@ -220,12 +221,14 @@ pub mod message_view {
                 }
             }
 
-            fn size_allocate(&self, widget: &Self::Type, width: i32, height: i32, baseline: i32) {
+            fn size_allocate(&self, width: i32, height: i32, baseline: i32) {
                 let litehtml_context = self.litehtml_context.borrow_mut();
 
                 unsafe { bindings::setup::render(*litehtml_context, width * pango::SCALE) };
 
-                widget.queue_draw();
+                let obj = self.obj();
+
+                obj.queue_draw();
             }
         }
     }
@@ -236,7 +239,7 @@ pub mod message_view {
     }
     impl MessageView {
         pub fn new() -> MessageView {
-            glib::Object::new(&[]).expect("Failed to create row data")
+            glib::Object::new::<MessageView>(&[])
         }
 
         pub fn load_content(&self, content: &String) {
@@ -303,7 +306,7 @@ pub mod conversation_message_item {
     }
     impl ConversationMessageItem {
         pub fn new() -> ConversationMessageItem {
-            glib::Object::new(&[]).expect("Failed to create row data")
+            glib::Object::new::<ConversationMessageItem>(&[])
         }
 
         pub fn new_with_message(message: &models::Message) -> ConversationMessageItem {
