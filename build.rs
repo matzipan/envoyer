@@ -33,9 +33,7 @@ fn main() {
     let include_path = format!("{}/include", out_path);
 
     // Build litehtml as a CMake library
-    let litehtml_build = cmake::Config::new("vendor/litehtml")
-        .define("BUILD_TESTING", "Off")
-        .build();
+    let litehtml_build = cmake::Config::new("vendor/litehtml").define("BUILD_TESTING", "Off").build();
 
     // Build the litehtml container as a C++ library
     cc::Build::new()
@@ -69,9 +67,9 @@ fn main() {
         .expect("Couldn't write bindings!");
 
     println!("cargo:rustc-link-search=native={}/lib", litehtml_build.display());
+    println!("cargo:rustc-link-lib=static=litehtml_container");
     println!("cargo:rustc-link-lib=static=litehtml");
     println!("cargo:rustc-link-lib=static=gumbo");
-    println!("cargo:rustc-link-lib=static=litehtml_container");
     println!("cargo:rustc-link-lib=dylib=stdc++");
 
     // Tell cargo to invalidate the built crate whenever the wrapper changes
