@@ -1,3 +1,5 @@
+use crate::models::folder_conversations_list::model::FolderModel;
+
 use super::*;
 
 use gtk::subclass::prelude::*;
@@ -14,7 +16,6 @@ mod imp {
 
     use super::*;
 
-    type ItemType = String;
     type RowWidgetType = crate::ui::window::folder_conversation_item::FolderConversationItem;
 
     pub enum Location {
@@ -35,38 +36,38 @@ mod imp {
         hscroll_policy: Cell<Option<ScrollablePolicy>>,
         vertical_adjustment: RefCell<Option<Adjustment>>,
         vscroll_policy: Cell<Option<ScrollablePolicy>>,
-        height_per_row: Cell<i32>,
-        number_of_items: Cell<i32>,
-        first_item: Cell<i32>,
-        last_item: Cell<i32>,
+        height_per_row: Cell<u32>,
+        first_item: Cell<u32>,
+        last_item: Cell<u32>,
         adjustment_value_changed_signal_handler_id: RefCell<Option<SignalHandlerId>>,
-        data_store: RefCell<DynamicListViewStore<i32, ItemType>>,
-        factory_function: RefCell<Option<Box<dyn Fn(i32, &String) -> gtk::Widget + 'static>>>,
+        conversations_list_model: RefCell<Option<FolderModel>>,
+        factory_function: RefCell<Option<Box<dyn Fn(u32, &glib::Object) -> gtk::Widget + 'static>>>,
     }
 
     impl DynamicListView {
-        fn total_height(&self) -> i32 {
-            (self.data_store.borrow().len() as i32) * self.height_per_row.get()
+        fn item_count(&self) -> u32 {
+            let store_borrow = self.conversations_list_model.borrow();
+
+            store_borrow.as_ref().map_or(0, |x| x.n_items())
         }
 
-        pub fn set_height_per_row(&self, height: i32) {
+        fn total_height(&self) -> u32 {
+            self.item_count() * self.height_per_row.get()
+        }
+
+        pub fn set_height_per_row(&self, height: u32) {
             self.height_per_row.set(height);
         }
 
-        pub fn set_factory(&self, factory_function: impl Fn(i32, &String) -> gtk::Widget + 'static) {
+        pub fn set_factory(&self, factory_function: impl Fn(u32, &glib::Object) -> gtk::Widget + 'static) {
             *self.factory_function.borrow_mut() = Some(Box::new(factory_function));
         }
 
-        pub fn append(&self, child: String) {
-            let mut child_for_index = self.data_store.borrow_mut();
-            let items_position = self.number_of_items.get();
-
-            child_for_index.insert(items_position, child);
-
-            self.number_of_items.set(items_position + 1);
+        pub fn set_conversations_list_model(&self, conversations_list_model: FolderModel) {
+            *self.conversations_list_model.borrow_mut() = Some(conversations_list_model);
         }
 
-        fn configure_adjustment(&self, height: i32) {
+        fn configure_adjustment(&self, height: u32) {
             let total_height = self.total_height();
 
             if let Some(vertical_adjustment) = self.vertical_adjustment.borrow().as_ref() {
@@ -97,12 +98,17 @@ mod imp {
 
         fn size_allocate_children(&self, width: i32) {
             let height_per_row = self.height_per_row.get();
-            let vertical_adjustment_value = self.vertical_adjustment_value().floor() as i32;
+            let vertical_adjustment_value = self.vertical_adjustment_value().floor() as u32;
 
             self.children_foreach(&Order::Forward, move |row| {
                 let item_index = row.get_item_index();
 
-                let allocation = gtk::Allocation::new(0, item_index * height_per_row - vertical_adjustment_value, width, height_per_row);
+                let allocation = gtk::Allocation::new(
+                    0,
+                    (item_index * height_per_row) as i32 - vertical_adjustment_value as i32,
+                    width,
+                    height_per_row as i32,
+                );
 
                 row.size_allocate(&allocation, -1);
 
@@ -131,7 +137,7 @@ mod imp {
             }
         }
 
-        fn children_count(&self) -> i32 {
+        fn children_count(&self) -> u32 {
             let obj = self.obj();
 
             let mut child_option = obj.first_child();
@@ -147,9 +153,9 @@ mod imp {
             return children_count;
         }
 
-        fn remove_rows_in_index_range(&self, range: Range<i32>, removal_location: Location) {
+        fn remove_rows_in_index_range(&self, range: Range<u32>, removal_location: Location) {
             // We're reverting when location is bottom so we can match straight away
-            let range_items: Vec<i32> = match removal_location {
+            let range_items: Vec<_> = match removal_location {
                 Location::Top => range.collect(),
                 Location::Bottom => range.rev().collect(),
             };
@@ -172,27 +178,29 @@ mod imp {
             }
         }
 
-        fn create_rows_in_index_range(&self, range: Range<i32>, creation_location: Location) {
+        fn create_rows_in_index_range(&self, range: Range<u32>, creation_location: Location) {
             let factory_function_cell = self.factory_function.borrow();
             if let Some(factory_function) = factory_function_cell.as_ref() {
                 let obj = self.obj();
 
                 // We're reverting when location is top so we can use the insert_after to
                 // prepend new items
-                let range_items: Vec<i32> = match creation_location {
+                let range_items: Vec<u32> = match creation_location {
                     Location::Top => range.rev().collect(),
                     Location::Bottom => range.collect(),
                 };
 
+                let store_borrow = self.conversations_list_model.borrow();
                 for item_index in range_items {
-                    if let Some(item_data) = self.data_store.borrow().get(&item_index) {
-                        let row = factory_function(item_index, item_data);
+                    // It's okay to unwrap because we initialize at creation time
+                    if let Some(item_data) = store_borrow.as_ref().unwrap().item(item_index) {
+                        let row = factory_function(item_index, &item_data);
 
                         let allocation = gtk::Allocation::new(
                             0,
-                            item_index * self.height_per_row.get(),
+                            (item_index * self.height_per_row.get()) as i32,
                             obj.allocated_width(),
-                            self.height_per_row.get(),
+                            self.height_per_row.get() as i32,
                         );
 
                         row.size_allocate(&allocation, -1);
@@ -214,15 +222,17 @@ mod imp {
             let obj = self.obj();
 
             let height_per_row = self.height_per_row.get();
-            let widget_height = obj.allocated_height();
+            let widget_height = obj.allocated_height() as u32;
             let vertical_adjustment_value = self.vertical_adjustment_value();
+
+            let item_count = self.item_count();
 
             let previous_first_item = self.first_item.get();
             let previous_last_item = self.last_item.get();
 
-            let current_first_item = (vertical_adjustment_value / height_per_row as f64).floor() as i32;
+            let current_first_item = (vertical_adjustment_value / height_per_row as f64).floor() as u32;
             let visible_items_count = widget_height / height_per_row + 2;
-            let current_last_item = current_first_item + visible_items_count;
+            let current_last_item = item_count.min(current_first_item + visible_items_count);
 
             match previous_first_item.cmp(&current_first_item) {
                 std::cmp::Ordering::Less => {
@@ -356,7 +366,7 @@ mod imp {
 
             match orientation {
                 gtk::Orientation::Horizontal => (0, 0, -1, -1),
-                gtk::Orientation::Vertical => (0, total_height, -1, -1),
+                gtk::Orientation::Vertical => (0, total_height as i32, -1, -1),
                 _ => unimplemented!(),
             }
         }
@@ -367,7 +377,7 @@ mod imp {
             let allocation = gtk::Allocation::new(0, 0, width, height);
             obj.size_allocate(&allocation, baseline);
 
-            self.configure_adjustment(height);
+            self.configure_adjustment(height as u32);
             self.update_visible_children();
             self.size_allocate_children(width);
 
@@ -383,19 +393,19 @@ glib::wrapper! {
     pub struct DynamicListView(ObjectSubclass<imp::DynamicListView>) @extends gtk::Widget, @implements gtk::Scrollable;
 }
 impl DynamicListView {
-    pub fn new(height: i32, factory_function: impl Fn(i32, &String) -> gtk::Widget + 'static) -> DynamicListView {
+    pub fn new(
+        height: u32,
+        conversations_list_model: FolderModel,
+        factory_function: impl Fn(u32, &glib::Object) -> gtk::Widget + 'static,
+    ) -> DynamicListView {
         let instance = glib::Object::new::<DynamicListView>(&[]);
 
         let self_ = imp::DynamicListView::from_instance(&instance);
 
         self_.set_height_per_row(height);
+        self_.set_conversations_list_model(conversations_list_model);
         self_.set_factory(factory_function);
 
         instance
-    }
-    pub fn append(&self, child: String) {
-        let self_ = imp::DynamicListView::from_instance(self);
-
-        self_.append(child);
     }
 }

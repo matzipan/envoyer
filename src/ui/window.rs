@@ -1,4 +1,4 @@
-use gtk::{gdk, glib, graphene, gsk, pango};
+use gtk::{gdk, glib, gsk, pango};
 
 use gtk::prelude::*;
 
@@ -9,17 +9,19 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::hash::Hash;
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
 
 use crate::bindings;
 use crate::controllers::ApplicationMessage;
 use crate::models;
 
+use self::dynamic_list_view::DynamicListView;
+use self::folder_conversation_item::FolderConversationItem;
+
 pub mod dynamic_list_view;
 
 pub struct Window {
     pub gtk_window: gtk::ApplicationWindow,
-    threads_list_box: gtk::ListBox,
+    threads_list_view: DynamicListView,
     conversation_viewer_list_box: gtk::ListBox,
 }
 
@@ -116,7 +118,7 @@ pub mod folder_conversation_item {
         // directly from the outside.
         pub struct FolderConversationItem {
             pub conversation: Rc<RefCell<Option<models::MessageSummary>>>,
-            pub item_index: RefCell<i32>,
+            pub item_index: RefCell<u32>,
         }
 
         // Basic declaration of our type for the GObject type system
@@ -148,7 +150,7 @@ pub mod folder_conversation_item {
             glib::Object::new::<FolderConversationItem>(&[])
         }
 
-        pub fn new_with_item_index(item_index: i32) -> FolderConversationItem {
+        pub fn new_with_item_index(item_index: u32) -> FolderConversationItem {
             let instance = Self::new();
 
             let self_ = imp::FolderConversationItem::from_instance(&instance);
@@ -173,7 +175,7 @@ pub mod folder_conversation_item {
             self_.conversation.clone()
         }
 
-        pub fn get_item_index(&self) -> i32 {
+        pub fn get_item_index(&self) -> u32 {
             let self_ = imp::FolderConversationItem::from_instance(self);
             self_.item_index.borrow().to_owned()
         }
@@ -394,8 +396,8 @@ impl Window {
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
 
-        let factory = gtk::SignalListItemFactory::new();
-        factory.connect_bind(move |_factory, list_item| {
+        let folders_list_factory = gtk::SignalListItemFactory::new();
+        folders_list_factory.connect_bind(move |_, list_item| {
             let item = list_item.item().unwrap();
 
             let folder_row_data = item
@@ -420,8 +422,8 @@ impl Window {
             list_item.set_child(Some(&box_item));
         });
 
-        let selection_model = gtk::NoSelection::new(Some(folders_list_model));
-        let folders_list_view = gtk::ListView::new(Some(&selection_model), Some(&factory));
+        let folders_list_selection_model = gtk::NoSelection::new(Some(folders_list_model));
+        let folders_list_view = gtk::ListView::new(Some(&folders_list_selection_model), Some(&folders_list_factory));
         folders_list_view.style_context().add_class("folders_sidebar");
         folders_list_view.set_single_click_activate(true);
 
@@ -430,14 +432,110 @@ impl Window {
         folders_scroll_box.set_size_request(200, -1);
         folders_scroll_box.set_child(Some(&folders_list_view));
 
-        let threads_list_box = gtk::ListBox::new();
-        threads_list_box.set_activate_on_single_click(false);
-        threads_list_box.set_selection_mode(gtk::SelectionMode::Multiple);
+        let threads_list_view = dynamic_list_view::DynamicListView::new(50, conversations_list_model.clone(), move |item_index, item| {
+            let row = FolderConversationItem::new_with_item_index(item_index);
 
-        let folder_conversations_scroll_box = gtk::ScrolledWindow::new();
-        folder_conversations_scroll_box.set_vexpand(true);
-        folder_conversations_scroll_box.set_size_request(200, -1);
-        folder_conversations_scroll_box.set_child(Some(&threads_list_box));
+            let item_data = item
+                .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
+                .expect("Row data is of wrong type");
+            let conversation_rc = item_data.get_conversation();
+            let conversation_borrow = conversation_rc.borrow();
+            let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
+
+            let label = gtk::Label::new(Some(&conversation.subject));
+
+            row.set_child(Some(&label));
+
+            // let box_row =
+            // folder_conversation_item::FolderConversationItem::new_with_conversation(&
+            // conversation); box_row.style_context().add_class("
+            // folder_conversation_item");
+
+            // let subject_label = gtk::Label::new(None);
+            // subject_label.set_hexpand(true);
+            // subject_label.set_halign(gtk::Align::Start);
+            // subject_label.set_ellipsize(pango::EllipsizeMode::End);
+            // subject_label.style_context().add_class("subject");
+            // subject_label.set_xalign(0.0);
+
+            // let attachment_image =
+            // gtk::Image::from_icon_name(&"mail-attachment-symbolic");
+            // attachment_image.set_sensitive(false);
+            // attachment_image.set_tooltip_text(Some("This thread contains one
+            // or more attachments"));
+
+            // let top_grid = gtk::Grid::new();
+            // top_grid.set_orientation(gtk::Orientation::Horizontal);
+            // top_grid.set_column_spacing(3);
+
+            // // unseen_dot = new Envoyer.Widgets.Main.UnseenDot ();
+            // // unseen_dot.no_show_all = true;
+            // // top_grid.add (unseen_dot);
+            // top_grid.attach(&subject_label, 0, 0, 1, 1);
+            // top_grid.attach(&attachment_image, 1, 0, 1, 1);
+
+            // //@TODO make smaller star_image.
+            // let star_image = gtk::Button::from_icon_name(&"starred");
+            // star_image.style_context().add_class("star");
+            // star_image.set_sensitive(true);
+            // star_image.set_tooltip_text(Some("Mark this thread as starred"));
+
+            // let addresses_label = gtk::Label::new(None);
+            // addresses_label.set_hexpand(true);
+            // addresses_label.set_halign(gtk::Align::Start);
+            // addresses_label.set_ellipsize(pango::EllipsizeMode::End);
+            // addresses_label.style_context().add_class("addresses");
+
+            // let datetime_received_label = gtk::Label::new(None);
+            // datetime_received_label.style_context().add_class("received");
+
+            // let bottom_grid = gtk::Grid::new();
+            // bottom_grid.set_orientation(gtk::Orientation::Horizontal);
+            // bottom_grid.set_column_spacing(3);
+            // bottom_grid.attach(&addresses_label, 0, 0, 1, 1);
+            // bottom_grid.attach(&datetime_received_label, 1, 0, 1, 1);
+            // bottom_grid.attach(&star_image, 2, 0, 1, 1);
+
+            // let outer_grid = gtk::Grid::new();
+            // outer_grid.set_orientation(gtk::Orientation::Vertical);
+            // outer_grid.set_row_spacing(3);
+            // outer_grid.set_margin_top(4);
+            // outer_grid.set_margin_bottom(4);
+            // outer_grid.set_margin_start(8);
+            // outer_grid.set_margin_end(8);
+
+            // outer_grid.attach(&top_grid, 0, 0, 1, 1);
+            // outer_grid.attach(&bottom_grid, 0, 1, 1, 1);
+
+            // box_row.set_child(Some(&outer_grid));
+
+            // // Load data
+            // // @TODO Currently this is done in a very naive way, to be
+            // detailed later addresses_label.set_text(&
+            // conversation.from); subject_label.set_text(&
+            // conversation.subject);
+
+            // //@TODO implement an autoupdating timestamp
+            // datetime_received_label.set_text(&conversation.
+            // get_relative_time_ago());
+
+            // datetime_received_label.set_tooltip_text(Some(&conversation.
+            // time_received.to_string()));
+
+            // attachment_image.hide();
+            // star_image.hide();
+
+            // // set_swipe_icon_name ("envoyer-delete-symbolic");
+
+            // list_item.set_child(Some(&box_row));
+
+            row.upcast::<gtk::Widget>()
+        });
+
+        let dynamic_list_scroll_box = gtk::ScrolledWindow::new();
+        dynamic_list_scroll_box.set_vexpand(true);
+        dynamic_list_scroll_box.set_size_request(200, -1);
+        dynamic_list_scroll_box.set_child(Some(&threads_list_view));
 
         let conversation_viewer_list_box = gtk::ListBox::new();
         conversation_viewer_list_box.style_context().add_class("conversation_viewer");
@@ -480,7 +578,7 @@ impl Window {
         main_grid.set_orientation(gtk::Orientation::Horizontal);
 
         main_grid.attach(&folders_scroll_box, 0, 0, 1, 1);
-        main_grid.attach(&folder_conversations_scroll_box, 1, 0, 1, 1);
+        main_grid.attach(&dynamic_list_scroll_box, 1, 0, 1, 1);
         main_grid.attach(&conversation_viewer_stack, 2, 0, 1, 1);
 
         gtk_window.set_child(Some(&main_grid));
@@ -512,110 +610,34 @@ impl Window {
 
         let sender_clone = sender.clone();
 
-        threads_list_box.connect_row_selected(move |_, row| {
-            if let Some(row) = row {
-                let row = row
-                    .downcast_ref::<folder_conversation_item::FolderConversationItem>()
-                    .expect("List box row is of wrong type");
+        // threads_list_view.connect_activate(move |list_view, position| {
+        //     let model = list_view.model().unwrap();
+        //     let item = model.item(position);
 
-                let conversation = row.get_conversation();
+        //     if let Some(item) = item {
+        //         let item = item
+        //
+        // .downcast_ref::<folder_conversation_item::FolderConversationItem>()
+        //             .expect("List box row is of wrong type");
 
-                let message = conversation.borrow().as_ref().expect("Model configuration invalid").clone();
+        //         let conversation_rc = item.get_conversation();
+        //         let conversation_borrow = conversation_rc.borrow();
+        //         let conversation = conversation_borrow.as_ref().expect("Model
+        // contents invalid");
 
-                info!("Selected conversation with subject \"{}\"", message.subject);
+        //         let message = conversation;
 
-                sender_clone
-                    .send(ApplicationMessage::ShowConversation { conversation: message })
-                    .expect("Unable to send application message");
-            } else {
-                //         application.unload_current_conversation_thread ();
-            }
-        });
+        //         info!("Selected conversation with subject \"{}\"", message.subject);
 
-        threads_list_box.bind_model(Some(conversations_list_model), |item| {
-            let item = item
-                .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
-                .expect("Row data is of wrong type");
-            let conversation_rc = item.get_conversation();
-            let conversation_borrow = conversation_rc.borrow();
-            let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
-
-            let box_row = folder_conversation_item::FolderConversationItem::new_with_conversation(&conversation);
-            box_row.style_context().add_class("folder_conversation_item");
-
-            let subject_label = gtk::Label::new(None);
-            subject_label.set_hexpand(true);
-            subject_label.set_halign(gtk::Align::Start);
-            subject_label.set_ellipsize(pango::EllipsizeMode::End);
-            subject_label.style_context().add_class("subject");
-            subject_label.set_xalign(0.0);
-
-            let attachment_image = gtk::Image::from_icon_name(&"mail-attachment-symbolic");
-            attachment_image.set_sensitive(false);
-            attachment_image.set_tooltip_text(Some("This thread contains one or more attachments"));
-
-            let top_grid = gtk::Grid::new();
-            top_grid.set_orientation(gtk::Orientation::Horizontal);
-            top_grid.set_column_spacing(3);
-
-            // unseen_dot = new Envoyer.Widgets.Main.UnseenDot ();
-            // unseen_dot.no_show_all = true;
-            // top_grid.add (unseen_dot);
-            top_grid.attach(&subject_label, 0, 0, 1, 1);
-            top_grid.attach(&attachment_image, 1, 0, 1, 1);
-
-            //@TODO make smaller star_image.
-            let star_image = gtk::Button::from_icon_name(&"starred");
-            star_image.style_context().add_class("star");
-            star_image.set_sensitive(true);
-            star_image.set_tooltip_text(Some("Mark this thread as starred"));
-
-            let addresses_label = gtk::Label::new(None);
-            addresses_label.set_hexpand(true);
-            addresses_label.set_halign(gtk::Align::Start);
-            addresses_label.set_ellipsize(pango::EllipsizeMode::End);
-            addresses_label.style_context().add_class("addresses");
-
-            let datetime_received_label = gtk::Label::new(None);
-            datetime_received_label.style_context().add_class("received");
-
-            let bottom_grid = gtk::Grid::new();
-            bottom_grid.set_orientation(gtk::Orientation::Horizontal);
-            bottom_grid.set_column_spacing(3);
-            bottom_grid.attach(&addresses_label, 0, 0, 1, 1);
-            bottom_grid.attach(&datetime_received_label, 1, 0, 1, 1);
-            bottom_grid.attach(&star_image, 2, 0, 1, 1);
-
-            let outer_grid = gtk::Grid::new();
-            outer_grid.set_orientation(gtk::Orientation::Vertical);
-            outer_grid.set_row_spacing(3);
-            outer_grid.set_margin_top(4);
-            outer_grid.set_margin_bottom(4);
-            outer_grid.set_margin_start(8);
-            outer_grid.set_margin_end(8);
-
-            outer_grid.attach(&top_grid, 0, 0, 1, 1);
-            outer_grid.attach(&bottom_grid, 0, 1, 1, 1);
-
-            box_row.set_child(Some(&outer_grid));
-
-            // Load data
-            // @TODO Currently this is done in a very naive way, to be detailed later
-            addresses_label.set_text(&conversation.from);
-            subject_label.set_text(&conversation.subject);
-
-            //@TODO implement an autoupdating timestamp
-            datetime_received_label.set_text(&conversation.get_relative_time_ago());
-
-            datetime_received_label.set_tooltip_text(Some(&conversation.time_received.to_string()));
-
-            attachment_image.hide();
-            star_image.hide();
-
-            box_row.upcast::<gtk::Widget>()
-
-            // set_swipe_icon_name ("envoyer-delete-symbolic");
-        });
+        //         sender_clone
+        //             .send(ApplicationMessage::ShowConversation {
+        //                 conversation: message.clone(),
+        //             })
+        //             .expect("Unable to send application message");
+        //     } else {
+        //         //         application.unload_current_conversation_thread ();
+        //     }
+        // });
 
         conversation_model.connect_is_loading(move |args| {
             let is_loading = args[1].get::<bool>().expect("The is_loading value needs to be of type `bool`.");
@@ -781,7 +803,7 @@ impl Window {
 
         Self {
             gtk_window,
-            threads_list_box,
+            threads_list_view,
             conversation_viewer_list_box,
         }
     }
