@@ -516,6 +516,7 @@ pub mod folder_conversation_item {
         // directly from the outside.
         pub struct FolderConversationItem {
             pub conversation: Rc<RefCell<Option<models::MessageSummary>>>,
+            pub item_index: RefCell<i32>,
         }
 
         // Basic declaration of our type for the GObject type system
@@ -529,6 +530,7 @@ pub mod folder_conversation_item {
             fn new() -> Self {
                 Self {
                     conversation: Default::default(),
+                    item_index: RefCell::new(0),
                 }
             }
         }
@@ -546,6 +548,16 @@ pub mod folder_conversation_item {
             glib::Object::new::<FolderConversationItem>(&[])
         }
 
+        pub fn new_with_item_index(item_index: i32) -> FolderConversationItem {
+            let instance = Self::new();
+
+            let self_ = imp::FolderConversationItem::from_instance(&instance);
+            //@TODO can we get rid of this clone?
+            self_.item_index.replace(item_index);
+
+            instance
+        }
+
         pub fn new_with_conversation(conversation: &models::MessageSummary) -> FolderConversationItem {
             let instance = Self::new();
 
@@ -559,6 +571,11 @@ pub mod folder_conversation_item {
         pub fn get_conversation(&self) -> Rc<RefCell<Option<models::MessageSummary>>> {
             let self_ = imp::FolderConversationItem::from_instance(self);
             self_.conversation.clone()
+        }
+
+        pub fn get_item_index(&self) -> i32 {
+            let self_ = imp::FolderConversationItem::from_instance(self);
+            self_.item_index.borrow().to_owned()
         }
     }
 }
