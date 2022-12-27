@@ -13,6 +13,7 @@ use std::rc::Rc;
 use crate::bindings;
 use crate::controllers::ApplicationMessage;
 use crate::models;
+use crate::models::folder_conversations_list::row_data::ConversationRowData;
 
 use self::dynamic_list_view::DynamicListView;
 use self::folder_conversation_item::FolderConversationItem;
@@ -126,7 +127,7 @@ pub mod folder_conversation_item {
         impl ObjectSubclass for FolderConversationItem {
             const NAME: &'static str = "FolderConversationItem";
             type Type = super::FolderConversationItem;
-            type ParentType = gtk::ListBoxRow;
+            type ParentType = gtk::Box;
             // Called once at the very beginning of instantiation of each instance and
             // creates the data structure that contains all our state
             fn new() -> Self {
@@ -137,35 +138,27 @@ pub mod folder_conversation_item {
             }
         }
         impl ObjectImpl for FolderConversationItem {}
-        impl ListBoxRowImpl for FolderConversationItem {}
+        impl BoxImpl for FolderConversationItem {}
         impl WidgetImpl for FolderConversationItem {}
     }
 
     // The public part
     glib::wrapper! {
-        pub struct FolderConversationItem(ObjectSubclass<imp::FolderConversationItem>) @extends gtk::ListBoxRow, gtk::Widget, @implements gtk::Buildable, gtk::Actionable;
+        pub struct FolderConversationItem(ObjectSubclass<imp::FolderConversationItem>) @extends gtk::Box, gtk::Widget, @implements gtk::Buildable, gtk::Actionable;
     }
     impl FolderConversationItem {
         pub fn new() -> FolderConversationItem {
             glib::Object::new::<FolderConversationItem>(&[])
         }
 
-        pub fn new_with_item_index(item_index: u32) -> FolderConversationItem {
+        pub fn new_with_item_index_and_conversation(item_index: u32, conversation: &models::MessageSummary) -> FolderConversationItem {
             let instance = Self::new();
 
             let self_ = imp::FolderConversationItem::from_instance(&instance);
-            //@TODO can we get rid of this clone?
-            self_.item_index.replace(item_index);
 
-            instance
-        }
-
-        pub fn new_with_conversation(conversation: &models::MessageSummary) -> FolderConversationItem {
-            let instance = Self::new();
-
-            let self_ = imp::FolderConversationItem::from_instance(&instance);
             //@TODO can we get rid of this clone?
             self_.conversation.replace(Some(conversation.clone()));
+            self_.item_index.replace(item_index);
 
             instance
         }
@@ -598,34 +591,29 @@ impl Window {
 
         let sender_clone = sender.clone();
 
-        // threads_list_view.connect_activate(move |list_view, position| {
-        //     let model = list_view.model().unwrap();
-        //     let item = model.item(position);
+        threads_list_view.connect_activate(move |list_view, position| {
+            let model = list_view.model().unwrap();
+            let item = model.item(position);
 
-        //     if let Some(item) = item {
-        //         let item = item
-        //
-        // .downcast_ref::<folder_conversation_item::FolderConversationItem>()
-        //             .expect("List box row is of wrong type");
+            if let Some(item) = item {
+                let item = item.downcast_ref::<ConversationRowData>().expect("Row data is of the wrong type");
+                let conversation_rc = item.get_conversation();
+                let conversation_borrow = conversation_rc.borrow();
+                let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
 
-        //         let conversation_rc = item.get_conversation();
-        //         let conversation_borrow = conversation_rc.borrow();
-        //         let conversation = conversation_borrow.as_ref().expect("Model
-        // contents invalid");
+                let message = conversation;
 
-        //         let message = conversation;
+                info!("Selected conversation with subject \"{}\"", message.subject);
 
-        //         info!("Selected conversation with subject \"{}\"", message.subject);
-
-        //         sender_clone
-        //             .send(ApplicationMessage::ShowConversation {
-        //                 conversation: message.clone(),
-        //             })
-        //             .expect("Unable to send application message");
-        //     } else {
-        //         //         application.unload_current_conversation_thread ();
-        //     }
-        // });
+                sender_clone
+                    .send(ApplicationMessage::ShowConversation {
+                        conversation: message.clone(),
+                    })
+                    .expect("Unable to send application message");
+            } else {
+                //         application.unload_current_conversation_thread ();
+            }
+        });
 
         conversation_model.connect_is_loading(move |args| {
             let is_loading = args[1].get::<bool>().expect("The is_loading value needs to be of type `bool`.");
