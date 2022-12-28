@@ -71,7 +71,7 @@ mod imp {
             *self.factory_function.borrow_mut() = Some(Box::new(factory_function));
         }
 
-        pub fn set_activate(&self, activate_function: impl Fn(&super::DynamicListView, u32) + 'static) {
+        pub fn set_activate_function(&self, activate_function: impl Fn(&super::DynamicListView, u32) + 'static) {
             *self.activate_function.borrow_mut() = Some(Rc::new(Box::new(activate_function)));
         }
 
@@ -217,16 +217,15 @@ mod imp {
                                 self.height_per_row.get() as i32,
                             );
 
-                            let list_row_widget = row.downcast_ref::<gtk::Widget>().expect("Row is expected to be ListBoxRow");
+                            let list_row_widget = row
+                                .downcast_ref::<FolderConversationItem>()
+                                .expect("Row is expected to be ListBoxRow");
                             let activate_function_clone = activate_function.clone();
                             let obj_clone = obj.clone();
 
-                            let gesture = gtk::GestureClick::new();
-                            gesture.connect_released(move |gesture, _, _, _| {
-                                gesture.set_state(gtk::EventSequenceState::Claimed);
+                            list_row_widget.connect_activate(move || {
                                 activate_function_clone(&obj_clone, item_index);
                             });
-                            list_row_widget.add_controller(&gesture);
 
                             row.size_allocate(&allocation, -1);
 
@@ -438,7 +437,7 @@ impl DynamicListView {
     pub fn connect_activate(&self, activate_function: impl Fn(&DynamicListView, u32) + 'static) {
         let self_ = imp::DynamicListView::from_instance(self);
 
-        self_.set_activate(activate_function);
+        self_.set_activate_function(activate_function);
     }
 
     pub fn model(&self) -> Option<FolderModel> {
