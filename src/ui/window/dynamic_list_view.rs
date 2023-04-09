@@ -250,6 +250,16 @@ mod imp {
                             let obj_clone = obj.clone();
 
                             list_row_widget.connect_activate(move || {
+                                children_foreach(&obj_clone, &Order::Forward, move |row| {
+                                    if row.get_item_index() == item_index {
+                                        row.set_state_flags(gtk::StateFlags::SELECTED, false);
+                                    } else {
+                                        row.unset_state_flags(gtk::StateFlags::SELECTED);
+                                    }
+
+                                    true
+                                });
+
                                 activate_function_clone(&obj_clone, item_index);
                             });
 
