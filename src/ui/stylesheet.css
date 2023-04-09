@@ -83,8 +83,18 @@ headerbar button:active {
     margin-right: 3px;
 }
 
-.folder_conversation_item:selected .addresses, .folder_conversation_item:selected .received {
+.folder_conversation_item:selected {
+    background-color: #3584e4;
+}
+
+.folder_conversation_item:selected .addresses,
+.folder_conversation_item:selected .received {
     color: rgba(255, 255, 255, 0.6);
+}
+
+.folder_conversation_item:selected .subject,
+.folder_conversation_item:selected .unseen_dot {
+    color: #fff;
 }
 
 .folder_conversation_item .star {
@@ -108,10 +118,6 @@ headerbar button:active {
 .folder_conversation_item.unseen .subject,
 .folder_conversation_item.unseen .unseen_dot {
     color: #0777D4;
-}
-
-.folder_conversation_item.unseen:selected .subject, .folder_conversation_item.unseen:selected .unseen_dot {
-    color: #fff;
 }
 
 .folders_sidebar { 
