@@ -130,22 +130,22 @@ mod imp {
 
         fn children_foreach<F: Fn(&RowWidgetType) -> bool>(&self, order: &Order, f: F) {
             let obj = self.obj();
-            let mut child_option = match order {
+            let mut next_child_option = match order {
                 Order::Forward => obj.first_child(),
                 Order::Reverse => obj.last_child(),
             };
 
-            while let Some(child) = child_option {
+            while let Some(child) = next_child_option {
+                next_child_option = match order {
+                    Order::Forward => child.next_sibling(),
+                    Order::Reverse => obj.prev_sibling(),
+                };
+
                 let row = child.downcast_ref::<RowWidgetType>().unwrap();
 
                 if !f(&row) {
                     break;
                 }
-
-                child_option = match order {
-                    Order::Forward => child.next_sibling(),
-                    Order::Reverse => obj.prev_sibling(),
-                };
             }
         }
 
