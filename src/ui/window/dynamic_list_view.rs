@@ -281,7 +281,7 @@ mod imp {
 
             match previous_last_item.cmp(&current_last_item) {
                 std::cmp::Ordering::Less => {
-                    let unclamped_previous_last_item = previous_last_item.max(current_last_item - visible_items_count);
+                    let unclamped_previous_last_item = previous_last_item.max(current_last_item.saturating_sub(visible_items_count));
                     // Without this clamping, the list of elements could end up have too many
                     // elements out of range at the top when scrolling in big increments.
                     let previous_last_item = unclamped_previous_last_item.max(current_first_item);
