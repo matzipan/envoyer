@@ -22,16 +22,30 @@ headerbar button:active {
     background: #fff;
 }
 
-.welcome_dialog .h1, .please_wait_loading_contents_grid .h1  { font-size: 30px; }
+.welcome_dialog .h1,
+.please_wait_loading_contents_grid .h1 {
+    font-size: 30px;
+}
 
-.welcome_dialog .initial-information-grid { margin-top: 40px; }
-.welcome_dialog .form_entry { margin-left: 30px; }
+.welcome_dialog .initial-information-grid {
+    margin-top: 40px;
+}
 
-.welcome_dialog .button { margin-top: 30px; }
+.welcome_dialog .form_entry {
+    margin-left: 30px;
+}
 
-.conversation_viewer { background: @background_secondary_color; }
+.welcome_dialog .button {
+    margin-top: 30px;
+}
 
-.conversation_viewer .conversation_message_item { background: #fff; }
+.conversation_viewer {
+    background: @background_secondary_color;
+}
+
+.conversation_viewer .conversation_message_item {
+    background: #fff;
+}
 
 .folder_conversation_item {
     padding-right: 5px;
@@ -39,9 +53,12 @@ headerbar button:active {
     border-bottom: 1px solid #efefef;
 }
 
-.folder_conversation_item .addresses, .folder_conversation_item .received,
-.conversation_message_item .addresses.to, .conversation_message_item .addresses.cc,
-.conversation_message_item .addresses.bcc, .conversation_message_item .received  {
+.folder_conversation_item .addresses,
+.folder_conversation_item .received,
+.conversation_message_item .addresses.to,
+.conversation_message_item .addresses.cc,
+.conversation_message_item .addresses.bcc,
+.conversation_message_item .received {
     color: rgba(100, 100, 100, 1);
 }
 
@@ -88,7 +105,8 @@ headerbar button:active {
     margin-left: 14px;
 }
 
-.folder_conversation_item.unseen .subject, .folder_conversation_item.unseen .unseen_dot {
+.folder_conversation_item.unseen .subject,
+.folder_conversation_item.unseen .unseen_dot {
     color: #0777D4;
 }
 
