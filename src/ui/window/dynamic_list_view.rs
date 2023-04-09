@@ -29,17 +29,51 @@ mod imp {
         Reverse,
     }
 
+    fn children_foreach<F: Fn(&RowWidgetType) -> bool>(obj: &super::DynamicListView, order: &Order, f: F) {
+        let mut next_child_option = match order {
+            Order::Forward => obj.first_child(),
+            Order::Reverse => obj.last_child(),
+        };
+
+        while let Some(child) = next_child_option {
+            next_child_option = match order {
+                Order::Forward => child.next_sibling(),
+                Order::Reverse => obj.prev_sibling(),
+            };
+
+            let row = child.downcast_ref::<RowWidgetType>().unwrap();
+
+            if !f(&row) {
+                break;
+            }
+        }
+    }
+
+    fn children_count(obj: &super::DynamicListView) -> u32 {
+        let mut child_option = obj.first_child();
+
+        let mut children_count = 0;
+
+        while let Some(child) = child_option {
+            children_count += 1;
+
+            child_option = child.next_sibling();
+        }
+
+        return children_count;
+    }
+
     // The actual data structure that stores our values. This is not accessible
     // directly from the outside.
     #[derive(Default)]
     pub struct DynamicListView {
-        horizontal_adjustment: RefCell<Option<Adjustment>>,
+        horizontal_adjustment: Rc<RefCell<Option<Adjustment>>>,
         hscroll_policy: Cell<Option<ScrollablePolicy>>,
-        vertical_adjustment: RefCell<Option<Adjustment>>,
+        vertical_adjustment: Rc<RefCell<Option<Adjustment>>>,
         vscroll_policy: Cell<Option<ScrollablePolicy>>,
         height_per_row: Cell<u32>,
-        first_item: Cell<u32>,
-        last_item: Cell<u32>,
+        first_item: Rc<RefCell<u32>>,
+        last_item: Rc<RefCell<u32>>,
         adjustment_value_changed_signal_handler_id: RefCell<Option<SignalHandlerId>>,
         conversations_list_model: RefCell<Option<FolderModel>>,
         factory_function: RefCell<Option<Box<dyn Fn(u32, &glib::Object) -> gtk::Widget + 'static>>>,
@@ -76,13 +110,40 @@ mod imp {
         }
 
         pub fn set_conversations_list_model(&self, conversations_list_model: FolderModel) {
+            let obj = self.obj().clone();
+            let first_item_clone = self.first_item.clone();
+            let last_item_clone = self.last_item.clone();
+            let vertical_adjustment_clone = self.vertical_adjustment.clone();
+
+            conversations_list_model.connect_items_changed(move |_, _, _, _| {
+                // Currently there is no ability to refresh folder contents while they are
+                // loaded, so I'm hijacking this to signify loading a new folder. Will have to
+                // change in the future.
+                let maybe_adjustment = (*vertical_adjustment_clone).borrow().clone();
+                if let Some(adjustment) = maybe_adjustment {
+                    adjustment.set_value(0f64);
+                    obj.set_vadjustment(Some(&adjustment));
+                }
+
+                children_foreach(&obj, &Order::Forward, |child| {
+                    child.unparent();
+
+                    true
+                });
+
+                *first_item_clone.borrow_mut() = 0;
+                *last_item_clone.borrow_mut() = 0;
+
+                obj.queue_allocate();
+            });
+
             *self.conversations_list_model.borrow_mut() = Some(conversations_list_model);
         }
 
         fn configure_adjustment(&self, height: u32) {
             let total_height = self.total_height();
 
-            if let Some(vertical_adjustment) = self.vertical_adjustment.borrow().as_ref() {
+            if let Some(vertical_adjustment) = (*self.vertical_adjustment).borrow().as_ref() {
                 let signal_handler_id_cell = self.adjustment_value_changed_signal_handler_id.borrow();
                 let signal_handler_id = signal_handler_id_cell.as_ref().expect("Signal handler should be set at this point");
 
@@ -102,7 +163,7 @@ mod imp {
         }
 
         fn vertical_adjustment_value(&self) -> f64 {
-            self.vertical_adjustment
+            (*self.vertical_adjustment)
                 .borrow()
                 .as_ref()
                 .map_or(0f64, |adjustment| adjustment.value())
@@ -112,7 +173,7 @@ mod imp {
             let height_per_row = self.height_per_row.get();
             let vertical_adjustment_value = self.vertical_adjustment_value().floor() as u32;
 
-            self.children_foreach(&Order::Forward, move |row| {
+            children_foreach(&self.obj(), &Order::Forward, move |row| {
                 let item_index = row.get_item_index();
 
                 let allocation = gtk::Allocation::new(
@@ -128,44 +189,9 @@ mod imp {
             });
         }
 
-        fn children_foreach<F: Fn(&RowWidgetType) -> bool>(&self, order: &Order, f: F) {
-            let obj = self.obj();
-            let mut next_child_option = match order {
-                Order::Forward => obj.first_child(),
-                Order::Reverse => obj.last_child(),
-            };
-
-            while let Some(child) = next_child_option {
-                next_child_option = match order {
-                    Order::Forward => child.next_sibling(),
-                    Order::Reverse => obj.prev_sibling(),
-                };
-
-                let row = child.downcast_ref::<RowWidgetType>().unwrap();
-
-                if !f(&row) {
-                    break;
-                }
-            }
-        }
-
-        fn children_count(&self) -> u32 {
-            let obj = self.obj();
-
-            let mut child_option = obj.first_child();
-
-            let mut children_count = 0;
-
-            while let Some(child) = child_option {
-                children_count += 1;
-
-                child_option = child.next_sibling();
-            }
-
-            return children_count;
-        }
-
         fn remove_rows_in_index_range(&self, range: Range<u32>, removal_location: Location) {
+            let obj = self.obj();
+
             // We're reverting when location is bottom so we can match straight away
             let range_items: Vec<_> = match removal_location {
                 Location::Top => range.collect(),
@@ -178,7 +204,7 @@ mod imp {
             };
 
             for item_index in range_items {
-                self.children_foreach(&order, move |row| {
+                children_foreach(&obj, &order, move |row| {
                     if row.get_item_index() == item_index {
                         row.unparent();
 
@@ -252,8 +278,8 @@ mod imp {
 
             let item_count = self.item_count();
 
-            let previous_first_item = self.first_item.get();
-            let previous_last_item = self.last_item.get();
+            let previous_first_item = *self.first_item.as_ref().borrow();
+            let previous_last_item = *self.last_item.as_ref().borrow();
 
             let current_first_item = (vertical_adjustment_value / height_per_row as f64).floor() as u32;
             let visible_items_count = widget_height / height_per_row + 2;
@@ -302,12 +328,12 @@ mod imp {
             }
 
             std::assert!(
-                self.children_count() <= visible_items_count,
+                children_count(&obj) <= visible_items_count,
                 "There are more children than there can be visible. This is a bug"
             );
 
-            self.first_item.set(current_first_item);
-            self.last_item.set(current_last_item);
+            *self.first_item.borrow_mut() = current_first_item;
+            *self.last_item.borrow_mut() = current_last_item;
         }
     }
 
@@ -379,9 +405,9 @@ mod imp {
 
         fn property(&self, _id: usize, pspec: &ParamSpec) -> glib::Value {
             match pspec.name() {
-                "hadjustment" => self.horizontal_adjustment.borrow().to_value(),
+                "hadjustment" => (*self.horizontal_adjustment).borrow().to_value(),
                 "hscroll-policy" => self.hscroll_policy.get().unwrap_or(ScrollablePolicy::Minimum).to_value(),
-                "vadjustment" => self.vertical_adjustment.borrow().to_value(),
+                "vadjustment" => (*self.vertical_adjustment).borrow().to_value(),
                 "vscroll-policy" => self.vscroll_policy.get().unwrap_or(ScrollablePolicy::Minimum).to_value(),
                 _ => unimplemented!(),
             }
