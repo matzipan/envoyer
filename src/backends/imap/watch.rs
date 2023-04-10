@@ -10,7 +10,7 @@ use melib::backends::BackendEventConsumer;
 
 use melib::connections::timeout;
 
-use melib::MeliError;
+use melib::Error as MeliError;
 
 use log::debug;
 

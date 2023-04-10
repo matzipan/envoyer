@@ -61,7 +61,7 @@ use smallvec::SmallVec;
 impl From<Message> for melib::email::Envelope {
     fn from(message: Message) -> Self {
         let mut envelope = Self {
-            hash: message.id as u64, //@TODO
+            hash: melib::email::EnvelopeHash(message.id as u64), //@TODO
             date: String::new(),
             timestamp: message.time_received.timestamp() as u64, //@TODO
             from: SmallVec::new(),
@@ -76,7 +76,7 @@ impl From<Message> for melib::email::Envelope {
             thread: melib::thread::ThreadNodeHash::null(),
             has_attachments: false,               //@TODO
             flags: melib::email::Flag::default(), //@TODO
-            labels: SmallVec::new(),              //@TODO
+            tags: SmallVec::new(),                //@TODO
         };
 
         // from: melib::parser::address::rfc2822address_list(&message.from.as_bytes()).
@@ -166,7 +166,7 @@ impl From<melib::email::Envelope> for NewMessage {
             folder_id: 0,
             subject: String::from(envelope.subject()),
             // We go straight for try_into().unwrap() because we know the timestamp won't take 64 bits any time soon
-            time_received: chrono::NaiveDateTime::from_timestamp(envelope.datetime() as i64, 0), //@TODO
+            time_received: chrono::NaiveDateTime::from_timestamp_opt(envelope.datetime() as i64, 0).unwrap_or_default(), //@TODO
             from: envelope.field_from_to_string(),
             to: envelope.field_to_to_string(),
             cc: envelope.field_cc_to_string(),

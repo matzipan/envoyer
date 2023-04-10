@@ -4,7 +4,7 @@ use crate::models;
 
 use melib::connections::timeout;
 
-use melib::MeliError;
+use melib::Error as MeliError;
 
 use log::debug;
 

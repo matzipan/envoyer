@@ -280,7 +280,7 @@ impl Identity {
     //     &self,
     //     folder: &models::Folder,
     // ) -> Result<Pin<Box<dyn Stream<Item = Result<melib::email::Mail,
-    // melib::error::MeliError>>>>, String> {     // if let Ok(mut mailbox_job)
+    // melib::error::Error>>>>, String> {     // if let Ok(mut mailbox_job)
     // = backend.fetch(inbox.hash()) {
 
     //     let mut mailbox_job = self

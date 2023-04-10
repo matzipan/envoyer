@@ -9,9 +9,9 @@ use melib::backends::imap::{
     list_mailbox_result, status_response, ImapConnection, ImapExtensionUse, ImapLineSplit, ImapMailbox, ImapProtocol::IMAP as ImapProtocol,
     ImapServerConf, MessageSequenceNumber, ModSequence, RequiredResponses, SyncPolicy, UIDStore,
 };
-use melib::backends::{BackendEventConsumer, MailboxHash};
+use melib::backends::{BackendEventConsumer, AccountHash, MailboxHash};
 use melib::connections::timeout;
-use melib::{BackendMailbox, MeliError};
+use melib::{BackendMailbox, Error as MeliError};
 
 use futures::lock::Mutex as FutureMutex;
 use std::collections::HashMap;
@@ -220,12 +220,12 @@ pub fn create_connection(server_conf: &ImapServerConf, event_consumer: BackendEv
         server_conf: server_conf.clone(),
         sync_policy: SyncPolicy::Basic,
         uid_store: Arc::new(UIDStore::new(
-            0,
+            AccountHash(0),
             Arc::new("123".to_string()),
             BackendEventConsumer::new(Arc::new(|_, _| {})),
             server_conf.timeout,
         )),
-        account_hash: 0,
+        account_hash: AccountHash(0),
         account_name: Arc::new("123".to_string()),
         capabilities: Default::default(),
         is_online: Arc::new(Mutex::new((SystemTime::now(), Err(MeliError::new("Account is uninitialised."))))),
@@ -347,7 +347,7 @@ impl ImapBackend {
                 } else {
                 }
             }
-            mailboxes.retain(|_, v| v.hash != 0);
+            mailboxes.retain(|_, v| v.hash != MailboxHash(0));
             conn.send_command(b"LSUB \"\" \"*\"").await?;
             conn.read_response(&mut res, RequiredResponses::LSUB_REQUIRED).await?;
 
@@ -394,7 +394,7 @@ impl ImapBackend {
             let builder = melib::AttachmentBuilder::new(message.body.unwrap());
             let parsed_body = builder.build();
 
-            Ok(parsed_body.text())
+            Ok(parsed_body.text(melib::attachment_types::Text::Html))
         }))
     }
 }
