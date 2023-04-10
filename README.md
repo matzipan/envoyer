@@ -13,6 +13,23 @@ nice. Go learn Rust!
 
 ## Building
 
+## Requirements
+
+* Initialize git submodules:
+
+  ```shell
+  git submodule init
+  git submodule update
+  ```
+
+* If you are building with flatpak, install `flatpak` runtime:
+
+  ```shell
+  flatpak install flathub "org.gnome.Sdk/x86_64/43"
+  flatpak install flathub "org.freedesktop.Sdk.Extension.rust-nightly"
+  flatpak install flathub "org.freedesktop.Sdk.Extension.llvm14"
+  ```
+
 ### Installing locally
 
 ```
@@ -20,13 +37,24 @@ mkdir build
 flatpak-builder --user --install build flatpak.yml
 ```
 
-### Developing
+### Make a development build
 
-```
-flatpak-builder build flatpak.yml
-flatpak-builder --run build flatpak.yml bash
-cargo build
-```
+* If you have `libgtk4` and Rust installed locally, run `cargo build`
+
+* To build with flatpak, run the following commands:
+  
+  ```shell
+  flatpak-builder build flatpak.yml
+  flatpak-builder --run build flatpak.yml bash
+  ```
+  
+  This will open a shell inside the flatpak environment.
+  You can then execute the binary:
+  
+  ```shell
+  ./build/files/bin/envoyer
+  ```
+  
 
 ### License
 
