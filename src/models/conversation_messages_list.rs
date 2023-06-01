@@ -83,7 +83,7 @@ pub mod model {
     impl ConversationModel {
         #[allow(clippy::new_without_default)]
         pub fn new() -> ConversationModel {
-            glib::Object::new::<ConversationModel>(&[])
+            glib::Object::new::<ConversationModel>()
         }
 
         pub fn attach_store(self, store: Arc<services::Store>) {
@@ -164,7 +164,7 @@ pub mod row_data {
     }
     impl MessageRowData {
         pub fn new() -> MessageRowData {
-            glib::Object::new::<MessageRowData>(&[])
+            glib::Object::new::<MessageRowData>()
         }
         pub fn set_message(&self, message: models::Message) {
             let self_ = imp::MessageRowData::from_instance(self);

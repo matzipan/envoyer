@@ -87,7 +87,7 @@ pub mod folders_list_item {
     }
     impl FoldersListItem {
         pub fn new() -> FoldersListItem {
-            glib::Object::new::<FoldersListItem>(&[])
+            glib::Object::new::<FoldersListItem>()
         }
 
         pub fn new_with_folder(folder: &models::Folder) -> FoldersListItem {
@@ -211,7 +211,7 @@ pub mod message_view {
     }
     impl MessageView {
         pub fn new() -> MessageView {
-            glib::Object::new::<MessageView>(&[])
+            glib::Object::new::<MessageView>()
         }
 
         pub fn load_content(&self, content: &String) {
@@ -278,7 +278,7 @@ pub mod conversation_message_item {
     }
     impl ConversationMessageItem {
         pub fn new() -> ConversationMessageItem {
-            glib::Object::new::<ConversationMessageItem>(&[])
+            glib::Object::new::<ConversationMessageItem>()
         }
 
         pub fn new_with_message(message: &models::Message) -> ConversationMessageItem {
@@ -316,7 +316,7 @@ impl Window {
         gtk::Window::set_default_icon_name("iconname");
         let my_str = include_str!("stylesheet.css");
         let provider = gtk::CssProvider::new();
-        provider.load_from_data(my_str.as_bytes());
+        provider.load_from_data(my_str);
         gtk::StyleContext::add_provider_for_display(
             &gdk::Display::default().expect("Error initializing gtk css provider."),
             &provider,
@@ -349,8 +349,8 @@ impl Window {
             list_item.set_child(Some(&box_item));
         });
 
-        let folders_list_selection_model = gtk::NoSelection::new(Some(folders_list_model));
-        let folders_list_view = gtk::ListView::new(Some(&folders_list_selection_model), Some(&folders_list_factory));
+        let folders_list_selection_model = gtk::NoSelection::new(Some(folders_list_model.clone()));
+        let folders_list_view = gtk::ListView::new(Some(folders_list_selection_model), Some(folders_list_factory));
         folders_list_view.style_context().add_class("folders_sidebar");
         folders_list_view.set_single_click_activate(true);
 
@@ -604,25 +604,25 @@ impl Window {
                 to_addresses_grid.hide();
             } else {
                 to_addresses_list.set_text(&message.to);
-            }
+    }
 
             if message.from.trim().is_empty() {
                 from_addresses_list.hide();
             } else {
                 from_addresses_list.set_text(&message.from);
-            }
+}
 
             if message.cc.trim().is_empty() {
                 cc_addresses_grid.hide();
             } else {
                 cc_addresses_list.set_text(&message.cc);
-            }
+}
 
             if message.bcc.trim().is_empty() {
                 bcc_addresses_grid.hide();
             } else {
                 bcc_addresses_list.set_text(&message.bcc);
-            }
+    }
 
             attachment_indicator.hide();
 

@@ -371,8 +371,8 @@ mod imp {
                 vec![
                     ParamSpecObject::builder::<Adjustment>("hadjustment").build(),
                     ParamSpecObject::builder::<Adjustment>("vadjustment").build(),
-                    ParamSpecEnum::builder::<ScrollablePolicy>("hscroll-policy", ScrollablePolicy::Minimum).build(),
-                    ParamSpecEnum::builder::<ScrollablePolicy>("vscroll-policy", ScrollablePolicy::Minimum).build(),
+                    ParamSpecEnum::builder_with_default::<ScrollablePolicy>("hscroll-policy", ScrollablePolicy::Minimum).build(),
+                    ParamSpecEnum::builder_with_default::<ScrollablePolicy>("vscroll-policy", ScrollablePolicy::Minimum).build(),
                 ]
             });
             PROPERTIES.as_ref()
@@ -462,7 +462,7 @@ impl DynamicListView {
         conversations_list_model: FolderModel,
         factory_function: impl Fn(u32, &glib::Object) -> gtk::Widget + 'static,
     ) -> DynamicListView {
-        let instance = glib::Object::new::<DynamicListView>(&[]);
+        let instance = glib::Object::new::<DynamicListView>();
 
         let self_ = imp::DynamicListView::from_instance(&instance);
 

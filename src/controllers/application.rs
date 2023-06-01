@@ -90,7 +90,7 @@ impl Application {
     }
 
     fn new(gtk_application: &gtk::Application) -> Application {
-        let (application_message_sender, application_message_receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+        let (application_message_sender, application_message_receiver) = glib::MainContext::channel(glib::Priority::DEFAULT);
         let context = glib::MainContext::default();
 
         let identities = Arc::new(Mutex::new(Vec::<Arc<models::Identity>>::new()));
