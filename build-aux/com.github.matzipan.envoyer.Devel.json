@@ -15,12 +15,14 @@
         "--device=dri",
         "--env=RUST_LOG=envoyer=debug",
         "--env=G_MESSAGES_DEBUG=none",
-        "--env=RUST_BACKTRACE=1"
+        "--env=RUST_BACKTRACE=1",
+        "--talk-name=org.freedesktop.portal.OpenURI"
     ],
     "build-options": {
         "append-path": "/usr/lib/sdk/rust-nightly/bin:/usr/lib/sdk/llvm14/bin",
         "build-args": [
-            "--share=network"
+            "--share=network",
+            "--socket=session-bus"
         ],
         "env": {
             "CARGO_REGISTRIES_CRATES_IO_PROTOCOL": "sparse",
