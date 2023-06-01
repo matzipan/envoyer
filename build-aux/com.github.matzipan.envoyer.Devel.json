@@ -4,7 +4,7 @@
     "runtime-version": "43",
     "sdk": "org.gnome.Sdk",
     "sdk-extensions": [
-        "org.freedesktop.Sdk.Extension.rust-stable",
+        "org.freedesktop.Sdk.Extension.rust-nightly",
         "org.freedesktop.Sdk.Extension.llvm14"
     ],
     "command": "envoyer",
@@ -18,7 +18,7 @@
         "--env=RUST_BACKTRACE=1"
     ],
     "build-options": {
-        "append-path": "/usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/llvm14/bin",
+        "append-path": "/usr/lib/sdk/rust-nightly/bin:/usr/lib/sdk/llvm14/bin",
         "build-args": [
             "--share=network"
         ],
