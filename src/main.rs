@@ -19,6 +19,14 @@ mod schema;
 mod services;
 mod ui;
 
+#[rustfmt::skip]
+mod config;
+
+use gettextrs::{gettext, LocaleCategory};
+use gtk::{gio, glib};
+
+use self::config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
+
 use log::{Level, LevelFilter, Metadata, Record};
 
 struct SimpleLogger;
@@ -43,11 +51,16 @@ fn main() -> std::io::Result<()> {
     log::set_logger(&LOGGER)
         .map(|()| log::set_max_level(LevelFilter::Debug))
         .expect("Unable to set up logger");
-    // Intl.setlocale (LocaleCategory.ALL, Intl.get_language_names ()[0]);
-    // Intl.textdomain (Config.GETTEXT_PACKAGE);
 
-    // Environment.set_application_name (Constants.APP_NAME);
-    // Environment.set_prgname (Constants.PROJECT_FQDN);
+    // Prepare i18n
+    gettextrs::setlocale(LocaleCategory::LcAll, "");
+    gettextrs::bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR).expect("Unable to bind the text domain");
+    gettextrs::textdomain(GETTEXT_PACKAGE).expect("Unable to switch to the text domain");
+
+    glib::set_application_name(&gettext("Envoyer"));
+
+    let res = gio::Resource::load(RESOURCES_FILE).expect("Could not load gresource file");
+    gio::resources_register(&res);
 
     controllers::Application::run();
 
