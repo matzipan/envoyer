@@ -37,7 +37,7 @@ impl WelcomeDialog {
             sender: sender,
             // Workaround for the desktop manager seemingly taking over headerbars?
             gtk_dialog: gtk::Dialog::with_buttons(
-                Some(&""),
+                Some(""),
                 None::<&gtk::Window>,
                 gtk::DialogFlags::USE_HEADER_BAR | gtk::DialogFlags::MODAL,
                 &[],

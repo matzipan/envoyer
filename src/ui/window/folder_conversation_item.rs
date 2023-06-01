@@ -157,7 +157,7 @@ mod imp {
                 gesture.set_state(gtk::EventSequenceState::Claimed);
                 activate_function();
             });
-            obj.add_controller(&gesture);
+            obj.add_controller(gesture);
         }
     }
 }
@@ -168,7 +168,7 @@ glib::wrapper! {
 }
 impl FolderConversationItem {
     pub fn new() -> FolderConversationItem {
-        glib::Object::new::<FolderConversationItem>(&[])
+        glib::Object::new::<FolderConversationItem>()
     }
 
     pub fn new_with_item_index_and_conversation(item_index: u32, conversation: &models::MessageSummary) -> FolderConversationItem {

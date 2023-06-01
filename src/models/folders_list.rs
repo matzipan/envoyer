@@ -70,7 +70,7 @@ pub mod model {
     impl FolderListModel {
         #[allow(clippy::new_without_default)]
         pub fn new() -> FolderListModel {
-            glib::Object::new(&[])
+            glib::Object::new()
         }
 
         pub fn attach_store(self, store: Arc<services::Store>) {
@@ -150,7 +150,7 @@ pub mod row_data {
     }
     impl FolderRowData {
         pub fn new() -> FolderRowData {
-            glib::Object::new::<FolderRowData>(&[])
+            glib::Object::new::<FolderRowData>()
         }
         pub fn set_folder(&self, folder: models::Folder) {
             let self_ = imp::FolderRowData::from_instance(self);
