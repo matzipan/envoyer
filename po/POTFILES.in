@@ -1,6 +1,4 @@
 data/com.github.matzipan.envoyer.desktop.in.in
 data/com.github.matzipan.envoyer.gschema.xml.in
 data/com.github.matzipan.envoyer.metainfo.xml.in.in
-data/resources/ui/shortcuts.ui
-data/resources/ui/window.ui
 src/application.rs
