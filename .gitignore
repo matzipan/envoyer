@@ -3,3 +3,4 @@ db.sqlite
 sdk
 .flatpak-builder
 build
+workdir
