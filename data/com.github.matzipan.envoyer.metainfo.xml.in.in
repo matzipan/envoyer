@@ -3,33 +3,32 @@
 <component type="desktop-application">
   <id>@app-id@</id>
   <metadata_license>CC0</metadata_license>
-  <!-- Insert your license of choice here -->
-  <!-- <project_license>MIT</project_license> -->
+  <project_license>GPL-3.0-only</project_license>
   <name>Envoyer</name>
-  <summary>Write a GTK + Rust application</summary>
+  <summary>Mail for the Linux desktop</summary>
   <description>
-    <p>A boilerplate template for GTK + Rust. It uses Meson as a build system and has flatpak support by default.</p>
+    <p>Envoyer intends to be the mail app for the Linux desktop of today.</p>
   </description>
   <screenshots>
     <screenshot type="default">
-      <image>https://gitlab.gnome.org/bilelmoussaoui/envoyer/raw/master/data/resources/screenshots/screenshot1.png</image>
+      <image>http://invalid/image.png</image>
       <caption>Main window</caption>
     </screenshot>
   </screenshots>
-  <url type="homepage">https://gitlab.gnome.org/bilelmoussaoui/envoyer</url>
-  <url type="bugtracker">https://gitlab.gnome.org/bilelmoussaoui/envoyer/issues</url>
+  <url type="homepage">https://github.com/matzipan/envoyer/</url>
+  <url type="bugtracker">https://github.com/matzipan/envoyer/issues</url>
   <content_rating type="oars-1.0" />
   <releases>
-    <release version="0.1.0" date="2019-07-11" />
+    <release version="0.1.0" date="2021-07-25" />
   </releases>
   <kudos>
-     <!--
+    <!--
        GNOME Software kudos:
        https://gitlab.gnome.org/GNOME/gnome-software/-/blob/main/doc/kudos.md
      -->
-     <kudo>ModernToolkit</kudo>
-     <kudo>HiDpiIcon</kudo>
-     <kudo>Notifications</kudo>
+    <kudo>ModernToolkit</kudo>
+    <kudo>HiDpiIcon</kudo>
+    <kudo>Notifications</kudo>
   </kudos>
   <developer_name>Andrei Zisu</developer_name>
   <update_contact>matzipan@gmail.com</update_contact>
