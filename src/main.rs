@@ -59,8 +59,9 @@ fn main() -> std::io::Result<()> {
 
     glib::set_application_name(&gettext("Envoyer"));
 
-    let res = gio::Resource::load(RESOURCES_FILE).expect("Could not load gresource file");
-    gio::resources_register(&res);
+    // Not really using resources now and can't really bothered with it
+    // let res = gio::Resource::load(RESOURCES_FILE).expect("Could not load
+    // gresource file"); gio::resources_register(&res);
 
     controllers::Application::run();
 
