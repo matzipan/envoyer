@@ -25,7 +25,7 @@ jobs:
       uses: flatpak/flatpak-github-actions/flatpak-builder@v3
       with:
         bundle: com.github.matzipan.envoyer.flatpak
-        manifest-path: ./flatpak.yml
+        manifest-path: ./build-aux/flatpak.yml
         cache-key: flatpak-builder-${{ github.ref }}
     # - name: Run tests
     #   working-directory: envoyer

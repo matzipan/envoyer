@@ -26,20 +26,38 @@ git submodule update
 
 ```
 mkdir build
-flatpak-builder --user --install build flatpak.yml
+flatpak-builder --user --install build build-aux/flatpak.yml
 ```
 
 ### Make a development build
 
-In case you don't have GTK 4 on your system, you can use flatpak.
-The commands below should give you a shell in a flatpak environment with GTK 4 set up.
-  ```shell
-  flatpak-builder build flatpak.yml
-  flatpak-builder --run build flatpak.yml bash
-  ```
-To build or run the application, use the usual `cargo` commands: `cargo build` or `cargo run`.
+The commands below should give you a shell in a flatpak environment with GTK 4 set up. This also works on systems with
+no GTK 4. Building without flatpak is possible, although a bit more difficult.
 
-You can find the binaries under `./build/files/bin/envoyer`
+```shell
+flatpak-builder --user workdir build-aux/flatpak.yml
+flatpak-builder --run workdir build-aux/flatpak.yml bash
+```
+
+To build the application then:
+
+```shell
+mkdir build && cd build
+meson --prefix=/app ..
+ninja
+```
+
+In order to get the application set up correctly, you will need to run:
+
+```
+ninja install
+```
+
+Then you will simply be able to run the application from the `PATH` by simply running:
+
+```
+envoyer
+```
 
 ### License
 

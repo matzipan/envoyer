@@ -23,10 +23,8 @@ build-options:
     - --socket=session-bus
 modules:
   - name: com.github.matzipan.envoyer
-    buildsystem: simple
+    buildsystem: meson
+    run-tests: true
     sources:
       - type: dir
-        path: "."
-    build-commands:
-      - "cargo build --release --verbose"
-      - "install -Dm755 ./target/release/envoyer -t /app/bin/"
+        path: "../"
