@@ -13,5 +13,15 @@
       <default>false</default>
       <summary>Window maximized state</summary>
     </key>
+    <key name="position-x" type="i">
+      <default>600</default>
+      <summary>x axis position on screen</summary>
+      <description>The last recorded x position of the application window.</description>
+    </key>
+    <key name="position-y" type="i">
+      <default>600</default>
+      <summary>y axis position on screen</summary>
+      <description>The last recorded y position of the application window.</description>
+    </key>
   </schema>
 </schemalist>
