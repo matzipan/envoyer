@@ -1,12 +1,16 @@
 [Desktop Entry]
 Name=Envoyer
-Comment=Write a GTK + Rust application
-Type=Application
-Exec=envoyer
-Terminal=false
-Categories=GNOME;GTK;
-# Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-Keywords=Gnome;GTK;
+GenericName=Email App
+Comment=Mail for the Linux desktop
+Categories=GNOME;GTK;Network;Email;
+Exec=com.github.matzipan.envoyer
 # Translators: Do NOT translate or transliterate this text (this is an icon file name)!
 Icon=@icon@
+Terminal=false
+Type=Application
 StartupNotify=true
+X-GNOME-Gettext-Domain=envoyer
+X-GNOME-UsesNotifications=true
+MimeType=x-scheme-handler/mailto;
+# Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+Keywords=email;e-mail;envoyer;mail;send;inbox;
