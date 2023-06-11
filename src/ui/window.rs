@@ -12,7 +12,7 @@ use std::rc::Rc;
 
 use crate::bindings;
 use crate::config::{APP_ID, PROFILE};
-use crate::controllers::ApplicationMessage;
+use crate::controllers::{Application, ApplicationMessage};
 use crate::models;
 use crate::models::folder_conversations_list::row_data::ConversationRowData;
 
@@ -371,16 +371,6 @@ mod imp {
                 .as_ref()
                 .expect("Conversations list model not available");
 
-            gtk::Window::set_default_icon_name("iconname");
-            let my_str = include_str!("stylesheet.css");
-            let provider = gtk::CssProvider::new();
-            provider.load_from_data(my_str);
-            gtk::StyleContext::add_provider_for_display(
-                &gdk::Display::default().expect("Error initializing gtk css provider."),
-                &provider,
-                gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-            );
-
             let folders_list_factory = gtk::SignalListItemFactory::new();
             folders_list_factory.connect_bind(move |_, list_item| {
                 let item = list_item.item().unwrap();
@@ -418,17 +408,17 @@ mod imp {
             folders_scroll_box.set_child(Some(&folders_list_view));
 
             let threads_list_view = DynamicListView::new(50, conversations_list_model.clone(), move |item_index, item| {
-                    let item_data = item
-                        .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
-                        .expect("Row data is of wrong type");
-                    let conversation_rc = item_data.get_conversation();
-                    let conversation_borrow = conversation_rc.borrow();
-                    let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
+                let item_data = item
+                    .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
+                    .expect("Row data is of wrong type");
+                let conversation_rc = item_data.get_conversation();
+                let conversation_borrow = conversation_rc.borrow();
+                let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
 
-                    let box_row = FolderConversationItem::new_with_item_index_and_conversation(item_index, &conversation);
+                let box_row = FolderConversationItem::new_with_item_index_and_conversation(item_index, &conversation);
 
-                    box_row.upcast::<gtk::Widget>()
-                });
+                box_row.upcast::<gtk::Widget>()
+            });
 
             let dynamic_list_scroll_box = gtk::ScrolledWindow::new();
             dynamic_list_scroll_box.set_vexpand(true);
@@ -726,7 +716,7 @@ glib::wrapper! {
 
 impl Window {
     pub fn new(
-        application: &gtk::Application,
+        application: &Application,
         sender: glib::Sender<ApplicationMessage>,
         folders_list_model: &models::folders_list::model::FolderListModel,
         conversations_list_model: &models::folder_conversations_list::model::FolderModel,
@@ -776,15 +766,6 @@ impl Window {
             self.maximize();
         }
     }
-
-    pub fn show(&self) {
-        let imp: &imp::Window = self.imp();
-
-        imp.show();
-
-        self.present_with_time((glib::monotonic_time() / 1000) as u32);
-    }
-
     // public new void grab_focus () {
     //     listbox.grab_focus ();
     // }
