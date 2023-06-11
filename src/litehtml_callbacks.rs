@@ -1,10 +1,9 @@
 use gtk::prelude::*;
 use gtk::{gdk, graphene, gsk, pango};
-use pango::prelude::*;
 use pangocairo;
 
 use libc;
-use log::{debug, info};
+use log::debug;
 use std::ffi::{CStr, CString};
 
 use bitflags::bitflags;

@@ -11,7 +11,6 @@ use std::collections::{HashMap, HashSet};
 use std::convert::TryFrom;
 use std::env;
 use std::fmt;
-use std::ptr::eq;
 
 use diesel::prelude::*;
 

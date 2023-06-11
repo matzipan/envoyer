@@ -23,9 +23,9 @@ mod ui;
 mod config;
 
 use gettextrs::{gettext, LocaleCategory};
-use gtk::{gio, glib};
+use gtk::glib;
 
-use self::config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
+use self::config::{GETTEXT_PACKAGE, LOCALEDIR};
 
 use log::{Level, LevelFilter, Metadata, Record};
 
