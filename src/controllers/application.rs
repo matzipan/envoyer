@@ -221,7 +221,7 @@ mod imp {
                         let store_clone = store_clone.clone();
                         let identities_clone = identities_clone.clone();
 
-                        context_clone.spawn(async move {
+                        context_clone.spawn_local(async move {
                             // @TODO replace the expects with error reporting
                             let bare_identities = store_clone.get_bare_identities().expect("Unable to acquire a database connection");
 
@@ -256,7 +256,7 @@ mod imp {
 
                         for identity in identities {
                             let identity = identity.clone();
-                            context_clone.spawn(identity.start_session());
+                            context_clone.spawn_local(identity.start_session());
                         }
 
                         folders_list_model_clone.load();
@@ -322,7 +322,7 @@ mod imp {
                                         identities[0].clone()
                                     };
 
-                                    context_clone.spawn(
+                                    context_clone.spawn_local(
                                         async move {
                                             identity.fetch_message_content(conversation.id).await?;
 
