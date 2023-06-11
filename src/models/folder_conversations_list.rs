@@ -7,7 +7,6 @@ use gtk::subclass::prelude::*;
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::Arc;
 
 use crate::models;
 use crate::services;
@@ -20,7 +19,7 @@ pub mod model {
 
         #[derive(Debug)]
         pub struct FolderModel {
-            pub store: Rc<RefCell<Option<Arc<services::Store>>>>,
+            pub store: Rc<RefCell<Option<Rc<services::Store>>>>,
             pub summaries: Rc<RefCell<Option<Vec<models::MessageSummary>>>>,
             pub currently_loaded_folder: Rc<RefCell<Option<models::Folder>>>,
         }
@@ -58,7 +57,7 @@ pub mod model {
             fn item(&self, position: u32) -> Option<glib::Object> {
                 let data = ConversationRowData::new();
 
-                data.set_conversation(self.summaries.borrow().as_ref().unwrap()[position as usize].clone()); //@TODO should probably be an arc to the item
+                data.set_conversation(self.summaries.borrow().as_ref().unwrap()[position as usize].clone()); //@TODO should probably be an Rc to the item
 
                 Some(data.clone().upcast::<glib::Object>())
             }
@@ -75,7 +74,7 @@ pub mod model {
             glib::Object::new::<FolderModel>()
         }
 
-        pub fn attach_store(self, store: Arc<services::Store>) {
+        pub fn attach_store(self, store: Rc<services::Store>) {
             let self_ = imp::FolderModel::from_instance(&self);
 
             self_.store.replace(Some(store));

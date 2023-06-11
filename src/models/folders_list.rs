@@ -7,7 +7,6 @@ use gtk::subclass::prelude::*;
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::Arc;
 
 use crate::models;
 use crate::services;
@@ -20,7 +19,7 @@ pub mod model {
 
         #[derive(Debug)]
         pub struct FolderListModel {
-            pub store: Rc<RefCell<Option<Arc<services::Store>>>>,
+            pub store: Rc<RefCell<Option<Rc<services::Store>>>>,
             pub folders: Rc<RefCell<Vec<models::Folder>>>,
             pub bare_identities: Rc<RefCell<Vec<models::BareIdentity>>>,
         }
@@ -55,7 +54,7 @@ pub mod model {
                 self.folders.borrow().get(position as usize).map(|x| {
                     let data = FolderRowData::new();
 
-                    data.set_folder(x.clone()); //@TODO should probably be an arc to the item
+                    data.set_folder(x.clone()); //@TODO should probably be an Rc to the item
 
                     data.clone().upcast::<glib::Object>()
                 })
@@ -73,7 +72,7 @@ pub mod model {
             glib::Object::new()
         }
 
-        pub fn attach_store(self, store: Arc<services::Store>) {
+        pub fn attach_store(self, store: Rc<services::Store>) {
             let self_ = imp::FolderListModel::from_instance(&self);
 
             self_.store.replace(Some(store));

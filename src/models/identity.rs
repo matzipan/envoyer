@@ -6,9 +6,9 @@ use melib::{backends::BackendMailbox, BackendEventConsumer};
 
 use std::boxed::Box;
 use std::collections::HashMap;
-use std::time::Instant;
-
+use std::rc::Rc;
 use std::sync::Arc;
+use std::time::Instant;
 
 use crate::backends::imap;
 use crate::controllers::ApplicationMessage;
@@ -23,16 +23,16 @@ pub enum SyncType {
 
 #[derive(Clone, Debug)]
 pub struct Identity {
-    pub bare_identity: Arc<models::BareIdentity>,
-    backend: Arc<Box<imap::ImapBackend>>,
-    store: Arc<services::Store>,
+    pub bare_identity: Rc<models::BareIdentity>,
+    backend: Rc<Box<imap::ImapBackend>>,
+    store: Rc<services::Store>,
     application_message_sender: glib::Sender<ApplicationMessage>,
 }
 
 impl Identity {
     pub async fn new(
         bare_identity: models::BareIdentity,
-        store: Arc<services::Store>,
+        store: Rc<services::Store>,
         application_message_sender: glib::Sender<ApplicationMessage>,
     ) -> Identity {
         info!("Creating identity with address {}", bare_identity.email_address);
@@ -61,14 +61,14 @@ impl Identity {
 
         info!("Identity for {} created", bare_identity.email_address);
         return Identity {
-            bare_identity: Arc::new(bare_identity),
-            backend: Arc::new(imap_backend),
+            bare_identity: Rc::new(bare_identity),
+            backend: Rc::new(imap_backend),
             store,
             application_message_sender,
         };
     }
 
-    pub async fn initialize(self: Arc<Self>) -> Result<(), String> {
+    pub async fn initialize(self: Rc<Self>) -> Result<(), String> {
         info!("Initializing identity with address {}", self.bare_identity.email_address);
 
         //@TODO how does LSUB come into play/ only filter for subscribed?
@@ -82,7 +82,7 @@ impl Identity {
         Ok(())
     }
 
-    pub async fn start_session(self: Arc<Self>) {
+    pub async fn start_session(self: Rc<Self>) {
         info!("Syncing folders");
         self.clone().sync_folders().await.map_err(|e| {
             //@TODO show in UI
@@ -148,7 +148,7 @@ impl Identity {
         }
     }
 
-    async fn sync_messages_for_non_inbox_folders(self: Arc<Self>) -> Result<(), String> {
+    async fn sync_messages_for_non_inbox_folders(self: Rc<Self>) -> Result<(), String> {
         let folders = self.store.get_folders(&self.bare_identity)?;
 
         for folder in folders.iter().filter(|x| x.folder_name != "INBOX") {
@@ -163,7 +163,7 @@ impl Identity {
     }
 
     fn handle_sync_messages_for_folder_result(
-        self: Arc<Self>,
+        self: Rc<Self>,
         sync_folder: &models::Folder,
         sync_result: Result<Option<Vec<models::NewMessage>>, String>,
     ) {
@@ -185,7 +185,7 @@ impl Identity {
         }
     }
 
-    async fn fetch_folders(self: Arc<Self>) -> Result<Vec<Box<melib::backends::imap::ImapMailbox>>, String> {
+    async fn fetch_folders(self: Rc<Self>) -> Result<Vec<Box<melib::backends::imap::ImapMailbox>>, String> {
         self.backend
             .is_online()
             .map_err(|e| e.to_string())?
@@ -223,7 +223,7 @@ impl Identity {
         Ok(folders)
     }
 
-    async fn sync_folders(self: Arc<Self>) -> Result<(), String> {
+    async fn sync_folders(self: Rc<Self>) -> Result<(), String> {
         let mailboxes = self.clone().fetch_folders().await?; //@TODO rename to fetch mailboxes
 
         // This is used to detect local folders removed from the server
@@ -310,7 +310,7 @@ impl Identity {
     // }
 
     async fn sync_messages_for_folder(
-        self: Arc<Self>,
+        self: Rc<Self>,
         folder: &models::Folder,
         sync_type: SyncType,
     ) -> Result<Option<Vec<models::NewMessage>>, String> {
@@ -395,7 +395,7 @@ impl Identity {
         self.store.is_message_content_downloaded(conversation_id)
     }
 
-    pub async fn fetch_message_content(self: Arc<Self>, conversation_id: i32) -> Result<(), String> {
+    pub async fn fetch_message_content(self: Rc<Self>, conversation_id: i32) -> Result<(), String> {
         //@TODO handle case when this returns error
         let message = self.store.get_message(conversation_id).expect("Unable to get message");
         let folder = self.store.get_folder(message.folder_id).expect("Unable to get folder");
