@@ -11,13 +11,14 @@ use std::rc::Rc;
 use crate::controllers::ApplicationMessage;
 use crate::ui;
 
+#[derive(Debug, Clone)]
 struct FormData {
     pub email_address: Option<String>,
     pub full_name: Option<String>,
     pub account_name: Option<String>,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct WelcomeDialog {
     pub sender: glib::Sender<ApplicationMessage>,
     pub gtk_dialog: gtk::Dialog,

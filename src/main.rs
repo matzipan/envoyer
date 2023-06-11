@@ -47,7 +47,7 @@ impl log::Log for SimpleLogger {
 
 static LOGGER: SimpleLogger = SimpleLogger;
 
-fn main() -> std::io::Result<()> {
+fn main() -> glib::ExitCode {
     log::set_logger(&LOGGER)
         .map(|()| log::set_max_level(LevelFilter::Debug))
         .expect("Unable to set up logger");
@@ -63,7 +63,8 @@ fn main() -> std::io::Result<()> {
     // let res = gio::Resource::load(RESOURCES_FILE).expect("Could not load
     // gresource file"); gio::resources_register(&res);
 
-    controllers::Application::run();
+    gtk::init().expect("Failed to initialize GTK Application");
 
-    Ok(())
+    let app = controllers::Application::default();
+    app.run()
 }

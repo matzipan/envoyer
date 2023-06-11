@@ -1,15 +1,18 @@
-use gtk;
-use gtk::gio;
 use gtk::gio::prelude::*;
-use gtk::glib;
+use gtk::prelude::*;
+use gtk::subclass::prelude::*;
+use gtk::{gdk, gio, glib};
 
 use chrono::prelude::*;
 use futures::prelude::*;
 
-use log::{error, info};
+use log::{debug, error, info};
+
+use gettextrs::gettext;
+
+use crate::config::{APP_ID, PKGDATADIR, PROFILE, VERSION};
 
 use crate::google_oauth;
-use crate::litehtml_callbacks;
 use crate::models;
 use crate::services;
 
@@ -17,7 +20,7 @@ use crate::ui;
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 diesel_migrations::embed_migrations!();
 
@@ -58,336 +61,461 @@ pub enum ApplicationMessage {
     },
 }
 
-pub struct Application {
-    main_window: Rc<RefCell<ui::Window>>,
-    welcome_dialog: Rc<RefCell<ui::WelcomeDialog>>,
-    application_message_sender: glib::Sender<ApplicationMessage>,
-    context: glib::MainContext,
-    identities: Arc<Mutex<Vec<Arc<models::Identity>>>>,
-    store: Arc<services::Store>,
-    current_conversation_id: Rc<RefCell<Option<i32>>>,
-}
+mod imp {
+    use super::*;
 
-impl Application {
-    pub fn run() {
-        gtk::init().expect("Failed to initialize GTK Application");
-
-        let gtk_application = gtk::Application::new(Some("com.github.matzipan.envoyer"), Default::default());
-
-        gtk_application.connect_startup(|gtk_application| {
-            Application::on_startup(&gtk_application);
-        });
-
-        gtk_application.run();
+    #[derive(Debug, Default)]
+    pub struct Application {
+        pub main_window: RefCell<Option<ui::Window>>,
+        pub application_message_sender: RefCell<Option<glib::Sender<ApplicationMessage>>>,
+        pub store: RefCell<Option<Arc<services::Store>>>,
     }
 
-    fn on_startup(gtk_application: &gtk::Application) {
-        gtk_application.connect_activate(|gtk_application| {
-            let application = Application::new(gtk_application);
-
-            application.on_activate();
-        });
+    #[glib::object_subclass]
+    impl ObjectSubclass for Application {
+        const NAME: &'static str = "Application";
+        type Type = super::Application;
+        type ParentType = gtk::Application;
     }
 
-    fn new(gtk_application: &gtk::Application) -> Application {
-        let (application_message_sender, application_message_receiver) = glib::MainContext::channel(glib::Priority::DEFAULT);
-        let context = glib::MainContext::default();
+    impl ObjectImpl for Application {}
 
-        let identities = Arc::new(Mutex::new(Vec::<Arc<models::Identity>>::new()));
+    impl ApplicationImpl for Application {
+        fn activate(&self) {
+            debug!("Application activate");
 
-        let folders_list_model = models::folders_list::model::FolderListModel::new();
-        let conversations_list_model = models::folder_conversations_list::model::FolderModel::new();
-        let conversation_model = models::conversation_messages_list::model::ConversationModel::new();
+            {
+                let store_borrow = self.store.borrow();
+                let store = store_borrow.as_ref().expect("Unable to access store");
+                match store.initialize_database() {
+                    Ok(_) => {
+                        let application_message = match store.is_account_setup_needed() {
+                            true => ApplicationMessage::Setup {},
+                            false => ApplicationMessage::LoadIdentities { initialize: false },
+                        };
 
-        let application = Self {
-            main_window: Rc::new(RefCell::new(ui::Window::new(
-                gtk_application,
+                        self.application_message_sender
+                            .borrow()
+                            .as_ref()
+                            .expect("Unable to access application message sender")
+                            .send(application_message)
+                            .expect("Unable to send application message");
+                    }
+                    Err(e) => {
+                        //@TODO show an error dialog
+                        error!("Error encountered when initializing the database: {}", &e);
+                    }
+                }
+            }
+
+            self.parent_activate();
+
+            let main_window_borrow = self.main_window.borrow();
+
+            main_window_borrow
+                .as_ref()
+                .expect("Unable to access main window")
+                .present_with_time((glib::monotonic_time() / 1000) as u32);
+        }
+
+        fn startup(&self) {
+            debug!("Application startup");
+            self.parent_startup();
+            let app = self.obj();
+
+            // Set icons for shell
+            gtk::Window::set_default_icon_name(APP_ID);
+
+            app.setup_css();
+            app.setup_gactions();
+            app.setup_accels();
+
+            self.run();
+        }
+    }
+
+    impl GtkApplicationImpl for Application {}
+
+    impl Application {
+        fn run(&self) {
+            let (application_message_sender, application_message_receiver) = glib::MainContext::channel(glib::Priority::DEFAULT);
+            let context = glib::MainContext::default();
+
+            let folders_list_model = models::folders_list::model::FolderListModel::new();
+            let conversations_list_model = models::folder_conversations_list::model::FolderModel::new();
+            let conversation_model = models::conversation_messages_list::model::ConversationModel::new();
+
+            let current_conversation_id: Rc<RefCell<Option<i32>>> = Default::default();
+
+            *self.store.borrow_mut() = Some(Arc::new(services::Store::new()));
+
+            let obj: glib::BorrowedObject<super::Application> = self.obj();
+
+            *self.main_window.borrow_mut() = Some(ui::Window::new(
+                obj.as_ref(),
                 application_message_sender.clone(),
                 &folders_list_model,
                 &conversations_list_model,
                 &conversation_model,
-            ))),
-            // Ideally this dialog would be created only if account setup is
-            // needed, but to simplify reference passing right now, we're
-            // always creating it.
-            welcome_dialog: Rc::new(RefCell::new(ui::WelcomeDialog::new(application_message_sender.clone()))),
-            application_message_sender: application_message_sender,
-            context: context,
-            identities: identities,
-            store: Arc::new(services::Store::new()),
-            current_conversation_id: Default::default(),
-        };
+            ));
 
-        let store_clone = application.store.clone();
-        let context_clone = application.context.clone();
-        let identities_clone = application.identities.clone();
-        let mut current_conversation_id_clone = application.current_conversation_id.clone();
-        let welcome_dialog = application.welcome_dialog.clone();
-        let main_window = application.main_window.clone();
-        let application_message_sender = application.application_message_sender.clone();
-        let folders_list_model_clone = folders_list_model.clone(); //@TODO any ownership by application?
-        let conversations_list_model_clone = conversations_list_model.clone();
-        let conversation_model_clone = conversation_model.clone();
+            *self.application_message_sender.borrow_mut() = Some(application_message_sender.clone());
 
-        conversations_list_model.attach_store(application.store.clone());
-        conversation_model.attach_store(application.store.clone());
-        folders_list_model.attach_store(application.store.clone());
+            // Ideally this dialog would be created only if account setup is needed, but to
+            // simplify reference passing right now, we're always creating it.
+            let welcome_dialog = ui::WelcomeDialog::new(application_message_sender.clone());
+            let identities: Rc<RefCell<Vec<Arc<models::Identity>>>> = Default::default();
 
-        application_message_receiver.attach(None, move |msg| {
-            match msg {
-                ApplicationMessage::Setup {} => {
-                    info!("Setup");
-                    welcome_dialog.borrow().show();
-                }
-                ApplicationMessage::SaveIdentity {
-                    email_address,
-                    full_name,
-                    account_name,
-                    identity_type,
-                    gmail_access_token: _,
-                    gmail_refresh_token,
-                    expires_at,
-                } => {
-                    info!("SaveIdentity for {}", email_address);
+            let context_clone = context.clone();
+            let identities_clone = identities.clone();
+            let current_conversation_id_clone = current_conversation_id.clone();
+            let welcome_dialog_clone = welcome_dialog.clone();
+            let main_window_clone = self.main_window.clone();
+            let folders_list_model_clone = folders_list_model.clone();
+            let conversations_list_model_clone = conversations_list_model.clone();
+            let conversation_model_clone = conversation_model.clone();
 
-                    let new_bare_identity = models::NewBareIdentity {
-                        email_address: &email_address,
-                        gmail_refresh_token: &gmail_refresh_token,
-                        identity_type: identity_type,
-                        expires_at: &expires_at.naive_utc(),
-                        full_name: &full_name,
-                        account_name: &account_name,
-                    };
+            let store_clone = self.store.borrow().as_ref().expect("Unable to access store").clone();
 
-                    let store_clone = store_clone.clone();
-                    store_clone.store_bare_identity(&new_bare_identity).map_err(|x| error!("{}", x));
+            conversations_list_model.attach_store(store_clone.clone());
+            conversation_model.attach_store(store_clone.clone());
+            folders_list_model.attach_store(store_clone.clone());
 
-                    application_message_sender
-                        .send(ApplicationMessage::LoadIdentities { initialize: true })
-                        .expect("Unable to send application message");
-                }
-                ApplicationMessage::LoadIdentities { initialize } => {
-                    info!("LoadIdentities with initialize {}", initialize);
+            application_message_receiver.attach(None, move |msg| {
+                match msg {
+                    ApplicationMessage::Setup {} => {
+                        info!("Setup");
+                        main_window_clone.borrow().as_ref().expect("Unable to access main window").hide();
+                        welcome_dialog_clone.show();
+                    }
+                    ApplicationMessage::SaveIdentity {
+                        email_address,
+                        full_name,
+                        account_name,
+                        identity_type,
+                        gmail_access_token: _,
+                        gmail_refresh_token,
+                        expires_at,
+                    } => {
+                        info!("SaveIdentity for {}", email_address);
 
-                    let application_message_sender_clone = application_message_sender.clone();
-                    let store_clone = store_clone.clone();
-                    let identities_clone = identities_clone.clone();
+                        let new_bare_identity = models::NewBareIdentity {
+                            email_address: &email_address,
+                            gmail_refresh_token: &gmail_refresh_token,
+                            identity_type: identity_type,
+                            expires_at: &expires_at.naive_utc(),
+                            full_name: &full_name,
+                            account_name: &account_name,
+                        };
 
-                    context_clone.spawn(async move {
-                        // @TODO replace the expects with error reporting
-                        let bare_identities = store_clone.get_bare_identities().expect("Unable to acquire a database connection");
+                        store_clone.store_bare_identity(&new_bare_identity).map_err(|x| error!("{}", x));
 
-                        for bare_identity in bare_identities {
-                            let store_clone = store_clone.clone();
+                        application_message_sender
+                            .send(ApplicationMessage::LoadIdentities { initialize: true })
+                            .expect("Unable to send application message");
+                    }
+                    ApplicationMessage::LoadIdentities { initialize } => {
+                        info!("LoadIdentities with initialize {}", initialize);
 
-                            let identity =
-                                Arc::new(models::Identity::new(bare_identity, store_clone, application_message_sender_clone.clone()).await);
+                        let application_message_sender_clone = application_message_sender.clone();
+                        let store_clone = store_clone.clone();
+                        let identities_clone = identities_clone.clone();
 
-                            if initialize {
-                                identity.clone().initialize().await.map_err(|x| error!("{}", x));
+                        context_clone.spawn(async move {
+                            // @TODO replace the expects with error reporting
+                            let bare_identities = store_clone.get_bare_identities().expect("Unable to acquire a database connection");
+
+                            for bare_identity in bare_identities {
+                                let store_clone = store_clone.clone();
+
+                                let identity = Arc::new(
+                                    models::Identity::new(bare_identity, store_clone, application_message_sender_clone.clone()).await,
+                                );
+
+                                if initialize {
+                                    identity.clone().initialize().await.map_err(|x| error!("{}", x));
+                                }
+
+                                let mut identities_borrow = RefCell::borrow_mut(&identities_clone);
+
+                                identities_borrow.push(identity);
                             }
 
-                            identities_clone.lock().expect("Unable to access identities").push(identity);
+                            application_message_sender_clone
+                                .send(ApplicationMessage::SetupDone {})
+                                .expect("Unable to send application message");
+                        });
+                    }
+                    ApplicationMessage::SetupDone {} => {
+                        info!("SetupDone");
+
+                        let application_message_sender_clone = application_message_sender.clone();
+
+                        let identities_borrow = RefCell::borrow(&identities_clone);
+                        let identities: &Vec<Arc<models::Identity>> = identities_borrow.as_ref();
+
+                        for identity in identities {
+                            let identity = identity.clone();
+                            context_clone.spawn(identity.start_session());
                         }
+
+                        folders_list_model_clone.load();
+
+                        let identity = identities[0].clone();
 
                         application_message_sender_clone
-                            .send(ApplicationMessage::SetupDone {})
+                            .send(ApplicationMessage::ShowFolder {
+                                folder: identity
+                                    .get_folders()
+                                    .unwrap()
+                                    .iter()
+                                    .find(|&x| x.folder_name == "INBOX")
+                                    .unwrap()
+                                    .clone(),
+                            })
                             .expect("Unable to send application message");
-                    });
-                }
-                ApplicationMessage::SetupDone {} => {
-                    info!("SetupDone");
 
-                    let application_message_sender_clone = application_message_sender.clone();
-
-                    for identity in &*identities_clone.lock().expect("Unable to access identities") {
-                        context_clone.spawn(identity.clone().start_session());
+                        welcome_dialog_clone.hide();
+                        main_window_clone.borrow().as_ref().expect("Unable to access main window").show();
                     }
+                    ApplicationMessage::ShowFolder { folder } => {
+                        info!("ShowFolder for folder with name {}", folder.folder_name);
 
-                    folders_list_model_clone.load();
+                        let conversations_list_model_clone = conversations_list_model_clone.clone();
 
-                    let identity = &identities_clone.lock().expect("BLA")[0];
+                        conversations_list_model_clone.load_folder(folder);
+                    }
+                    ApplicationMessage::ShowConversation { conversation } => {
+                        info!("ShowConversation for conversation with id {}", conversation.id);
 
-                    application_message_sender_clone
-                        .send(ApplicationMessage::ShowFolder {
-                            folder: identity
-                                .get_folders()
-                                .unwrap()
-                                .iter()
-                                .find(|&x| x.folder_name == "INBOX")
-                                .unwrap()
-                                .clone(),
-                        })
-                        .expect("Unable to send application message");
+                        let application_message_sender = application_message_sender.clone();
 
-                    welcome_dialog.borrow().hide();
-                    main_window.borrow().show();
-                }
-                ApplicationMessage::ShowFolder { folder } => {
-                    info!("ShowFolder for folder with name {}", folder.folder_name);
+                        let conversation_model_clone = conversation_model_clone.clone();
 
-                    let conversations_list_model_clone = conversations_list_model_clone.clone();
+                        let is_message_content_downloaded = {
+                            //@TODO hacky just to get things going
+                            let identity = {
+                                let identities_borrow = RefCell::borrow(&identities_clone);
+                                let identities: &Vec<Arc<models::Identity>> = identities_borrow.as_ref();
 
-                    conversations_list_model_clone.load_folder(folder);
-                }
-                ApplicationMessage::ShowConversation { conversation } => {
-                    info!("ShowConversation for conversation with id {}", conversation.id);
+                                identities[0].clone()
+                            };
 
-                    let application_message_sender = application_message_sender.clone();
+                            identity.is_message_content_downloaded(conversation.id)
+                        };
 
-                    let conversation_model_clone = conversation_model_clone.clone();
+                        current_conversation_id_clone.replace(Some(conversation.id));
 
-                    let is_message_content_downloaded = {
-                        //@TODO hacky just to get things going
-                        let identity = &identities_clone.lock().expect("BLA")[0];
+                        match is_message_content_downloaded {
+                            Ok(is_message_content_downloaded) => {
+                                if is_message_content_downloaded {
+                                    conversation_model_clone.load_message(conversation.id);
+                                } else {
+                                    info!("Message content not found. Triggering download.");
 
-                        identity.is_message_content_downloaded(conversation.id)
-                    };
+                                    conversation_model_clone.set_loading();
 
-                    current_conversation_id_clone.replace(Some(conversation.id));
+                                    let identity = {
+                                        let identities_borrow = RefCell::borrow(&identities_clone);
+                                        let identities: &Vec<Arc<models::Identity>> = identities_borrow.as_ref();
 
-                    match is_message_content_downloaded {
-                        Ok(is_message_content_downloaded) => {
-                            if is_message_content_downloaded {
-                                conversation_model_clone.load_message(conversation.id);
-                            } else {
-                                info!("Message content not found. Triggering download.");
+                                        identities[0].clone()
+                                    };
 
-                                conversation_model_clone.set_loading();
+                                    context_clone.spawn(
+                                        async move {
+                                            identity.fetch_message_content(conversation.id).await?;
 
-                                let identity = identities_clone.lock().expect("BLA")[0].clone();
+                                            Ok(conversation)
+                                        }
+                                        .and_then(|conversation| async move {
+                                            application_message_sender
+                                                .send(ApplicationMessage::ConversationContentLoadFinished { conversation })
+                                                .map_err(|x| x.to_string())?;
 
-                                context_clone.spawn(
-                                    async move {
-                                        identity.fetch_message_content(conversation.id).await?;
-
-                                        Ok(conversation)
-                                    }
-                                    .and_then(|conversation| async move {
-                                        application_message_sender
-                                            .send(ApplicationMessage::ConversationContentLoadFinished { conversation })
-                                            .map_err(|x| x.to_string())?;
-
-                                        Ok(())
-                                    })
-                                    .map(|result: Result<(), String>| {
-                                        match result {
-                                            Err(err) => {
-                                                //@TODO show in UI
-                                                error!("Unable to fetch message content: {}", err);
-                                            }
-                                            _ => {}
-                                        };
-                                    }),
-                                );
+                                            Ok(())
+                                        })
+                                        .map(|result: Result<(), String>| {
+                                            match result {
+                                                Err(err) => {
+                                                    //@TODO show in UI
+                                                    error!("Unable to fetch message content: {}", err);
+                                                }
+                                                _ => {}
+                                            };
+                                        }),
+                                    );
+                                }
                             }
+                            Err(x) => {}
                         }
-                        Err(x) => {}
+                    }
+                    ApplicationMessage::ConversationContentLoadFinished { conversation } => {
+                        info!("ConversationContentLoadFinished for conversation with id {}", conversation.id);
+
+                        // We check to see if the currently open conversation matches the conversation
+                        // whose content just finished loading so that we can update the UI
+
+                        if current_conversation_id_clone.borrow().as_ref() == Some(&conversation.id) {
+                            conversation_model_clone.load_message(conversation.id);
+                        }
+                    }
+                    ApplicationMessage::OpenGoogleAuthentication {
+                        email_address,
+                        full_name,
+                        account_name,
+                    } => {
+                        info!("OpenGoogleAuthentication for {}", email_address);
+
+                        let application_message_sender = application_message_sender.clone();
+
+                        let welcome_dialog_clone = welcome_dialog_clone.clone();
+
+                        context_clone.spawn_local(
+                            google_oauth::authenticate(email_address.clone())
+                                .and_then(|authentication_result| async move {
+                                    welcome_dialog_clone.show_please_wait();
+                                    welcome_dialog_clone.show();
+
+                                    Ok(authentication_result)
+                                })
+                                .and_then(google_oauth::request_tokens)
+                                .and_then(|response_token| async move {
+                                    application_message_sender
+                                        .send(ApplicationMessage::SaveIdentity {
+                                            email_address: email_address,
+                                            full_name: full_name,
+                                            identity_type: models::IdentityType::Gmail,
+                                            account_name: account_name,
+                                            gmail_access_token: response_token.access_token,
+                                            gmail_refresh_token: response_token.refresh_token,
+                                            expires_at: response_token.expires_at,
+                                        })
+                                        .map_err(|e| e.to_string())?;
+
+                                    Ok(())
+                                })
+                                .map(|result| {
+                                    match result {
+                                        Err(err) => {
+                                            //@TODO show in UI
+                                            error!("Unable to authenticate: {}", err);
+                                        }
+                                        _ => {}
+                                    };
+                                }),
+                        );
+                    }
+                    ApplicationMessage::NewMessages {
+                        new_messages,
+                        folder,
+                        identity,
+                    } => {
+                        info!(
+                            "New messages received for {}: {}",
+                            identity.bare_identity.email_address,
+                            new_messages.len()
+                        );
+
+                        let conversations_list_model_clone = conversations_list_model_clone.clone();
+
+                        conversations_list_model_clone.handle_new_messages_for_folder(&folder);
+
+                        for new_message in new_messages {
+                            info!("New message {} ", new_message.subject)
+                        }
                     }
                 }
-                ApplicationMessage::ConversationContentLoadFinished { conversation } => {
-                    info!("ConversationContentLoadFinished for conversation with id {}", conversation.id);
+                // Returning false here would close the receiver and have senders fail
+                glib::Continue(true)
+            });
 
-                    // We check to see if the currently open conversation matches the conversation
-                    // whose content just finished loading so that we can update the UI
+            let main_window_borrow = self.main_window.borrow();
+            let main_window = main_window_borrow.as_ref().expect("Unable to access main window");
 
-                    if *current_conversation_id_clone.borrow() == Some(conversation.id) {
-                        conversation_model_clone.load_message(conversation.id);
-                    }
-                }
-                ApplicationMessage::OpenGoogleAuthentication {
-                    email_address,
-                    full_name,
-                    account_name,
-                } => {
-                    info!("OpenGoogleAuthentication for {}", email_address);
+            welcome_dialog.transient_for(main_window);
+        }
+    }
+}
 
-                    let application_message_sender = application_message_sender.clone();
+glib::wrapper! {
+    pub struct Application(ObjectSubclass<imp::Application>)
+        @extends gio::Application, gtk::Application,
+        @implements gio::ActionMap, gio::ActionGroup;
+}
 
-                    let welcome_dialog_clone = welcome_dialog.clone();
+impl Application {
+    fn main_window(&self) -> ui::Window {
+        let main_window_borrow = self.imp().main_window.borrow();
+        let main_window: &ui::Window = main_window_borrow.as_ref().expect("Unable to access main window");
 
-                    context_clone.spawn_local(
-                        google_oauth::authenticate(email_address.clone())
-                            .and_then(|authentication_result| async move {
-                                let dialog_borrow_handle = welcome_dialog_clone.borrow();
-                                dialog_borrow_handle.show_please_wait();
-                                dialog_borrow_handle.show();
-
-                                Ok(authentication_result)
-                            })
-                            .and_then(google_oauth::request_tokens)
-                            .and_then(|response_token| async move {
-                                application_message_sender
-                                    .send(ApplicationMessage::SaveIdentity {
-                                        email_address: email_address,
-                                        full_name: full_name,
-                                        identity_type: models::IdentityType::Gmail,
-                                        account_name: account_name,
-                                        gmail_access_token: response_token.access_token,
-                                        gmail_refresh_token: response_token.refresh_token,
-                                        expires_at: response_token.expires_at,
-                                    })
-                                    .map_err(|e| e.to_string())?;
-
-                                Ok(())
-                            })
-                            .map(|result| {
-                                match result {
-                                    Err(err) => {
-                                        //@TODO show in UI
-                                        error!("Unable to authenticate: {}", err);
-                                    }
-                                    _ => {}
-                                };
-                            }),
-                    );
-                }
-                ApplicationMessage::NewMessages {
-                    new_messages,
-                    folder,
-                    identity,
-                } => {
-                    info!(
-                        "New messages received for {}: {}",
-                        identity.bare_identity.email_address,
-                        new_messages.len()
-                    );
-
-                    let conversations_list_model_clone = conversations_list_model_clone.clone();
-
-                    conversations_list_model_clone.handle_new_messages_for_folder(&folder);
-
-                    for new_message in new_messages {
-                        info!("New message {} ", new_message.subject)
-                    }
-                }
-            }
-            // Returning false here would close the receiver and have senders
-            // fail
-            glib::Continue(true)
-        });
-
-        application.welcome_dialog.borrow().transient_for(&application.main_window.borrow());
-
-        application
+        main_window.clone()
     }
 
-    fn on_activate(self) {
-        match self.store.initialize_database() {
-            Ok(_) => {
-                let application_message = match self.store.is_account_setup_needed() {
-                    true => ApplicationMessage::Setup {},
-                    false => ApplicationMessage::LoadIdentities { initialize: false },
-                };
+    fn setup_gactions(&self) {
+        // Quit
+        let action_quit = gio::ActionEntry::builder("quit")
+            .activate(move |app: &Self, _, _| {
+                // This is needed to trigger the delete event and saving the window state
+                app.main_window().close();
+                app.quit();
+            })
+            .build();
 
-                self.application_message_sender
-                    .send(application_message)
-                    .expect("Unable to send application message");
-            }
-            Err(e) => {
-                //@TODO show an error dialog
-                error!("Error encountered when initializing the database: {}", &e);
-            }
+        // About
+        let action_about = gio::ActionEntry::builder("about")
+            .activate(|app: &Self, _, _| {
+                app.show_about_dialog();
+            })
+            .build();
+        self.add_action_entries([action_quit, action_about]);
+    }
+
+    // Sets up keyboard shortcuts
+    fn setup_accels(&self) {
+        self.set_accels_for_action("app.quit", &["<Control>q"]);
+        self.set_accels_for_action("window.close", &["<Control>w"]);
+    }
+
+    fn setup_css(&self) {
+        let stylesheet_string = include_str!("../ui/stylesheet.css");
+        let provider = gtk::CssProvider::new();
+        provider.load_from_data(stylesheet_string);
+        if let Some(display) = gdk::Display::default() {
+            gtk::StyleContext::add_provider_for_display(&display, &provider, gtk::STYLE_PROVIDER_PRIORITY_APPLICATION);
         }
+    }
+
+    fn show_about_dialog(&self) {
+        let dialog = gtk::AboutDialog::builder()
+            .logo_icon_name(APP_ID)
+            .license_type(gtk::License::Gpl30Only)
+            .website("https://github.com/matzipan/envoyer/")
+            .version(VERSION)
+            .transient_for(&self.main_window())
+            .translator_credits(gettext("translator-credits"))
+            .modal(true)
+            .authors(vec!["Andrei Zisu"])
+            .artists(vec!["Andrei Zisu"])
+            .build();
+
+        dialog.present();
+    }
+
+    pub fn run(&self) -> glib::ExitCode {
+        info!("Envoyer ({})", APP_ID);
+        info!("Version: {} ({})", VERSION, PROFILE);
+        info!("Datadir: {}", PKGDATADIR);
+
+        ApplicationExtManual::run(self)
+    }
+}
+
+impl Default for Application {
+    fn default() -> Self {
+        glib::Object::builder()
+            .property("application-id", APP_ID)
+            .property("resource-base-path", "/com/github/matzipan/envoyer/")
+            .build()
     }
 }
