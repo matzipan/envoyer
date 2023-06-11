@@ -240,7 +240,7 @@ impl WelcomeDialog {
     }
 
     pub fn transient_for(&self, main_window: &ui::Window) {
-        self.gtk_dialog.set_transient_for(Some(&main_window.gtk_window));
+        self.gtk_dialog.set_transient_for(Some(main_window));
     }
 
     pub fn show_please_wait(&self) {
