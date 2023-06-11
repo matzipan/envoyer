@@ -12,7 +12,6 @@ use glib::Value;
 use std::cell::RefCell;
 use std::ops::Fn;
 use std::rc::Rc;
-use std::sync::Arc;
 
 use crate::models;
 use crate::services;
@@ -27,7 +26,7 @@ pub mod model {
 
         #[derive(Debug)]
         pub struct ConversationModel {
-            pub store: Rc<RefCell<Option<Arc<services::Store>>>>,
+            pub store: Rc<RefCell<Option<Rc<services::Store>>>>,
             pub message: Rc<RefCell<Option<models::Message>>>,
         }
 
@@ -69,7 +68,7 @@ pub mod model {
             fn item(&self, position: u32) -> Option<glib::Object> {
                 let data = models::conversation_messages_list::row_data::MessageRowData::new();
 
-                data.set_message(self.message.borrow().as_ref().unwrap().clone()); //@TODO should probably be an arc to the item
+                data.set_message(self.message.borrow().as_ref().unwrap().clone()); //@TODO should probably be an Rc to the item
 
                 Some(data.clone().upcast::<glib::Object>())
             }
@@ -86,7 +85,7 @@ pub mod model {
             glib::Object::new::<ConversationModel>()
         }
 
-        pub fn attach_store(self, store: Arc<services::Store>) {
+        pub fn attach_store(self, store: Rc<services::Store>) {
             let self_ = imp::ConversationModel::from_instance(&self);
 
             self_.store.replace(Some(store));

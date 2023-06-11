@@ -20,7 +20,6 @@ use crate::ui;
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::Arc;
 
 diesel_migrations::embed_migrations!();
 
@@ -52,7 +51,7 @@ pub enum ApplicationMessage {
     NewMessages {
         new_messages: Vec<models::NewMessage>,
         folder: models::Folder,
-        identity: Arc<models::Identity>,
+        identity: Rc<models::Identity>,
     },
     OpenGoogleAuthentication {
         email_address: String,
@@ -68,7 +67,7 @@ mod imp {
     pub struct Application {
         pub main_window: RefCell<Option<ui::Window>>,
         pub application_message_sender: RefCell<Option<glib::Sender<ApplicationMessage>>>,
-        pub store: RefCell<Option<Arc<services::Store>>>,
+        pub store: RefCell<Option<Rc<services::Store>>>,
     }
 
     #[glib::object_subclass]
@@ -147,7 +146,7 @@ mod imp {
 
             let current_conversation_id: Rc<RefCell<Option<i32>>> = Default::default();
 
-            *self.store.borrow_mut() = Some(Arc::new(services::Store::new()));
+            *self.store.borrow_mut() = Some(Rc::new(services::Store::new()));
 
             let obj: glib::BorrowedObject<super::Application> = self.obj();
 
@@ -164,7 +163,7 @@ mod imp {
             // Ideally this dialog would be created only if account setup is needed, but to
             // simplify reference passing right now, we're always creating it.
             let welcome_dialog = ui::WelcomeDialog::new(application_message_sender.clone());
-            let identities: Rc<RefCell<Vec<Arc<models::Identity>>>> = Default::default();
+            let identities: Rc<RefCell<Vec<Rc<models::Identity>>>> = Default::default();
 
             let context_clone = context.clone();
             let identities_clone = identities.clone();
@@ -228,7 +227,7 @@ mod imp {
                             for bare_identity in bare_identities {
                                 let store_clone = store_clone.clone();
 
-                                let identity = Arc::new(
+                                let identity = Rc::new(
                                     models::Identity::new(bare_identity, store_clone, application_message_sender_clone.clone()).await,
                                 );
 
@@ -252,7 +251,7 @@ mod imp {
                         let application_message_sender_clone = application_message_sender.clone();
 
                         let identities_borrow = RefCell::borrow(&identities_clone);
-                        let identities: &Vec<Arc<models::Identity>> = identities_borrow.as_ref();
+                        let identities: &Vec<Rc<models::Identity>> = identities_borrow.as_ref();
 
                         for identity in identities {
                             let identity = identity.clone();
@@ -296,7 +295,7 @@ mod imp {
                             //@TODO hacky just to get things going
                             let identity = {
                                 let identities_borrow = RefCell::borrow(&identities_clone);
-                                let identities: &Vec<Arc<models::Identity>> = identities_borrow.as_ref();
+                                let identities: &Vec<Rc<models::Identity>> = identities_borrow.as_ref();
 
                                 identities[0].clone()
                             };
@@ -317,7 +316,7 @@ mod imp {
 
                                     let identity = {
                                         let identities_borrow = RefCell::borrow(&identities_clone);
-                                        let identities: &Vec<Arc<models::Identity>> = identities_borrow.as_ref();
+                                        let identities: &Vec<Rc<models::Identity>> = identities_borrow.as_ref();
 
                                         identities[0].clone()
                                     };
