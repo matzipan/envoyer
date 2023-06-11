@@ -1,5 +1,3 @@
-use futures::prelude::*;
-
 use log::{debug, error, info};
 
 use gtk::glib;
@@ -8,12 +6,9 @@ use melib::{backends::BackendMailbox, BackendEventConsumer};
 
 use std::boxed::Box;
 use std::collections::HashMap;
-use std::pin::Pin;
 use std::time::Instant;
 
 use std::sync::Arc;
-
-use async_stream;
 
 use crate::backends::imap;
 use crate::controllers::ApplicationMessage;

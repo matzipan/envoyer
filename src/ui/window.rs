@@ -1,6 +1,6 @@
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use gtk::{gdk, gio, glib, gsk, pango};
+use gtk::{gio, glib, gsk, pango};
 
 use log::info;
 
@@ -417,8 +417,7 @@ mod imp {
             folders_scroll_box.set_size_request(200, -1);
             folders_scroll_box.set_child(Some(&folders_list_view));
 
-            let threads_list_view =
-                dynamic_list_view::DynamicListView::new(50, conversations_list_model.clone(), move |item_index, item| {
+            let threads_list_view = DynamicListView::new(50, conversations_list_model.clone(), move |item_index, item| {
                     let item_data = item
                         .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
                         .expect("Row data is of wrong type");
