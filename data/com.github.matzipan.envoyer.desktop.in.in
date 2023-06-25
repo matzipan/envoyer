@@ -3,7 +3,7 @@ Name=Envoyer
 GenericName=Email App
 Comment=Mail for the Linux desktop
 Categories=GNOME;GTK;Network;Email;
-Exec=com.github.matzipan.envoyer
+Exec=envoyer
 # Translators: Do NOT translate or transliterate this text (this is an icon file name)!
 Icon=@icon@
 Terminal=false
