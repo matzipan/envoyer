@@ -495,6 +495,7 @@ impl Application {
             .translator_credits(gettext("translator-credits"))
             .modal(true)
             .authors(vec!["Andrei Zisu"])
+            .comments("Using melib by Manos Pitsidianakis")
             .artists(vec!["Andrei Zisu"])
             .build();
 
