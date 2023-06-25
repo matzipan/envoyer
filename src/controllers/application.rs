@@ -165,6 +165,8 @@ mod imp {
             let welcome_dialog = ui::WelcomeDialog::new(application_message_sender.clone());
             let identities: Rc<RefCell<Vec<Rc<models::Identity>>>> = Default::default();
 
+            let obj_clone = obj.clone();
+
             let context_clone = context.clone();
             let identities_clone = identities.clone();
             let current_conversation_id_clone = current_conversation_id.clone();
@@ -420,8 +422,22 @@ mod imp {
 
                         conversations_list_model_clone.handle_new_messages_for_folder(&folder);
 
-                        for new_message in new_messages {
-                            info!("New message {} ", new_message.subject)
+                        for new_message in &new_messages {
+                            debug!("New message {} ", new_message.subject)
+                        }
+
+                        if new_messages.len() == 1 {
+                            let new_message = &new_messages[0];
+
+                            let notification = gio::Notification::new(&new_message.from);
+                            notification.set_body(Some(&new_message.subject));
+                            notification.set_priority(gio::NotificationPriority::Normal);
+                            obj_clone.send_notification(Some(&"email.arrived"), &notification);
+                        } else if new_messages.len() > 1 {
+                            let title_string = format!("{} new emails received", new_messages.len());
+                            let notification = gio::Notification::new(&title_string);
+                            notification.set_priority(gio::NotificationPriority::Normal);
+                            obj_clone.send_notification(Some(&"email.arrived"), &notification);
                         }
                     }
                 }
