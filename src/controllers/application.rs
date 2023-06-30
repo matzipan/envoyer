@@ -21,8 +21,6 @@ use crate::ui;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-diesel_migrations::embed_migrations!();
-
 #[derive(Debug)]
 pub enum ApplicationMessage {
     Setup {},

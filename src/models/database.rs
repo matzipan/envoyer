@@ -2,7 +2,7 @@ use crate::schema::{folders, identities, messages};
 use chrono;
 
 #[derive(Identifiable, Queryable, Associations, Debug, Clone)]
-#[belongs_to(BareIdentity, foreign_key = "identity_id")]
+#[diesel(belongs_to(BareIdentity, foreign_key = identity_id))]
 pub struct Folder {
     pub id: i32,
     pub folder_name: String,
@@ -13,8 +13,8 @@ pub struct Folder {
 }
 
 #[derive(Insertable, Associations, Debug)]
-#[belongs_to(BareIdentity, foreign_key = "identity_id")]
-#[table_name = "folders"]
+#[diesel(belongs_to(BareIdentity, foreign_key = identity_id))]
+#[diesel(table_name = folders)]
 pub struct NewFolder {
     pub folder_name: String,
     pub folder_path: String,
@@ -23,7 +23,7 @@ pub struct NewFolder {
 }
 
 #[derive(Identifiable, Queryable, Associations, Debug, Clone)]
-#[belongs_to(Folder)]
+#[diesel(belongs_to(Folder))]
 pub struct Message {
     pub id: i32,
     pub message_id: String,
@@ -80,7 +80,9 @@ impl From<Message> for melib::email::Envelope {
         };
 
         // from: melib::parser::address::rfc2822address_list(&message.from.as_bytes()).
-        // unwrap().1, to: melib::parser::address::rfc2822address_list(&message.to.as_bytes()).unwrap().1,
+        // unwrap().1, to:
+        // melib::parser::address::rfc2822address_list(&message.to.as_bytes()).unwrap().
+        // 1,
 
         // cc: melib::parser::address::rfc2822address_list(&message.cc.as_bytes()).
         // unwrap().1, bcc: melib::parser::address::rfc2822address_list(&
@@ -105,8 +107,8 @@ impl From<Message> for melib::email::Envelope {
     }
 }
 
-#[derive(Identifiable, Queryable, Associations, Debug, Clone)]
-#[table_name = "messages"]
+#[derive(Identifiable, Queryable, Debug, Clone)]
+#[diesel(table_name = messages)]
 pub struct MessageSummary {
     pub id: i32,
     pub message_id: String,
@@ -127,7 +129,7 @@ impl MessageSummary {
 }
 
 #[derive(AsChangeset, Debug, Clone)]
-#[table_name = "messages"]
+#[diesel(table_name = messages)]
 pub struct MessageFlags {
     pub seen: bool,
     pub flagged: bool,
@@ -136,8 +138,8 @@ pub struct MessageFlags {
 }
 
 #[derive(Insertable, Associations, Debug)]
-#[belongs_to(Folder)]
-#[table_name = "messages"]
+#[diesel(belongs_to(Folder))]
+#[diesel(table_name = messages)]
 pub struct NewMessage {
     pub message_id: String,
     pub folder_id: i32,
@@ -187,7 +189,7 @@ impl From<melib::email::Envelope> for NewMessage {
 }
 
 #[derive(Debug, AsExpression, FromSqlRow, Clone)]
-#[sql_type = "diesel::sql_types::Text"]
+#[diesel(sql_type = diesel::sql_types::Text)]
 pub enum IdentityType {
     Gmail,
 }
@@ -197,7 +199,7 @@ where
     DB: diesel::backend::Backend,
     String: diesel::deserialize::FromSql<diesel::sql_types::Text, DB>,
 {
-    fn from_sql(bytes: Option<&DB::RawValue>) -> diesel::deserialize::Result<Self> {
+    fn from_sql(bytes: DB::RawValue<'_>) -> diesel::deserialize::Result<Self> {
         let deserialized = String::from_sql(bytes).expect("Unable to deserialize corrupt identity type");
         match deserialized.as_ref() {
             "Gmail" => Ok(IdentityType::Gmail),
@@ -206,22 +208,21 @@ where
     }
 }
 
-impl<DB> diesel::serialize::ToSql<diesel::sql_types::Text, DB> for IdentityType
+impl diesel::serialize::ToSql<diesel::sql_types::Text, diesel::sqlite::Sqlite> for IdentityType
 where
-    DB: diesel::backend::Backend,
-    String: diesel::serialize::ToSql<diesel::sql_types::Text, DB>,
+    String: diesel::serialize::ToSql<diesel::sql_types::Text, diesel::sqlite::Sqlite>,
 {
-    fn to_sql<W: std::io::Write>(&self, out: &mut diesel::serialize::Output<W, DB>) -> diesel::serialize::Result {
-        let serialized = match *self {
-            IdentityType::Gmail => "Gmail",
+    fn to_sql<'b>(&'b self, out: &mut diesel::serialize::Output<'b, '_, diesel::sqlite::Sqlite>) -> diesel::serialize::Result {
+        match *self {
+            IdentityType::Gmail => out.set_value("Gmail".to_owned()),
         };
 
-        String::to_sql(&serialized.to_owned(), out)
+        Ok(diesel::serialize::IsNull::No)
     }
 }
 
 #[derive(Identifiable, Queryable, Debug, Clone)]
-#[table_name = "identities"]
+#[diesel(table_name = identities)]
 pub struct BareIdentity {
     pub id: i32,
     pub email_address: String,
@@ -233,7 +234,7 @@ pub struct BareIdentity {
 }
 
 #[derive(Insertable, Debug)]
-#[table_name = "identities"]
+#[diesel(table_name = identities)]
 pub struct NewBareIdentity<'a> {
     pub email_address: &'a String,
     pub gmail_refresh_token: &'a String,

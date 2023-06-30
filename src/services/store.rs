@@ -14,6 +14,11 @@ use std::fmt;
 
 use diesel::prelude::*;
 
+use diesel::migration::MigrationConnection;
+use diesel_migrations::MigrationHarness;
+
+pub const MIGRATIONS: diesel_migrations::EmbeddedMigrations = diesel_migrations::embed_migrations!();
+
 pub enum StoreType {
     Fresh { new_uid_validity: u32 },
     Incremental,
@@ -67,46 +72,47 @@ impl Store {
     }
 
     pub fn initialize_database(&self) -> Result<(), String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         debug!("Set up the migrations table");
-        diesel_migrations::setup_database(&connection).map_err(|e| e.to_string())?;
 
-        diesel_migrations::run_pending_migrations(&connection).map_err(|e| e.to_string())?;
+        connection.setup().map_err(|e| e.to_string())?;
+
+        connection.run_pending_migrations(MIGRATIONS).map_err(|e| e.to_string())?;
 
         Ok(())
     }
 
     pub fn is_account_setup_needed(&self) -> bool {
-        let connection = self
+        let connection = &mut self
             .database_connection_pool
             .get()
             .expect("Unable to acquire a database connection");
 
         let identities: i64 = schema::identities::table
             .select(diesel::dsl::count_star())
-            .first(&connection)
+            .first(connection)
             .expect("Unable to get the number of identities");
 
         identities == 0
     }
 
     pub fn store_bare_identity(&self, new_bare_identity: &models::NewBareIdentity) -> Result<(), String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         diesel::insert_into(schema::identities::table)
             .values(new_bare_identity)
-            .execute(&connection)
+            .execute(connection)
             .map_err(|e| e.to_string())?;
 
         Ok(())
     }
 
     pub fn get_bare_identities(&self) -> Result<Vec<models::BareIdentity>, String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         schema::identities::table
-            .load::<models::BareIdentity>(&connection)
+            .load::<models::BareIdentity>(connection)
             .map_err(|e| e.to_string())
     }
 
@@ -125,7 +131,7 @@ impl Store {
             flags: 0, //@TODO flags
         };
 
-        let connection = self
+        let connection = &mut self
             .database_connection_pool
             .get()
             .expect("Unable to acquire a database connection");
@@ -137,21 +143,21 @@ impl Store {
 
         diesel::insert_into(schema::folders::table)
             .values(&new_folder)
-            .execute(&connection)
+            .execute(connection)
             .map_err(|e| e.to_string())?;
 
         Ok(())
     }
 
     pub fn remove_folder(&self, bare_identity: &models::BareIdentity, folder: &models::Folder) -> Result<(), String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         debug!(
             "Removing folder {} for identity {}",
             &folder.folder_name, &bare_identity.email_address
         );
 
-        diesel::delete(folder).execute(&connection).map_err(|e| e.to_string())?;
+        diesel::delete(folder).execute(connection).map_err(|e| e.to_string())?;
 
         //@TODO remove messages belonging to the folder
 
@@ -159,11 +165,11 @@ impl Store {
     }
 
     pub fn get_folders(&self, bare_identity: &models::BareIdentity) -> Result<Vec<models::Folder>, String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         schema::folders::table
             .filter(schema::folders::identity_id.eq(bare_identity.id))
-            .load::<models::Folder>(&connection)
+            .load::<models::Folder>(connection)
             .map_err(|e| e.to_string())
     }
 
@@ -184,12 +190,12 @@ impl Store {
         &self,
         folder: &models::Folder,
     ) -> Result<Option<(melib::backends::imap::UID, melib::backends::imap::UID)>, String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         schema::folders::table
             .select(schema::folders::uid_validity)
             .filter(schema::folders::id.eq(folder.id))
-            .first::<Option<i64>>(&connection)
+            .first::<Option<i64>>(connection)
             .map_err(|e| e.to_string())
             .and_then(|uid_validity| {
                 match uid_validity {
@@ -204,7 +210,7 @@ impl Store {
                         match schema::messages::table
                             .select(diesel::dsl::max(schema::messages::uid))
                             .filter(schema::messages::folder_id.eq(folder.id))
-                            .first::<Option<i64>>(&connection)
+                            .first::<Option<i64>>(connection)
                         {
                             Ok(Some(max_uid)) => {
                                 // max_uid is u32 according th the IMAP RFC but we're storing it as i64 since
@@ -224,47 +230,48 @@ impl Store {
     }
 
     pub fn get_message_count_for_folder(&self, folder: &models::Folder) -> Result<u32, String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         schema::messages::table
             .filter(schema::messages::folder_id.eq(folder.id))
             .count()
-            .get_result(&connection)
+            .get_result(connection)
             // The gtk libraries accept u32, so we don't keep the full range
             .map(|x: i64| x as u32)
             .map_err(|e| e.to_string())
     }
 
     pub fn get_folder(&self, id: i32) -> Result<models::Folder, String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         schema::folders::table
             .filter(schema::folders::id.eq(id))
-            .first::<models::Folder>(&connection)
+            .first::<models::Folder>(connection)
             .map_err(|e| e.to_string())
     }
 
     pub fn get_message(&self, id: i32) -> Result<models::Message, String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection: &mut diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<SqliteConnection>> =
+            &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         schema::messages::table
             .filter(schema::messages::id.eq(id))
-            .first::<models::Message>(&connection)
+            .first::<models::Message>(connection)
             .map_err(|e| e.to_string())
     }
 
     pub fn get_messages_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::Message>, String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         schema::messages::table
             .filter(schema::messages::folder_id.eq(folder.id))
             .order(schema::messages::time_received.desc())
-            .load::<models::Message>(&connection)
+            .load::<models::Message>(connection)
             .map_err(|e| e.to_string())
     }
 
     pub fn get_message_summaries_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::MessageSummary>, String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         schema::messages::table
             .select((
@@ -276,7 +283,7 @@ impl Store {
             ))
             .filter(schema::messages::folder_id.eq(folder.id))
             .order(schema::messages::time_received.desc())
-            .load::<models::MessageSummary>(&connection)
+            .load::<models::MessageSummary>(connection)
             .map_err(|e| e.to_string())
     }
 
@@ -294,21 +301,21 @@ impl Store {
         folder: &models::Folder,
         store_type: StoreType,
     ) -> Result<(), String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         connection
-            .transaction::<(), diesel::result::Error, _>(|| {
+            .transaction::<(), diesel::result::Error, _>(|connection| {
                 match store_type {
                     StoreType::Fresh { new_uid_validity } => {
                         debug!("Doing store messages of type fresh with new UID validity {}", new_uid_validity);
 
                         diesel::delete(schema::messages::table)
                             .filter(schema::messages::folder_id.eq(folder.id))
-                            .execute(&connection)?;
+                            .execute(connection)?;
 
                         diesel::update(folder)
                             .set(schema::folders::uid_validity.eq(Some(new_uid_validity as i64)))
-                            .execute(&connection)?;
+                            .execute(connection)?;
                     }
                     StoreType::Incremental => {}
                 };
@@ -320,7 +327,7 @@ impl Store {
 
                     diesel::insert_into(schema::messages::table)
                         .values(non_mut_new_message)
-                        .execute(&connection)?;
+                        .execute(connection)?;
                 }
 
                 Ok(())
@@ -336,15 +343,15 @@ impl Store {
     ///
     /// * `flag_updates` - The flag updates to store
     pub fn store_message_flag_updates_for_folder(&self, flag_updates: &Vec<backends::imap::MessageFlagUpdate>) -> Result<(), String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         connection
-            .transaction::<(), diesel::result::Error, _>(|| {
+            .transaction::<(), diesel::result::Error, _>(|connection| {
                 for flag_update in flag_updates.iter() {
                     diesel::update(schema::messages::table)
                         .filter(schema::messages::uid.eq(flag_update.uid as i64))
                         .set(flag_update.flags.clone())
-                        .execute(&connection)?;
+                        .execute(connection)?;
                 }
 
                 Ok(())
@@ -366,13 +373,13 @@ impl Store {
         server_uid_set: &HashSet<melib::backends::imap::UID>,
         folder: &models::Folder,
     ) -> Result<(), String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         // The key is the UID and the value is the database primary key
         let mut store_folder_uids: HashMap<_, _> = schema::messages::table
             .select((schema::messages::uid, schema::messages::id))
             .filter(schema::messages::folder_id.eq(folder.id))
-            .load::<(i64, i32)>(&connection)
+            .load::<(i64, i32)>(connection)
             .map_err(|e| e.to_string())?
             .into_iter()
             .collect();
@@ -397,31 +404,31 @@ impl Store {
 
         diesel::delete(schema::messages::table)
             .filter(schema::messages::id.eq_any(ids_not_on_server))
-            .execute(&connection)
+            .execute(connection)
             .map_err(|e| e.to_string())?;
 
         Ok(())
     }
 
     pub fn store_content_for_message(&self, message_content: String, message: &models::Message) -> Result<(), String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         diesel::update(message)
             .set(schema::messages::content.eq(&message_content))
-            .execute(&connection)
+            .execute(connection)
             .map_err(|e| e.to_string())?;
 
         Ok(())
     }
 
     pub fn is_message_content_downloaded(&self, id: i32) -> Result<bool, String> {
-        let connection = self.database_connection_pool.get().map_err(|e| e.to_string())?;
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         schema::messages::table
             .select(diesel::dsl::count_star())
             .filter(schema::messages::id.eq(id))
             .filter(schema::messages::content.is_not_null())
-            .first(&connection)
+            .first(connection)
             .map(|x: i64| x == 1)
             .map_err(|e| e.to_string())
     }
