@@ -1,6 +1,5 @@
 use super::*;
 
-use gtk::subclass::prelude::*;
 // Implementation sub-module of the GObject
 mod imp {
     use gtk::glib::WeakRef;
