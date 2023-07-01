@@ -298,7 +298,6 @@ mod imp {
     #[derive(glib::Properties)]
     #[properties(wrapper_type = super::Window)]
     pub struct Window {
-        pub gtk_window: gtk::Window,
         #[property(get, set, construct_only)]
         pub folders_list_model: RefCell<Option<models::folders_list::model::FolderListModel>>,
         #[property(get, set, construct_only)]
@@ -312,7 +311,6 @@ mod imp {
     impl Default for Window {
         fn default() -> Self {
             Self {
-                gtk_window: gtk::Window::default(),
                 folders_list_model: Default::default(),
                 conversations_list_model: Default::default(),
                 conversation_model: Default::default(),
