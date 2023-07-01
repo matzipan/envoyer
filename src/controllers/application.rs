@@ -1,4 +1,4 @@
-use gtk::gio::prelude::*;
+use gtk::gio::{prelude::*, SimpleAction};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gdk, gio, glib};
@@ -56,6 +56,9 @@ pub enum ApplicationMessage {
         full_name: String,
         account_name: String,
     },
+    ShowConversationContainingEmail {
+        email_id: i32,
+    },
 }
 
 mod imp {
@@ -66,6 +69,7 @@ mod imp {
         pub main_window: RefCell<Option<ui::Window>>,
         pub application_message_sender: RefCell<Option<glib::Sender<ApplicationMessage>>>,
         pub store: RefCell<Option<Rc<services::Store>>>,
+        pub notifications_email_count: Rc<RefCell<i32>>,
     }
 
     #[glib::object_subclass]
@@ -146,10 +150,10 @@ mod imp {
 
             *self.store.borrow_mut() = Some(Rc::new(services::Store::new()));
 
-            let obj: glib::BorrowedObject<super::Application> = self.obj();
+            let application_obj: glib::BorrowedObject<super::Application> = self.obj();
 
             *self.main_window.borrow_mut() = Some(ui::Window::new(
-                obj.as_ref(),
+                application_obj.as_ref(),
                 application_message_sender.clone(),
                 &folders_list_model,
                 &conversations_list_model,
@@ -157,13 +161,14 @@ mod imp {
             ));
 
             *self.application_message_sender.borrow_mut() = Some(application_message_sender.clone());
+            let application_message_sender_clone = application_message_sender.clone();
 
             // Ideally this dialog would be created only if account setup is needed, but to
             // simplify reference passing right now, we're always creating it.
             let welcome_dialog = ui::WelcomeDialog::new(application_message_sender.clone());
             let identities: Rc<RefCell<Vec<Rc<models::Identity>>>> = Default::default();
 
-            let obj_clone = obj.clone();
+            let application_obj_clone = application_obj.clone();
 
             let context_clone = context.clone();
             let identities_clone = identities.clone();
@@ -173,6 +178,7 @@ mod imp {
             let folders_list_model_clone = folders_list_model.clone();
             let conversations_list_model_clone = conversations_list_model.clone();
             let conversation_model_clone = conversation_model.clone();
+            let notifications_email_count_clone = self.notifications_email_count.clone();
 
             let store_clone = self.store.borrow().as_ref().expect("Unable to access store").clone();
 
@@ -359,6 +365,31 @@ mod imp {
                             conversation_model_clone.load_message(conversation.id);
                         }
                     }
+                    ApplicationMessage::ShowConversationContainingEmail { email_id } => {
+                        info!("ShowConversationContainingEmail for email with id {}", email_id);
+
+                        let store_clone = store_clone.clone();
+
+                        {
+                            let main_window_borrow = main_window_clone.borrow();
+
+                            main_window_borrow.as_ref().expect("Unable to access main window").present();
+                        }
+
+                        let _ = store_clone
+                            .get_message_summary(email_id)
+                            .map(|conversation| {
+                                // @TODO for the time being conversation and email are equivalent
+
+                                application_message_sender
+                                    .send(ApplicationMessage::ShowConversation { conversation })
+                                    .expect("Unable to send application message");
+                            })
+                            .map_err(|err| {
+                                error!("Could not find message summary: {}", err);
+                            });
+                    }
+
                     ApplicationMessage::OpenGoogleAuthentication {
                         email_address,
                         full_name,
@@ -424,18 +455,35 @@ mod imp {
                             debug!("New message {} ", new_message.subject)
                         }
 
-                        if new_messages.len() == 1 {
-                            let new_message = &new_messages[0];
+                        if folder.folder_name == "INBOX" {
+                            let count = {
+                                let mut count_borrow = notifications_email_count_clone.borrow_mut();
 
-                            let notification = gio::Notification::new(&new_message.from);
-                            notification.set_body(Some(&new_message.subject));
-                            notification.set_priority(gio::NotificationPriority::Normal);
-                            obj_clone.send_notification(Some(&"email.arrived"), &notification);
-                        } else if new_messages.len() > 1 {
-                            let title_string = format!("{} new emails received", new_messages.len());
-                            let notification = gio::Notification::new(&title_string);
-                            notification.set_priority(gio::NotificationPriority::Normal);
-                            obj_clone.send_notification(Some(&"email.arrived"), &notification);
+                                let new_count = *count_borrow + new_messages.len() as i32;
+
+                                *count_borrow = new_count;
+
+                                new_count
+                            };
+
+                            if count == 1 {
+                                let new_message = &new_messages[0];
+
+                                let notification = gio::Notification::new(&new_message.from);
+                                notification.set_body(Some(&new_message.subject));
+                                notification.set_priority(gio::NotificationPriority::Normal);
+                                notification.set_default_action_and_target_value(
+                                    "app.show-conversation-for-email-id",
+                                    Some(&new_message.id.expect("The message is is not set").to_variant()),
+                                );
+                                application_obj_clone.send_notification(Some("email.arrived"), &notification);
+                            } else if count > 1 {
+                                let body_string = format!("{} new emails received", count);
+                                let notification = gio::Notification::new("Envoyer");
+                                notification.set_body(Some(&body_string));
+                                notification.set_priority(gio::NotificationPriority::Normal);
+                                application_obj_clone.send_notification(Some("email.arrived"), &notification);
+                            }
                         }
                     }
                 }
@@ -446,7 +494,29 @@ mod imp {
             let main_window_borrow = self.main_window.borrow();
             let main_window = main_window_borrow.as_ref().expect("Unable to access main window");
 
+            let notifications_email_count_clone = self.notifications_email_count.clone();
+            main_window.connect_is_active_notify(move |_| {
+                debug!("Active detected, resetting notifications email count");
+                *notifications_email_count_clone.borrow_mut() = 0;
+            });
+
             welcome_dialog.transient_for(main_window);
+
+            let action_show_conversation_for_email_id =
+                SimpleAction::new("show-conversation-for-email-id", Some(&i32::static_variant_type()));
+            action_show_conversation_for_email_id.connect_activate(move |_, parameter| {
+                let email_id = parameter
+                    .expect("Could not get action parameter.")
+                    .get::<i32>()
+                    .expect("The action parameter is not of the expected type");
+
+                debug!("Action show-conversation-for-email-id triggered for email_id {}", email_id);
+
+                application_message_sender_clone
+                    .send(ApplicationMessage::ShowConversationContainingEmail { email_id })
+                    .expect("Unable to send application message");
+            });
+            application_obj.add_action(&action_show_conversation_for_email_id);
         }
     }
 }

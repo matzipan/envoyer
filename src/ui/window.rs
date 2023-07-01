@@ -768,13 +768,6 @@ impl Window {
     //     listbox.grab_focus ();
     // }
 
-    //     public void show_app () {
-    //         show ();
-    //       present ();
-
-    //       folder_conversations_list.grab_focus ();
-    //   }
-
     // let (roots, threads, envelopes) =
     // self.identities.lock().expect("Unable to acquire identities lock")[0]
     //     .clone()

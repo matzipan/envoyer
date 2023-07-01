@@ -260,6 +260,22 @@ impl Store {
             .map_err(|e| e.to_string())
     }
 
+    pub fn get_message_summary(&self, id: i32) -> Result<models::MessageSummary, String> {
+        let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
+
+        schema::messages::table
+            .select((
+                schema::messages::id,
+                schema::messages::message_id,
+                schema::messages::subject,
+                schema::messages::from,
+                schema::messages::time_received,
+            ))
+            .filter(schema::messages::id.eq(id))
+            .first::<models::MessageSummary>(connection)
+            .map_err(|e| e.to_string())
+    }
+
     pub fn get_messages_for_folder(&self, folder: &models::Folder) -> Result<Vec<models::Message>, String> {
         let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
@@ -291,7 +307,9 @@ impl Store {
     ///
     /// # Arguments
     ///
-    /// * `new_messages` - The messages to store
+    /// * `new_messages` - The messages to store. After inserting, each message
+    ///   will have its id field populated with the unique ID of the inserted
+    ///   row in the database.
     /// * `folder` - The folder to save for
     /// * `store_type` - A fresh update deletes the existing messages in the
     ///   folder and sets the value of uid_validity for this folder.
@@ -325,9 +343,12 @@ impl Store {
 
                     let non_mut_new_message: &models::NewMessage = new_message;
 
-                    diesel::insert_into(schema::messages::table)
+                    let id = diesel::insert_into(schema::messages::table)
                         .values(non_mut_new_message)
-                        .execute(connection)?;
+                        .returning(schema::messages::id)
+                        .get_result::<i32>(connection)?;
+
+                    new_message.id = Some(id);
                 }
 
                 Ok(())

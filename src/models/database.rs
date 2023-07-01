@@ -141,6 +141,7 @@ pub struct MessageFlags {
 #[diesel(belongs_to(Folder))]
 #[diesel(table_name = messages)]
 pub struct NewMessage {
+    pub id: Option<i32>,
     pub message_id: String,
     pub folder_id: i32,
     pub subject: String,
@@ -164,6 +165,7 @@ impl From<melib::email::Envelope> for NewMessage {
         let flags = envelope.flags();
 
         NewMessage {
+            id: None,
             message_id: String::from_utf8(envelope.message_id().0.clone()).unwrap(),
             folder_id: 0,
             subject: String::from(envelope.subject()),
