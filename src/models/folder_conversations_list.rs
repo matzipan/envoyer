@@ -75,13 +75,13 @@ pub mod model {
         }
 
         pub fn attach_store(self, store: Rc<services::Store>) {
-            let self_ = imp::FolderModel::from_instance(&self);
+            let self_ = imp::FolderModel::from_obj(&self);
 
             self_.store.replace(Some(store));
         }
 
         pub fn load_folder(self, folder: models::Folder) {
-            let self_ = imp::FolderModel::from_instance(&self);
+            let self_ = imp::FolderModel::from_obj(&self);
 
             self_.currently_loaded_folder.replace(Some(folder));
 
@@ -89,7 +89,7 @@ pub mod model {
         }
 
         fn update_list(&self) {
-            let self_ = imp::FolderModel::from_instance(self);
+            let self_ = imp::FolderModel::from_obj(self);
 
             if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
                 let previous_count = self_.n_items();
@@ -111,7 +111,7 @@ pub mod model {
         }
 
         pub fn handle_new_messages_for_folder(self, folder: &models::Folder) {
-            let self_ = imp::FolderModel::from_instance(&self);
+            let self_ = imp::FolderModel::from_obj(&self);
 
             if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
                 if currently_loaded_folder.folder_name == folder.folder_name && currently_loaded_folder.identity_id == folder.identity_id {
@@ -165,11 +165,11 @@ pub mod row_data {
             glib::Object::new::<ConversationRowData>()
         }
         pub fn set_conversation(&self, conversation: models::MessageSummary) {
-            let self_ = imp::ConversationRowData::from_instance(self);
+            let self_ = imp::ConversationRowData::from_obj(self);
             self_.conversation.replace(Some(conversation));
         }
         pub fn get_conversation(&self) -> Rc<RefCell<Option<models::MessageSummary>>> {
-            let self_ = imp::ConversationRowData::from_instance(self);
+            let self_ = imp::ConversationRowData::from_obj(self);
             self_.conversation.clone()
         }
     }

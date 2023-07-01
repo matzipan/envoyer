@@ -86,13 +86,13 @@ pub mod model {
         }
 
         pub fn attach_store(self, store: Rc<services::Store>) {
-            let self_ = imp::ConversationModel::from_instance(&self);
+            let self_ = imp::ConversationModel::from_obj(&self);
 
             self_.store.replace(Some(store));
         }
 
         pub fn load_message(&self, id: i32) {
-            let self_ = imp::ConversationModel::from_instance(&self);
+            let self_ = imp::ConversationModel::from_obj(&self);
 
             let previous_count = self_.n_items();
 
@@ -166,11 +166,11 @@ pub mod row_data {
             glib::Object::new::<MessageRowData>()
         }
         pub fn set_message(&self, message: models::Message) {
-            let self_ = imp::MessageRowData::from_instance(self);
+            let self_ = imp::MessageRowData::from_obj(self);
             self_.message.replace(Some(message));
         }
         pub fn get_message(&self) -> Rc<RefCell<Option<models::Message>>> {
-            let self_ = imp::MessageRowData::from_instance(self);
+            let self_ = imp::MessageRowData::from_obj(self);
             self_.message.clone()
         }
     }

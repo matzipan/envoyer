@@ -87,7 +87,7 @@ pub mod folders_list_item {
         pub fn new_with_folder(folder: &models::Folder) -> FoldersListItem {
             let instance = Self::new();
 
-            let self_ = imp::FoldersListItem::from_instance(&instance);
+            let self_ = imp::FoldersListItem::from_obj(&instance);
             //@TODO can we get rid of this clone?
             self_.folder.replace(Some(folder.clone()));
 
@@ -95,7 +95,7 @@ pub mod folders_list_item {
         }
 
         pub fn get_folder(&self) -> Rc<RefCell<Option<models::Folder>>> {
-            let self_ = imp::FoldersListItem::from_instance(self);
+            let self_ = imp::FoldersListItem::from_obj(self);
             self_.folder.clone()
         }
     }
@@ -208,7 +208,7 @@ pub mod message_view {
         }
 
         pub fn load_content(&self, content: &String) {
-            let self_ = imp::MessageView::from_instance(self);
+            let self_ = imp::MessageView::from_obj(self);
 
             let master_stylesheet = include_str!("../ui/webview_stylesheet.css");
             let master_stylesheet = CString::new(master_stylesheet).expect("Could not build master stylesheet CString");
@@ -276,7 +276,7 @@ pub mod conversation_message_item {
         pub fn new_with_message(message: &models::Message) -> ConversationMessageItem {
             let instance = Self::new();
 
-            let self_ = imp::ConversationMessageItem::from_instance(&instance);
+            let self_ = imp::ConversationMessageItem::from_obj(&instance);
             //@TODO can we get rid of this clone?
             self_.message.replace(Some(message.clone()));
 
@@ -284,7 +284,7 @@ pub mod conversation_message_item {
         }
 
         pub fn get_message(&self) -> Rc<RefCell<Option<models::Message>>> {
-            let self_ = imp::ConversationMessageItem::from_instance(self);
+            let self_ = imp::ConversationMessageItem::from_obj(self);
             self_.message.clone()
         }
     }
