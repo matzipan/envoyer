@@ -373,6 +373,7 @@ mod imp {
                         {
                             let main_window_borrow = main_window_clone.borrow();
 
+                            // Seems broken due to https://gitlab.gnome.org/GNOME/gtk/-/issues/5239
                             main_window_borrow.as_ref().expect("Unable to access main window").present();
                         }
 
