@@ -165,14 +165,14 @@ impl Identity {
     fn handle_sync_messages_for_folder_result(
         self: Rc<Self>,
         sync_folder: &models::Folder,
-        sync_result: Result<Option<Vec<models::NewMessage>>, String>,
+        sync_result: Result<Vec<models::NewMessage>, String>,
     ) {
         match sync_result {
             Err(e) => {
                 //@TODO show in UI
                 error!("{}", e);
             }
-            Ok(Some(new_messages)) => {
+            Ok(new_messages) => {
                 self.application_message_sender
                     .send(ApplicationMessage::NewMessages {
                         new_messages,
@@ -181,7 +181,6 @@ impl Identity {
                     })
                     .expect("Unable to send application message");
             }
-            Ok(None) => {}
         }
     }
 
@@ -313,7 +312,7 @@ impl Identity {
         self: Rc<Self>,
         folder: &models::Folder,
         sync_type: SyncType,
-    ) -> Result<Option<Vec<models::NewMessage>>, String> {
+    ) -> Result<Vec<models::NewMessage>, String> {
         let backend_sync_type = match sync_type {
             SyncType::Fresh => imap::SyncType::Fresh,
             SyncType::Update => {
@@ -344,7 +343,7 @@ impl Identity {
         let now = Instant::now();
 
         debug!("Saving fetched data to store");
-        let new_messages = match backend_sync_type {
+        match backend_sync_type {
             imap::SyncType::Fresh => {
                 self.store
                     .store_messages_for_folder(&mut new_messages, folder, services::StoreType::Fresh { new_uid_validity })?;
@@ -371,7 +370,8 @@ impl Identity {
                     };
 
                     // This needs to happen before the call to "Keep only uids for folder"
-                    self.store
+                    let new_messages = self
+                        .store
                         .store_messages_for_folder(&mut new_messages, folder, services::StoreType::Incremental)?;
 
                     Some(new_messages)
