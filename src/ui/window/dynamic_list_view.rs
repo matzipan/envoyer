@@ -2,8 +2,6 @@ use crate::models::folder_conversations_list::model::FolderModel;
 
 use super::*;
 
-use gtk::subclass::prelude::*;
-
 // Implementation sub-module of the GObject
 mod imp {
     use std::{cell::Cell, ops::Range};
