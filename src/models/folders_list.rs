@@ -73,13 +73,13 @@ pub mod model {
         }
 
         pub fn attach_store(self, store: Rc<services::Store>) {
-            let self_ = imp::FolderListModel::from_instance(&self);
+            let self_ = imp::FolderListModel::from_obj(&self);
 
             self_.store.replace(Some(store));
         }
 
         pub fn load(&self) {
-            let self_ = imp::FolderListModel::from_instance(self);
+            let self_ = imp::FolderListModel::from_obj(self);
 
             let previous_count = self_.n_items();
 
@@ -152,11 +152,11 @@ pub mod row_data {
             glib::Object::new::<FolderRowData>()
         }
         pub fn set_folder(&self, folder: models::Folder) {
-            let self_ = imp::FolderRowData::from_instance(self);
+            let self_ = imp::FolderRowData::from_obj(self);
             self_.folder.replace(Some(folder));
         }
         pub fn get_folder(&self) -> Rc<RefCell<Option<models::Folder>>> {
-            let self_ = imp::FolderRowData::from_instance(self);
+            let self_ = imp::FolderRowData::from_obj(self);
             self_.folder.clone()
         }
     }

@@ -464,7 +464,7 @@ impl DynamicListView {
     ) -> DynamicListView {
         let instance = glib::Object::new::<DynamicListView>();
 
-        let self_ = imp::DynamicListView::from_instance(&instance);
+        let self_ = imp::DynamicListView::from_obj(&instance);
 
         self_.set_height_per_row(height);
         self_.set_conversations_list_model(conversations_list_model);
@@ -474,13 +474,13 @@ impl DynamicListView {
     }
 
     pub fn connect_activate(&self, activate_function: impl Fn(&DynamicListView, u32) + 'static) {
-        let self_ = imp::DynamicListView::from_instance(self);
+        let self_ = imp::DynamicListView::from_obj(self);
 
         self_.set_activate_function(activate_function);
     }
 
     pub fn model(&self) -> Option<FolderModel> {
-        let self_ = imp::DynamicListView::from_instance(self);
+        let self_ = imp::DynamicListView::from_obj(self);
 
         self_.model()
     }

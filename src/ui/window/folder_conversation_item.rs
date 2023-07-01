@@ -174,7 +174,7 @@ impl FolderConversationItem {
     pub fn new_with_item_index_and_conversation(item_index: u32, conversation: &models::MessageSummary) -> FolderConversationItem {
         let instance = Self::new();
 
-        let self_ = imp::FolderConversationItem::from_instance(&instance);
+        let self_ = imp::FolderConversationItem::from_obj(&instance);
 
         self_.item_index.replace(item_index);
 
@@ -185,17 +185,17 @@ impl FolderConversationItem {
     }
 
     pub fn get_conversation(&self) -> Rc<RefCell<Option<models::MessageSummary>>> {
-        let self_ = imp::FolderConversationItem::from_instance(self);
+        let self_ = imp::FolderConversationItem::from_obj(self);
         self_.get_conversation()
     }
 
     pub fn get_item_index(&self) -> u32 {
-        let self_ = imp::FolderConversationItem::from_instance(self);
+        let self_ = imp::FolderConversationItem::from_obj(self);
         self_.item_index.borrow().to_owned()
     }
 
     pub fn connect_activate(&self, activate_function: impl Fn() + 'static) {
-        let self_ = imp::FolderConversationItem::from_instance(self);
+        let self_ = imp::FolderConversationItem::from_obj(self);
         self_.set_activate_function(activate_function);
     }
 }
