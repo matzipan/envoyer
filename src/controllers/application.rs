@@ -401,13 +401,6 @@ mod imp {
 
                         let store_clone = store_clone.clone();
 
-                        {
-                            let main_window_borrow = main_window_clone.borrow();
-
-                            // Seems broken due to https://gitlab.gnome.org/GNOME/gtk/-/issues/5239
-                            main_window_borrow.as_ref().expect("Unable to access main window").present();
-                        }
-
                         let _ = store_clone
                             .get_message_summary(email_id)
                             .map(|conversation| {
@@ -499,19 +492,23 @@ mod imp {
                 glib::Continue(true)
             });
 
-            let main_window_borrow = self.main_window.borrow();
-            let main_window = main_window_borrow.as_ref().expect("Unable to access main window");
+            {
+                let main_window_borrow = self.main_window.borrow();
+                let main_window = main_window_borrow.as_ref().expect("Unable to access main window");
 
-            let notifications_email_count_clone = self.notifications_email_count.clone();
-            main_window.connect_is_active_notify(move |_| {
-                debug!("Active detected, resetting notifications email count");
-                *notifications_email_count_clone.borrow_mut() = 0;
-            });
+                let notifications_email_count_clone = self.notifications_email_count.clone();
+                main_window.connect_is_active_notify(move |_| {
+                    debug!("Active detected, resetting notifications email count");
+                    *notifications_email_count_clone.borrow_mut() = 0;
+                });
 
-            welcome_dialog.transient_for(main_window);
+                welcome_dialog.transient_for(main_window);
+            }
 
             let action_show_conversation_for_email_id =
                 SimpleAction::new("show-conversation-for-email-id", Some(&i32::static_variant_type()));
+
+            let main_window_clone = self.main_window.clone();
             action_show_conversation_for_email_id.connect_activate(move |_, parameter| {
                 let email_id = parameter
                     .expect("Could not get action parameter.")
@@ -523,6 +520,13 @@ mod imp {
                 application_message_sender_clone
                     .send(ApplicationMessage::ShowConversationContainingEmail { email_id })
                     .expect("Unable to send application message");
+
+                {
+                    let main_window_borrow = main_window_clone.borrow();
+
+                    // Seems broken due to https://gitlab.gnome.org/GNOME/gtk/-/issues/5239
+                    main_window_borrow.as_ref().expect("Unable to access main window").present();
+                }
             });
             application_obj.add_action(&action_show_conversation_for_email_id);
         }
