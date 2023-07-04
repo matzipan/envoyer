@@ -13,7 +13,7 @@ use gettextrs::gettext;
 use crate::config::{APP_ID, PKGDATADIR, PROFILE, VERSION};
 
 use crate::google_oauth;
-use crate::models;
+use crate::models::{self, NewMessage};
 use crate::services;
 
 use crate::ui;
@@ -59,6 +59,37 @@ pub enum ApplicationMessage {
     ShowConversationContainingEmail {
         email_id: i32,
     },
+}
+
+fn send_notification(notifications_email_count: &Rc<RefCell<i32>>, new_messages: Vec<NewMessage>, application_obj: &Application) {
+    let count = {
+        let mut count_borrow = notifications_email_count.borrow_mut();
+
+        let new_count = *count_borrow + new_messages.len() as i32;
+
+        *count_borrow = new_count;
+
+        new_count
+    };
+
+    if count == 1 {
+        let new_message = &new_messages[0];
+
+        let notification = gio::Notification::new(&new_message.from);
+        notification.set_body(Some(&new_message.subject));
+        notification.set_priority(gio::NotificationPriority::Normal);
+        notification.set_default_action_and_target_value(
+            "app.show-conversation-for-email-id",
+            Some(&new_message.id.expect("The message is is not set").to_variant()),
+        );
+        application_obj.send_notification(Some("email.arrived"), &notification);
+    } else if count > 1 {
+        let body_string = format!("{} new emails received", count);
+        let notification = gio::Notification::new("Envoyer");
+        notification.set_body(Some(&body_string));
+        notification.set_priority(gio::NotificationPriority::Normal);
+        application_obj.send_notification(Some("email.arrived"), &notification);
+    }
 }
 
 mod imp {
@@ -456,35 +487,11 @@ mod imp {
                             debug!("New message {} ", new_message.subject)
                         }
 
-                        if folder.folder_name == "INBOX" {
-                            let count = {
-                                let mut count_borrow = notifications_email_count_clone.borrow_mut();
+                        let is_window_active = main_window_clone.borrow().as_ref().map_or(false, |window| window.is_active());
+                        let is_message_for_inbox = folder.folder_name == "INBOX";
 
-                                let new_count = *count_borrow + new_messages.len() as i32;
-
-                                *count_borrow = new_count;
-
-                                new_count
-                            };
-
-                            if count == 1 {
-                                let new_message = &new_messages[0];
-
-                                let notification = gio::Notification::new(&new_message.from);
-                                notification.set_body(Some(&new_message.subject));
-                                notification.set_priority(gio::NotificationPriority::Normal);
-                                notification.set_default_action_and_target_value(
-                                    "app.show-conversation-for-email-id",
-                                    Some(&new_message.id.expect("The message is is not set").to_variant()),
-                                );
-                                application_obj_clone.send_notification(Some("email.arrived"), &notification);
-                            } else if count > 1 {
-                                let body_string = format!("{} new emails received", count);
-                                let notification = gio::Notification::new("Envoyer");
-                                notification.set_body(Some(&body_string));
-                                notification.set_priority(gio::NotificationPriority::Normal);
-                                application_obj_clone.send_notification(Some("email.arrived"), &notification);
-                            }
+                        if is_window_active && is_message_for_inbox {
+                            send_notification(&notifications_email_count_clone, new_messages, &application_obj_clone);
                         }
                     }
                 }
