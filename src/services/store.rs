@@ -412,8 +412,8 @@ impl Store {
         );
 
         let ids_not_on_server: Vec<_> = store_folder_uids
-            // We use drain_filter to avoid an extra copy to gain ownership
-            .drain_filter(|uid, _| !server_uid_set.contains(&(*uid as u32)))
+            .into_iter()
+            .filter(|(uid, _)| !server_uid_set.contains(&(*uid as u32)))
             .map(|(_, id)| id)
             .collect();
 
