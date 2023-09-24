@@ -294,7 +294,7 @@ pub mod conversation_message_item {
 
 mod imp {
     use gtk::{
-        glib::{ParamSpec, Value},
+        glib::{closure_local, ParamSpec, Value},
         CompositeTemplate,
     };
 
@@ -374,12 +374,6 @@ mod imp {
 
             // Load latest window state
             obj.load_window_size();
-
-            //@TODO set icon
-            let header = gtk::HeaderBar::new();
-            header.set_title_widget(Some(&gtk::Label::new(Some("Envoyer"))));
-            obj.set_titlebar(Some(&header));
-            obj.set_default_size(1600, 900);
 
             let conversation_model_borrow = self.conversation_model.borrow();
             let conversation_model = conversation_model_borrow.as_ref().expect("Conversation model not available");
@@ -506,33 +500,6 @@ mod imp {
             });
 
             let sender_clone = self.sender.clone();
-
-            self.threads_list_view.connect_activate(move |list_view, position| {
-                let model = list_view.model().unwrap();
-                let item = model.item(position);
-
-                if let Some(item) = item {
-                    let item = item.downcast_ref::<ConversationRowData>().expect("Row data is of the wrong type");
-                    let conversation_rc = item.get_conversation();
-                    let conversation_borrow = conversation_rc.borrow();
-                    let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
-
-                    let message = conversation;
-
-                    info!("Selected conversation with subject \"{}\"", message.subject);
-
-                    sender_clone
-                        .borrow()
-                        .as_ref()
-                        .expect("Message sender not available")
-                        .send(ApplicationMessage::ShowConversation {
-                            conversation: message.clone(),
-                        })
-                        .expect("Unable to send application message");
-                } else {
-                    // application.unload_current_conversation_thread ();
-                }
-            });
 
             /*
             conversation_model.connect_is_loading(move |args| {
@@ -717,7 +684,35 @@ mod imp {
     impl AdwApplicationWindowImpl for Window {}
 
     #[gtk::template_callbacks]
-    impl Window {}
+    impl Window {
+        #[template_callback]
+        fn threads_list_view_activate(&self, position: u32) {
+            let model = self.threads_list_view.get().model().unwrap();
+            let item = model.item(position);
+
+            if let Some(item) = item {
+                let item = item.downcast_ref::<ConversationRowData>().expect("Row data is of the wrong type");
+                let conversation_rc = item.get_conversation();
+                let conversation_borrow = conversation_rc.borrow();
+                let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
+
+                let message = conversation;
+
+                info!("Selected conversation with subject \"{}\"", message.subject);
+
+                self.sender
+                    .borrow()
+                    .as_ref()
+                    .expect("Message sender not available")
+                    .send(ApplicationMessage::ShowConversation {
+                        conversation: message.clone(),
+                    })
+                    .expect("Unable to send application message");
+            } else {
+                // application.unload_current_conversation_thread ();
+            }
+        }
+    }
 }
 
 glib::wrapper! {

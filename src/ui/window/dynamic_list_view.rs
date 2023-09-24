@@ -7,7 +7,7 @@ mod imp {
     use std::{cell::Cell, ops::Range};
 
     use gtk::{
-        glib::{ParamSpec, ParamSpecEnum, ParamSpecObject, ParamSpecUInt, SignalHandlerId},
+        glib::{subclass::Signal, ParamSpec, ParamSpecEnum, ParamSpecObject, ParamSpecUInt, SignalHandlerId},
         Adjustment, ScrollablePolicy,
     };
     use once_cell::sync::Lazy;
@@ -75,7 +75,6 @@ mod imp {
         adjustment_value_changed_signal_handler_id: RefCell<Option<SignalHandlerId>>,
         conversations_list_model: RefCell<Option<FolderModel>>,
         factory_function: RefCell<Option<Box<dyn Fn(u32, &glib::Object) -> gtk::Widget + 'static>>>,
-        activate_function: RefCell<Option<Rc<Box<dyn Fn(&super::DynamicListView, u32) + 'static>>>>,
     }
 
     impl DynamicListView {
@@ -101,10 +100,6 @@ mod imp {
 
         pub fn set_factory(&self, factory_function: impl Fn(u32, &glib::Object) -> gtk::Widget + 'static) {
             *self.factory_function.borrow_mut() = Some(Box::new(factory_function));
-        }
-
-        pub fn set_activate_function(&self, activate_function: impl Fn(&super::DynamicListView, u32) + 'static) {
-            *self.activate_function.borrow_mut() = Some(Rc::new(Box::new(activate_function)));
         }
 
         pub fn set_conversations_list_model(&self, conversations_list_model: FolderModel) {
@@ -216,60 +211,56 @@ mod imp {
 
         fn create_rows_in_index_range(&self, range: Range<u32>, creation_location: Location) {
             let factory_function_cell = self.factory_function.borrow();
-            let activate_function_cell = self.activate_function.borrow();
             if let Some(factory_function) = factory_function_cell.as_ref() {
-                if let Some(activate_function) = activate_function_cell.as_ref() {
-                    let obj = self.obj();
+                let obj = self.obj();
 
-                    // We're reverting when location is top so we can use the insert_after to
-                    // prepend new items
-                    let range_items: Vec<u32> = match creation_location {
-                        Location::Top => range.rev().collect(),
-                        Location::Bottom => range.collect(),
-                    };
+                // We're reverting when location is top so we can use the insert_after to
+                // prepend new items
+                let range_items: Vec<u32> = match creation_location {
+                    Location::Top => range.rev().collect(),
+                    Location::Bottom => range.collect(),
+                };
 
-                    let store_borrow = self.conversations_list_model.borrow();
-                    for item_index in range_items {
-                        // It's okay to unwrap because we initialize at creation time
-                        if let Some(item_data) = store_borrow.as_ref().unwrap().item(item_index) {
-                            let row = factory_function(item_index, &item_data);
+                let store_borrow = self.conversations_list_model.borrow();
+                for item_index in range_items {
+                    // It's okay to unwrap because we initialize at creation time
+                    if let Some(item_data) = store_borrow.as_ref().unwrap().item(item_index) {
+                        let row = factory_function(item_index, &item_data);
 
-                            let allocation = gtk::Allocation::new(
-                                0,
-                                (item_index * self.height_per_row.get()) as i32,
-                                obj.allocated_width(),
-                                self.height_per_row.get() as i32,
-                            );
+                        let allocation = gtk::Allocation::new(
+                            0,
+                            (item_index * self.height_per_row.get()) as i32,
+                            obj.allocated_width(),
+                            self.height_per_row.get() as i32,
+                        );
 
-                            let list_row_widget = row
-                                .downcast_ref::<FolderConversationItem>()
-                                .expect("Row is expected to be ListBoxRow");
-                            let activate_function_clone = activate_function.clone();
-                            let obj_clone = obj.clone();
+                        let list_row_widget = row
+                            .downcast_ref::<FolderConversationItem>()
+                            .expect("Row is expected to be ListBoxRow");
+                        let obj_clone = obj.clone();
 
-                            list_row_widget.connect_activate(move || {
-                                children_foreach(&obj_clone, &Order::Forward, move |row| {
-                                    if row.get_item_index() == item_index {
-                                        row.set_state_flags(gtk::StateFlags::SELECTED, false);
-                                    } else {
-                                        row.unset_state_flags(gtk::StateFlags::SELECTED);
-                                    }
+                        list_row_widget.connect_activate(move || {
+                            children_foreach(&obj_clone, &Order::Forward, move |row| {
+                                if row.get_item_index() == item_index {
+                                    row.set_state_flags(gtk::StateFlags::SELECTED, false);
+                                } else {
+                                    row.unset_state_flags(gtk::StateFlags::SELECTED);
+                                }
 
-                                    true
-                                });
-
-                                activate_function_clone(&obj_clone, item_index);
+                                true
                             });
 
-                            row.size_allocate(&allocation, -1);
+                            obj_clone.emit_by_name::<()>("activate", &[&item_index]);
+                        });
 
-                            match creation_location {
-                                Location::Top => {
-                                    row.insert_after(obj.upcast_ref::<gtk::Widget>(), gtk::Widget::NONE);
-                                }
-                                Location::Bottom => {
-                                    row.insert_before(obj.upcast_ref::<gtk::Widget>(), gtk::Widget::NONE);
-                                }
+                        row.size_allocate(&allocation, -1);
+
+                        match creation_location {
+                            Location::Top => {
+                                row.insert_after(obj.upcast_ref::<gtk::Widget>(), gtk::Widget::NONE);
+                            }
+                            Location::Bottom => {
+                                row.insert_before(obj.upcast_ref::<gtk::Widget>(), gtk::Widget::NONE);
                             }
                         }
                     }
@@ -427,6 +418,11 @@ mod imp {
                 _ => unimplemented!(),
             }
         }
+
+        fn signals() -> &'static [Signal] {
+            static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| vec![Signal::builder("activate").param_types([u32::static_type()]).build()]);
+            SIGNALS.as_ref()
+        }
     }
 
     impl WidgetImpl for DynamicListView {
@@ -458,12 +454,6 @@ glib::wrapper! {
     pub struct DynamicListView(ObjectSubclass<imp::DynamicListView>) @extends gtk::Widget, @implements gtk::Scrollable;
 }
 impl DynamicListView {
-    pub fn connect_activate(&self, activate_function: impl Fn(&DynamicListView, u32) + 'static) {
-        let self_ = imp::DynamicListView::from_obj(self);
-
-        self_.set_activate_function(activate_function);
-    }
-
     pub fn set_conversations_list_model(&self, conversations_list_model: FolderModel) {
         let self_ = imp::DynamicListView::from_obj(self);
 
