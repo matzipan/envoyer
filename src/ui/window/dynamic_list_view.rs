@@ -458,26 +458,22 @@ glib::wrapper! {
     pub struct DynamicListView(ObjectSubclass<imp::DynamicListView>) @extends gtk::Widget, @implements gtk::Scrollable;
 }
 impl DynamicListView {
-    pub fn new(
-        height: u32,
-        conversations_list_model: FolderModel,
-        factory_function: impl Fn(u32, &glib::Object) -> gtk::Widget + 'static,
-    ) -> DynamicListView {
-        let instance = glib::Object::new::<DynamicListView>();
-
-        let self_ = imp::DynamicListView::from_obj(&instance);
-
-        self_.set_height_per_row(height);
-        self_.set_conversations_list_model(conversations_list_model);
-        self_.set_factory(factory_function);
-
-        instance
-    }
-
     pub fn connect_activate(&self, activate_function: impl Fn(&DynamicListView, u32) + 'static) {
         let self_ = imp::DynamicListView::from_obj(self);
 
         self_.set_activate_function(activate_function);
+    }
+
+    pub fn set_conversations_list_model(&self, conversations_list_model: FolderModel) {
+        let self_ = imp::DynamicListView::from_obj(self);
+
+        self_.set_conversations_list_model(conversations_list_model);
+    }
+
+    pub fn set_factory(&self, factory_function: impl Fn(u32, &glib::Object) -> gtk::Widget + 'static) {
+        let self_ = imp::DynamicListView::from_obj(self);
+
+        self_.set_factory(factory_function);
     }
 
     pub fn model(&self) -> Option<FolderModel> {
