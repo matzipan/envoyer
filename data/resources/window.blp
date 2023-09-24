@@ -78,21 +78,12 @@ template $Window : Adw.ApplicationWindow {
                 };
               };
             }
-            content: Gtk.Overlay {
-              [overlay]
-              Gtk.Button {
-                halign: end;
-                valign: end;
-                icon-name: "document-edit-symbolic";
-                styles ["suggested-action", "circular", "fab"]
-              }
-              child: Gtk.ScrolledWindow {
+            content: Gtk.ScrolledWindow {
                 hscrollbar-policy: never;
                 child: Gtk.ListBox threads_list {
                   selection-mode: browse;
                   row-activated => $inbox_row_activated_cb();
                   styles ["navigation-sidebar"]
-                };
               };
             };
           };
