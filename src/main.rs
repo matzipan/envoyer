@@ -23,6 +23,7 @@ mod config;
 use gettextrs::{gettext, LocaleCategory};
 use gtk::{gio, glib};
 
+use adw;
 
 use self::config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
 
@@ -62,6 +63,7 @@ fn main() -> glib::ExitCode {
     gio::resources_register(&res);
 
     gtk::init().expect("Failed to initialize GTK Application");
+    adw::init().unwrap();
 
     let app = controllers::Application::default();
     app.run()
