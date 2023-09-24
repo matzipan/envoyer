@@ -38,9 +38,10 @@ template $Window : Adw.ApplicationWindow {
             }
             content: Gtk.ScrolledWindow {
               hscrollbar-policy: never;
-              child: Gtk.ListView folders_list {
+              child: Gtk.ListView folders_list_view {
                 single-click-activate: true;
                 styles ["navigation-sidebar"]
+                activate => $folders_list_activate() swapped;
               };
             };
           };
