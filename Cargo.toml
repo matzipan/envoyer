@@ -43,3 +43,8 @@ pangocairo = { git = "https://github.com/gtk-rs/gtk-rs-core.git", package = "pan
 [dependencies.gtk]
 package = "gtk4"
 git = "https://github.com/gtk-rs/gtk4-rs"
+
+[dependencies.adw]
+package = "libadwaita"
+git = "https://gitlab.gnome.org/World/Rust/libadwaita-rs"
+features = ["v1_4"]
