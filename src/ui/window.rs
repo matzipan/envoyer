@@ -2,6 +2,8 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib, gsk, pango};
 
+use adw::subclass::prelude::*;
+
 use log::info;
 
 use std::cell::RefCell;
@@ -291,12 +293,16 @@ pub mod conversation_message_item {
 }
 
 mod imp {
-    use gtk::glib::{ParamSpec, Value};
+    use gtk::{
+        glib::{ParamSpec, Value},
+        CompositeTemplate,
+    };
 
     use super::*;
 
-    #[derive(glib::Properties)]
+    #[derive(glib::Properties, CompositeTemplate)]
     #[properties(wrapper_type = super::Window)]
+    #[template(resource = "/com/github/matzipan/envoyer/window.ui")]
     pub struct Window {
         #[property(get, set, construct_only)]
         pub folders_list_model: RefCell<Option<models::folders_list::model::FolderListModel>>,
@@ -306,6 +312,10 @@ mod imp {
         pub conversation_model: RefCell<Option<models::conversation_messages_list::model::ConversationModel>>,
         pub settings: gio::Settings,
         pub sender: Rc<RefCell<Option<glib::Sender<ApplicationMessage>>>>,
+        #[template_child]
+        pub threads_list_view: TemplateChild<DynamicListView>,
+        #[template_child]
+        pub folders_list: TemplateChild<gtk::ListView>,
     }
 
     impl Default for Window {
@@ -316,6 +326,8 @@ mod imp {
                 conversation_model: Default::default(),
                 settings: gio::Settings::new(APP_ID),
                 sender: Default::default(),
+                threads_list_view: Default::default(),
+                folders_list: Default::default(),
             }
         }
     }
@@ -324,7 +336,18 @@ mod imp {
     impl ObjectSubclass for Window {
         const NAME: &'static str = "Window";
         type Type = super::Window;
-        type ParentType = gtk::ApplicationWindow;
+        type ParentType = adw::ApplicationWindow;
+
+        fn class_init(klass: &mut Self::Class) {
+            DynamicListView::ensure_type();
+
+            klass.bind_template();
+            klass.bind_template_callbacks();
+        }
+
+        fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
+            obj.init_template();
+        }
     }
 
     impl ObjectImpl for Window {
@@ -396,16 +419,14 @@ mod imp {
             });
 
             let folders_list_selection_model = gtk::NoSelection::new(Some(folders_list_model.clone()));
-            let folders_list_view = gtk::ListView::new(Some(folders_list_selection_model), Some(folders_list_factory));
-            folders_list_view.style_context().add_class("folders_sidebar");
-            folders_list_view.set_single_click_activate(true);
 
-            let folders_scroll_box = gtk::ScrolledWindow::new();
-            folders_scroll_box.set_vexpand(true);
-            folders_scroll_box.set_size_request(200, -1);
-            folders_scroll_box.set_child(Some(&folders_list_view));
+            self.folders_list.get().set_model(Some(&folders_list_selection_model));
+            self.folders_list.get().set_factory(Some(&folders_list_factory));
 
-            let threads_list_view = DynamicListView::new(50, conversations_list_model.clone(), move |item_index, item| {
+            self.threads_list_view
+                .get()
+                .set_conversations_list_model(conversations_list_model.clone());
+            self.threads_list_view.get().set_factory(move |item_index, item| {
                 let item_data = item
                     .downcast_ref::<models::folder_conversations_list::row_data::ConversationRowData>()
                     .expect("Row data is of wrong type");
@@ -418,11 +439,7 @@ mod imp {
                 box_row.upcast::<gtk::Widget>()
             });
 
-            let dynamic_list_scroll_box = gtk::ScrolledWindow::new();
-            dynamic_list_scroll_box.set_vexpand(true);
-            dynamic_list_scroll_box.set_size_request(200, -1);
-            dynamic_list_scroll_box.set_child(Some(&threads_list_view));
-
+            /*
             let conversation_viewer_list_box = gtk::ListBox::new();
             conversation_viewer_list_box.style_context().add_class("conversation_viewer");
 
@@ -458,20 +475,11 @@ mod imp {
             let conversation_viewer_stack = gtk::Stack::new();
             conversation_viewer_stack.add_named(&conversation_viewer_scroll_box, Some("conversation-viewer"));
             conversation_viewer_stack.add_named(&please_wait_loading_contents_grid, Some("loading"));
-
-            let main_grid = gtk::Grid::new();
-
-            main_grid.set_orientation(gtk::Orientation::Horizontal);
-
-            main_grid.attach(&folders_scroll_box, 0, 0, 1, 1);
-            main_grid.attach(&dynamic_list_scroll_box, 1, 0, 1, 1);
-            main_grid.attach(&conversation_viewer_stack, 2, 0, 1, 1);
-
-            obj.set_child(Some(&main_grid));
+            */
 
             let sender_clone = self.sender.clone();
 
-            folders_list_view.connect_activate(move |list_view, position| {
+            self.folders_list.get().connect_activate(move |list_view, position| {
                 let model = list_view.model().unwrap();
                 let item = model.item(position);
 
@@ -499,7 +507,7 @@ mod imp {
 
             let sender_clone = self.sender.clone();
 
-            threads_list_view.connect_activate(move |list_view, position| {
+            self.threads_list_view.connect_activate(move |list_view, position| {
                 let model = list_view.model().unwrap();
                 let item = model.item(position);
 
@@ -526,6 +534,7 @@ mod imp {
                 }
             });
 
+            /*
             conversation_model.connect_is_loading(move |args| {
                 let is_loading = args[1].get::<bool>().expect("The is_loading value needs to be of type `bool`.");
 
@@ -687,13 +696,14 @@ mod imp {
 
                 box_row.upcast::<gtk::Widget>()
             });
+            */
         }
     }
 
     impl WidgetImpl for Window {}
     impl WindowImpl for Window {
         // Save window state on delete event
-        fn close_request(&self) -> gtk::Inhibit {
+        fn close_request(&self) -> glib::Propagation {
             if let Err(err) = self.obj().save_window_size() {
                 log::warn!("Failed to save window state, {}", &err);
             }
@@ -704,11 +714,15 @@ mod imp {
     }
 
     impl ApplicationWindowImpl for Window {}
+    impl AdwApplicationWindowImpl for Window {}
+
+    #[gtk::template_callbacks]
+    impl Window {}
 }
 
 glib::wrapper! {
     pub struct Window(ObjectSubclass<imp::Window>)
-        @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow,
+        @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow, adw::ApplicationWindow,
         @implements gio::ActionMap, gio::ActionGroup, gtk::Root;
 }
 
