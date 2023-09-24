@@ -2,6 +2,7 @@ use gtk::gio::{prelude::*, SimpleAction};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gdk, gio, glib};
+use adw::subclass::prelude::*;
 
 use chrono::prelude::*;
 use futures::prelude::*;
@@ -107,7 +108,7 @@ mod imp {
     impl ObjectSubclass for Application {
         const NAME: &'static str = "Application";
         type Type = super::Application;
-        type ParentType = gtk::Application;
+        type ParentType = adw::Application;
     }
 
     impl ObjectImpl for Application {}
@@ -167,6 +168,7 @@ mod imp {
     }
 
     impl GtkApplicationImpl for Application {}
+    impl AdwApplicationImpl for Application {}
 
     impl Application {
         fn run(&self) {
@@ -488,8 +490,8 @@ mod imp {
                         }
                     }
                 }
-                // Returning false here would close the receiver and have senders fail
-                glib::Continue(true)
+                
+                glib::ControlFlow::Continue
             });
 
             {
@@ -535,7 +537,7 @@ mod imp {
 
 glib::wrapper! {
     pub struct Application(ObjectSubclass<imp::Application>)
-        @extends gio::Application, gtk::Application,
+        @extends gio::Application, gtk::Application, adw::Application,
         @implements gio::ActionMap, gio::ActionGroup;
 }
 
