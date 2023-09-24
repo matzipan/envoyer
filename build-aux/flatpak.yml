@@ -2,11 +2,11 @@ id: com.github.matzipan.envoyer
 tags:
   - "nightly"
 runtime: org.gnome.Platform
-runtime-version: "43"
+runtime-version: "45"
 sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-nightly
-  - org.freedesktop.Sdk.Extension.llvm14
+  - org.freedesktop.Sdk.Extension.llvm16
 command: envoyer
 finish-args:
   - --share=ipc
@@ -16,8 +16,8 @@ finish-args:
   - --talk-name=org.freedesktop.portal.OpenURI
 build-options:
   append-path: "/usr/lib/sdk/rust-nightly/bin"
-  prepend-path: "/usr/lib/sdk/llvm14/bin"
-  prepend-ld-library-path: "/usr/lib/sdk/llvm14/lib"  
+  prepend-path: "/usr/lib/sdk/llvm16/bin"
+  prepend-ld-library-path: "/usr/lib/sdk/llvm16/lib"  
   build-args:
     - --share=network
     - --socket=session-bus
