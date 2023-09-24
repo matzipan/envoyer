@@ -40,7 +40,6 @@ template $Window : Adw.ApplicationWindow {
               hscrollbar-policy: never;
               child: Gtk.ListView folders_list {
                 single-click-activate: true;
-                row-activated => $folders_row_activated_cb();
                 styles ["navigation-sidebar"]
               };
             };
@@ -170,8 +169,6 @@ template $Window : Adw.ApplicationWindow {
   };
   Adw.Breakpoint {
     condition ("max-width: 860sp")
-    apply => $two_pane_apply_cb();
-    unapply => $two_pane_unapply_cb();
     setters {
       outer_view.collapsed: true;
       inner_view.sidebar-width-fraction: 0.33;
@@ -179,7 +176,6 @@ template $Window : Adw.ApplicationWindow {
   }
   Adw.Breakpoint {
     condition ("max-width: 500sp")
-    unapply => $one_pane_unapply_cb();
     setters {
       outer_view.collapsed: true;
       inner_view.sidebar-width-fraction: 0.33;
