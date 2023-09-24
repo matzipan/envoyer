@@ -1,0 +1,260 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $Window : Adw.ApplicationWindow {
+  width-request: 360;
+  height-request: 200;
+  default-width: 1200;
+  default-height: 600;
+  title: _("Mail");
+  content: Adw.NavigationSplitView outer_view {
+    min-sidebar-width: 470;
+    max-sidebar-width: 780;
+    sidebar-width-fraction: 0.47;
+    sidebar: Adw.NavigationPage inner_view_page {
+      title: _("Inbox");
+      child: Adw.NavigationSplitView inner_view {
+        max-sidebar-width: 260;
+        sidebar-width-fraction: 0.38;
+        sidebar: Adw.NavigationPage {
+          title: _("Mail");
+          child: Adw.ToolbarView {
+            [top]
+            Adw.HeaderBar {
+              [start]
+              Gtk.MenuButton {
+                child: Adw.Avatar avatar {
+                  size: 24;
+                };
+                popover: Gtk.Popover {};
+                styles [ "image-button" ]
+              }
+              [end]
+              Gtk.MenuButton {
+                primary: true;
+                icon-name: "open-menu-symbolic";
+                menu-model: primary_menu;
+              }
+            }
+            content: Gtk.ScrolledWindow {
+              hscrollbar-policy: never;
+              child: Gtk.ListBox folders_list {
+                selection-mode: browse;
+                row-activated => $folders_row_activated_cb();
+                styles ["navigation-sidebar"]
+              };
+            };
+          };
+        };
+        content: Adw.NavigationPage inbox_page {
+          title: _("Inbox");
+          tag: "inbox";
+          child: Adw.ToolbarView {
+            [top]
+            Adw.HeaderBar {
+              [start]
+              Gtk.ToggleButton start_inbox_search_btn {
+                active: bind inbox_search_bar.search-mode-enabled bidirectional;
+                icon-name: "edit-find-symbolic";
+              }
+              [end]
+              Gtk.ToggleButton end_inbox_search_btn {
+                active: bind inbox_search_bar.search-mode-enabled bidirectional;
+                icon-name: "edit-find-symbolic";
+                visible: false;
+              }
+              [end]
+              Gtk.Button {
+                icon-name: "selection-mode-symbolic";
+              }
+            }
+            [top]
+            Gtk.SearchBar inbox_search_bar {
+              key-capture-widget: inbox_page;
+              child: Adw.Clamp {
+                maximum-size: 400;
+                child: Gtk.SearchEntry inbox_search_entry {
+                  hexpand: true;
+                };
+              };
+            }
+            content: Gtk.Overlay {
+              [overlay]
+              Gtk.Button {
+                halign: end;
+                valign: end;
+                icon-name: "document-edit-symbolic";
+                styles ["suggested-action", "circular", "fab"]
+              }
+              child: Gtk.ScrolledWindow {
+                hscrollbar-policy: never;
+                child: Gtk.ListBox inbox_list {
+                  selection-mode: browse;
+                  row-activated => $inbox_row_activated_cb();
+                  styles ["navigation-sidebar"]
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    content: Adw.NavigationPage message_page {
+      tag: "message";
+      title: _("Message");
+      child: Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {
+          show-title: false;
+
+          [start]
+          Gtk.Button reply_btn {
+            icon-name: 'mail-reply-sender-symbolic';
+          }
+          [start]
+          Gtk.Button reply_all_btn {
+            icon-name: 'mail-reply-all-symbolic';
+          }
+          [start]
+          Gtk.Button forward_btn {
+            icon-name: 'mail-forward-symbolic';
+          }
+
+          [end]
+          Gtk.ToggleButton {
+            icon-name: 'edit-find-symbolic';
+            active: bind message_search_bar.search-mode-enabled bidirectional;
+          }
+          [end]
+          Gtk.Button delete_btn {
+            icon-name: 'user-trash-symbolic';
+          }
+          [end]
+          Gtk.Button spam_btn {
+            icon-name: 'junk-symbolic';
+          }
+        }
+        [top]
+        Gtk.SearchBar message_search_bar {
+          key-capture-widget: message_page;
+          child: Adw.Clamp {
+            maximum-size: 400;
+            child: Gtk.SearchEntry message_search_entry {
+              hexpand: true;
+            };
+          };
+        }
+        content: Gtk.ScrolledWindow {
+          hscrollbar-policy: never;
+          child: Adw.Clamp {
+            maximum-size: 1200;
+            child: Gtk.Box {
+              orientation: vertical;
+              styles ["conversation"]
+              Gtk.Label {
+                label: "Weekend Hike";
+                xalign: 0;
+                styles ["title-2"]
+              }
+              Adw.Bin {
+                height-request: 240;
+                styles ["card"]
+              }
+              Adw.Bin {
+                height-request: 240;
+                styles ["card"]
+              }
+              Adw.Bin {
+                height-request: 240;
+                styles ["card"]
+              }
+              Adw.Bin {
+                height-request: 240;
+                styles ["card"]
+              }
+            };
+          };
+        };
+        [bottom]
+        Gtk.Box toolbar {
+          visible: false;
+          homogeneous: true;
+          Gtk.Button {
+            icon-name: 'mail-reply-sender-symbolic';
+          }
+          Gtk.Button {
+            icon-name: 'mail-reply-all-symbolic';
+          }
+          Gtk.Button {
+            icon-name: 'mail-forward-symbolic';
+          }
+          Gtk.Button {
+            icon-name: 'junk-symbolic';
+          }
+          Gtk.Button {
+            icon-name: 'user-trash-symbolic';
+          }
+          styles ["toolbar"]
+        }
+      };
+    };
+  };
+  Adw.Breakpoint {
+    condition ("max-width: 860sp")
+    apply => $two_pane_apply_cb();
+    unapply => $two_pane_unapply_cb();
+    setters {
+      outer_view.collapsed: true;
+      inbox_list.selection-mode: none;
+      inner_view.sidebar-width-fraction: 0.33;
+    }
+  }
+  Adw.Breakpoint {
+    condition ("max-width: 500sp")
+    unapply => $one_pane_unapply_cb();
+    setters {
+      outer_view.collapsed: true;
+      inbox_list.selection-mode: none;
+      inner_view.sidebar-width-fraction: 0.33;
+
+      inner_view.collapsed: true;
+      folders_list.selection-mode: none;
+
+      start_inbox_search_btn.visible: false;
+      end_inbox_search_btn.visible: true;
+
+      reply_btn.visible: false;
+      reply_all_btn.visible: false;
+      forward_btn.visible: false;
+      delete_btn.visible: false;
+      spam_btn.visible: false;
+      toolbar.visible: true;
+    }
+  }
+}
+menu primary_menu {
+  section {
+    item {
+      label: _("A_ccounts");
+      action: "app.accounts";
+    }
+  }
+  section {
+    item {
+      label: _("_Preferences");
+      action: "app.preferences";
+    }
+    item {
+      label: _("_Keyboard Shortcuts");
+      action: "win.show-help-overlay";
+    }
+    item {
+      label: _("_Help");
+      action: "app.help";
+    }
+    item {
+      label: _("_About Mail");
+      action: "app.about";
+    }
+  }
+}
