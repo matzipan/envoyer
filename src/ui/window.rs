@@ -315,7 +315,7 @@ mod imp {
         #[template_child]
         pub threads_list_view: TemplateChild<DynamicListView>,
         #[template_child]
-        pub folders_list: TemplateChild<gtk::ListView>,
+        pub folders_list_view: TemplateChild<gtk::ListView>,
     }
 
     impl Default for Window {
@@ -327,7 +327,7 @@ mod imp {
                 settings: gio::Settings::new(APP_ID),
                 sender: Default::default(),
                 threads_list_view: Default::default(),
-                folders_list: Default::default(),
+                folders_list_view: Default::default(),
             }
         }
     }
@@ -414,8 +414,8 @@ mod imp {
 
             let folders_list_selection_model = gtk::NoSelection::new(Some(folders_list_model.clone()));
 
-            self.folders_list.get().set_model(Some(&folders_list_selection_model));
-            self.folders_list.get().set_factory(Some(&folders_list_factory));
+            self.folders_list_view.get().set_model(Some(&folders_list_selection_model));
+            self.folders_list_view.get().set_factory(Some(&folders_list_factory));
 
             self.threads_list_view
                 .get()
@@ -470,34 +470,6 @@ mod imp {
             conversation_viewer_stack.add_named(&conversation_viewer_scroll_box, Some("conversation-viewer"));
             conversation_viewer_stack.add_named(&please_wait_loading_contents_grid, Some("loading"));
             */
-
-            let sender_clone = self.sender.clone();
-
-            self.folders_list.get().connect_activate(move |list_view, position| {
-                let model = list_view.model().unwrap();
-                let item = model.item(position);
-
-                if let Some(item) = item {
-                    let item = item
-                        .downcast_ref::<models::folders_list::row_data::FolderRowData>()
-                        .expect("List box row is of wrong type");
-
-                    let folder_rc = item.get_folder();
-                    let folder_borrow = folder_rc.borrow();
-                    let folder = folder_borrow.as_ref().expect("Model contents invalid");
-
-                    info!("Selected folder with name \"{}\"", folder.folder_name);
-
-                    sender_clone
-                        .borrow()
-                        .as_ref()
-                        .expect("Message sender not available")
-                        .send(ApplicationMessage::ShowFolder { folder: folder.clone() })
-                        .expect("Unable to send application message");
-                } else {
-                    // application.unload_current_folder ();
-                }
-            });
 
             let sender_clone = self.sender.clone();
 
@@ -710,6 +682,33 @@ mod imp {
                     .expect("Unable to send application message");
             } else {
                 // application.unload_current_conversation_thread ();
+            }
+        }
+
+        #[template_callback]
+        fn folders_list_activate(&self, position: u32) {
+            let model = self.folders_list_view.get().model().unwrap();
+            let item = model.item(position);
+
+            if let Some(item) = item {
+                let item = item
+                    .downcast_ref::<models::folders_list::row_data::FolderRowData>()
+                    .expect("List box row is of wrong type");
+
+                let folder_rc = item.get_folder();
+                let folder_borrow = folder_rc.borrow();
+                let folder = folder_borrow.as_ref().expect("Model contents invalid");
+
+                info!("Selected folder with name \"{}\"", folder.folder_name);
+
+                self.sender
+                    .borrow()
+                    .as_ref()
+                    .expect("Message sender not available")
+                    .send(ApplicationMessage::ShowFolder { folder: folder.clone() })
+                    .expect("Unable to send application message");
+            } else {
+                // application.unload_current_folder ();
             }
         }
     }
