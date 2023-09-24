@@ -7,7 +7,7 @@ mod imp {
     use std::{cell::Cell, ops::Range};
 
     use gtk::{
-        glib::{ParamSpec, ParamSpecEnum, ParamSpecObject, SignalHandlerId},
+        glib::{ParamSpec, ParamSpecEnum, ParamSpecObject, ParamSpecUInt, SignalHandlerId},
         Adjustment, ScrollablePolicy,
     };
     use once_cell::sync::Lazy;
@@ -371,6 +371,7 @@ mod imp {
                     ParamSpecObject::builder::<Adjustment>("vadjustment").build(),
                     ParamSpecEnum::builder_with_default::<ScrollablePolicy>("hscroll-policy", ScrollablePolicy::Minimum).build(),
                     ParamSpecEnum::builder_with_default::<ScrollablePolicy>("vscroll-policy", ScrollablePolicy::Minimum).build(),
+                    ParamSpecUInt::builder("height-per-row").build(),
                 ]
             });
             PROPERTIES.as_ref()
@@ -407,6 +408,11 @@ mod imp {
                         self.vscroll_policy.set(Some(value));
                     }
                 }
+                "height-per-row" => {
+                    if let Ok(value) = value.get::<u32>() {
+                        self.height_per_row.set(value);
+                    }
+                }
                 _ => {}
             }
         }
@@ -417,6 +423,7 @@ mod imp {
                 "hscroll-policy" => self.hscroll_policy.get().unwrap_or(ScrollablePolicy::Minimum).to_value(),
                 "vadjustment" => (*self.vertical_adjustment).borrow().to_value(),
                 "vscroll-policy" => self.vscroll_policy.get().unwrap_or(ScrollablePolicy::Minimum).to_value(),
+                "height-per-row" => self.height_per_row.get().to_value(),
                 _ => unimplemented!(),
             }
         }
