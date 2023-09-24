@@ -90,9 +90,9 @@ template $Window : Adw.ApplicationWindow {
         };
       };
     };
-    content: Adw.NavigationPage message_page {
-      tag: "message";
-      title: _("Message");
+    content: Adw.NavigationPage conversation_page {
+      tag: "conversation";
+      title: _("Conversation");
       child: Adw.ToolbarView {
         [top]
         Adw.HeaderBar {
@@ -114,7 +114,7 @@ template $Window : Adw.ApplicationWindow {
           [end]
           Gtk.ToggleButton {
             icon-name: 'edit-find-symbolic';
-            active: bind message_search_bar.search-mode-enabled bidirectional;
+            active: bind conversation_search_bar.search-mode-enabled bidirectional;
           }
           [end]
           Gtk.Button delete_btn {
@@ -126,24 +126,55 @@ template $Window : Adw.ApplicationWindow {
           }
         }
         [top]
-        Gtk.SearchBar message_search_bar {
-          key-capture-widget: message_page;
+        Gtk.SearchBar conversation_search_bar {
+          key-capture-widget: conversation_page;
           child: Adw.Clamp {
             maximum-size: 400;
-            child: Gtk.SearchEntry message_search_entry {
+            child: Gtk.SearchEntry conversation_search_entry {
               hexpand: true;
             };
           };
         }
-        content: Gtk.ScrolledWindow {
-          hscrollbar-policy: never;
-          child: Adw.Clamp {
-            maximum-size: 1200;
-            child: Gtk.Box {
-              orientation: vertical;
-              styles ["conversation"]
+        content: Gtk.Stack conversation_viewer_stack {
+          StackPage {
+            name: "conversation-viewer";
+            child: Gtk.ScrolledWindow {
+              hscrollbar-policy: never;
+              hexpand: true;
+              child: Adw.Clamp {
+                maximum-size: 1200;
+                Gtk.ListBox conversation_viewer_list_box {
+                  styles [ "conversation_viewer" ]
+                }
+              };
             };
-          };
+          }
+          StackPage {
+            name: "loading";
+            child: Gtk.Grid {
+              halign: center;
+              valign: center;
+              orientation: vertical;
+
+              Gtk.Label {
+                label: "Please wait";
+                halign: start;
+                styles ["h1"]
+              }
+              Gtk.Label {
+                label: "Loading message contents";
+                margin-bottom: 40;
+              }
+              Gtk.Spinner conversation_viewer_spinner {
+                halign: center;
+                valign: center;
+                width-request: 40;
+                height-request: 40;
+              }
+
+              styles ["please_wait_loading_contents_grid"]
+            };
+          }
         };
         [bottom]
         Gtk.Box toolbar {
