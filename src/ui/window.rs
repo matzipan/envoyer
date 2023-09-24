@@ -316,6 +316,12 @@ mod imp {
         pub threads_list_view: TemplateChild<DynamicListView>,
         #[template_child]
         pub folders_list_view: TemplateChild<gtk::ListView>,
+        #[template_child]
+        pub conversation_viewer_stack: TemplateChild<gtk::Stack>,
+        #[template_child]
+        pub conversation_viewer_spinner: TemplateChild<gtk::Spinner>,
+        #[template_child]
+        pub conversation_viewer_list_box: TemplateChild<gtk::ListBox>,
     }
 
     impl Default for Window {
@@ -328,6 +334,9 @@ mod imp {
                 sender: Default::default(),
                 threads_list_view: Default::default(),
                 folders_list_view: Default::default(),
+                conversation_viewer_stack: Default::default(),
+                conversation_viewer_spinner: Default::default(),
+                conversation_viewer_list_box: Default::default(),
             }
         }
     }
@@ -433,209 +442,173 @@ mod imp {
                 box_row.upcast::<gtk::Widget>()
             });
 
-            /*
-            let conversation_viewer_list_box = gtk::ListBox::new();
-            conversation_viewer_list_box.style_context().add_class("conversation_viewer");
-
-            let conversation_viewer_scroll_box = gtk::ScrolledWindow::new();
-            conversation_viewer_scroll_box.set_hexpand(true);
-            conversation_viewer_scroll_box.set_hscrollbar_policy(gtk::PolicyType::Never);
-            conversation_viewer_scroll_box.set_child(Some(&conversation_viewer_list_box));
-
-            let spinner = gtk::Spinner::new();
-
-            spinner.set_size_request(40, 40);
-            spinner.set_halign(gtk::Align::Center);
-            spinner.set_valign(gtk::Align::Center);
-
-            let please_wait_label = gtk::Label::new(Some("Please wait"));
-            please_wait_label.style_context().add_class("h1");
-            please_wait_label.set_halign(gtk::Align::Start);
-
-            let loading_label = gtk::Label::new(Some("Loading message contents."));
-            loading_label.set_margin_bottom(40);
-
-            let please_wait_loading_contents_grid = gtk::Grid::new();
-            please_wait_loading_contents_grid.set_orientation(gtk::Orientation::Vertical);
-            please_wait_loading_contents_grid.set_halign(gtk::Align::Center);
-            please_wait_loading_contents_grid.set_valign(gtk::Align::Center);
-            please_wait_loading_contents_grid
-                .style_context()
-                .add_class("please_wait_loading_contents_grid");
-            please_wait_loading_contents_grid.attach(&please_wait_label, 0, 0, 1, 1);
-            please_wait_loading_contents_grid.attach(&loading_label, 0, 1, 1, 1);
-            please_wait_loading_contents_grid.attach(&spinner, 0, 2, 1, 1);
-
-            let conversation_viewer_stack = gtk::Stack::new();
-            conversation_viewer_stack.add_named(&conversation_viewer_scroll_box, Some("conversation-viewer"));
-            conversation_viewer_stack.add_named(&please_wait_loading_contents_grid, Some("loading"));
-            */
-
             let sender_clone = self.sender.clone();
+            let conversation_viewer_stack = self.conversation_viewer_stack.get().clone();
+            let conversation_viewer_spinner = self.conversation_viewer_spinner.get().clone();
 
-            /*
             conversation_model.connect_is_loading(move |args| {
                 let is_loading = args[1].get::<bool>().expect("The is_loading value needs to be of type `bool`.");
 
                 if is_loading {
                     conversation_viewer_stack.set_visible_child_name("loading");
-                    spinner.start();
+                    conversation_viewer_spinner.start();
                 } else {
                     conversation_viewer_stack.set_visible_child_name("conversation-viewer");
-                    spinner.stop();
+                    conversation_viewer_spinner.stop();
                 }
 
                 None
             });
 
-            conversation_viewer_list_box.bind_model(Some(conversation_model), |item| {
-                let item = item
-                    .downcast_ref::<models::conversation_messages_list::row_data::MessageRowData>()
-                    .expect("Row data is of wrong type");
-                let message_rc = item.get_message();
-                let message_borrow = message_rc.borrow();
-                let message = message_borrow.as_ref().expect("Model contents invalid");
+            self.conversation_viewer_list_box
+                .get()
+                .bind_model(Some(conversation_model), |item| {
+                    let item = item
+                        .downcast_ref::<models::conversation_messages_list::row_data::MessageRowData>()
+                        .expect("Row data is of wrong type");
+                    let message_rc = item.get_message();
+                    let message_borrow = message_rc.borrow();
+                    let message = message_borrow.as_ref().expect("Model contents invalid");
 
-                let box_row = conversation_message_item::ConversationMessageItem::new_with_message(&message);
-                box_row.style_context().add_class("conversation_message_item");
-                box_row.set_selectable(false);
+                    let box_row = conversation_message_item::ConversationMessageItem::new_with_message(&message);
+                    box_row.style_context().add_class("conversation_message_item");
+                    box_row.set_selectable(false);
 
-                let subject_label = gtk::Label::new(None);
-                subject_label.set_ellipsize(gtk::pango::EllipsizeMode::End);
-                subject_label.set_halign(gtk::Align::Start);
-                subject_label.style_context().add_class("subject");
-                subject_label.set_xalign(0.0);
+                    let subject_label = gtk::Label::new(None);
+                    subject_label.set_ellipsize(gtk::pango::EllipsizeMode::End);
+                    subject_label.set_halign(gtk::Align::Start);
+                    subject_label.style_context().add_class("subject");
+                    subject_label.set_xalign(0.0);
 
-                let from_addresses_list = gtk::Label::new(None);
-                from_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
-                from_addresses_list.set_halign(gtk::Align::Start);
-                from_addresses_list.style_context().add_class("from");
-                from_addresses_list.style_context().add_class("addresses");
+                    let from_addresses_list = gtk::Label::new(None);
+                    from_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
+                    from_addresses_list.set_halign(gtk::Align::Start);
+                    from_addresses_list.style_context().add_class("from");
+                    from_addresses_list.style_context().add_class("addresses");
 
-                let to_addresses_label = gtk::Label::new(Some(&"to"));
-                to_addresses_label.style_context().add_class("addresses_label");
-                let to_addresses_list = gtk::Label::new(None);
-                to_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
-                to_addresses_list.set_hexpand(true);
-                to_addresses_list.set_halign(gtk::Align::Start);
-                let to_addresses_grid = gtk::Grid::new();
-                to_addresses_grid.style_context().add_class("to");
-                to_addresses_grid.style_context().add_class("addresses");
-                to_addresses_grid.attach(&to_addresses_label, 0, 0, 1, 1);
-                to_addresses_grid.attach(&to_addresses_list, 1, 0, 1, 1);
+                    let to_addresses_label = gtk::Label::new(Some(&"to"));
+                    to_addresses_label.style_context().add_class("addresses_label");
+                    let to_addresses_list = gtk::Label::new(None);
+                    to_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
+                    to_addresses_list.set_hexpand(true);
+                    to_addresses_list.set_halign(gtk::Align::Start);
+                    let to_addresses_grid = gtk::Grid::new();
+                    to_addresses_grid.style_context().add_class("to");
+                    to_addresses_grid.style_context().add_class("addresses");
+                    to_addresses_grid.attach(&to_addresses_label, 0, 0, 1, 1);
+                    to_addresses_grid.attach(&to_addresses_list, 1, 0, 1, 1);
 
-                let cc_addresses_label = gtk::Label::new(Some(&"cc"));
-                cc_addresses_label.style_context().add_class("addresses_label");
-                let cc_addresses_list = gtk::Label::new(None);
-                cc_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
-                cc_addresses_list.set_hexpand(true);
-                cc_addresses_list.set_halign(gtk::Align::Start);
-                let cc_addresses_grid = gtk::Grid::new();
-                cc_addresses_grid.style_context().add_class("cc");
-                cc_addresses_grid.style_context().add_class("addresses");
-                cc_addresses_grid.attach(&cc_addresses_label, 0, 0, 1, 1);
-                cc_addresses_grid.attach(&cc_addresses_list, 1, 0, 1, 1);
+                    let cc_addresses_label = gtk::Label::new(Some(&"cc"));
+                    cc_addresses_label.style_context().add_class("addresses_label");
+                    let cc_addresses_list = gtk::Label::new(None);
+                    cc_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
+                    cc_addresses_list.set_hexpand(true);
+                    cc_addresses_list.set_halign(gtk::Align::Start);
+                    let cc_addresses_grid = gtk::Grid::new();
+                    cc_addresses_grid.style_context().add_class("cc");
+                    cc_addresses_grid.style_context().add_class("addresses");
+                    cc_addresses_grid.attach(&cc_addresses_label, 0, 0, 1, 1);
+                    cc_addresses_grid.attach(&cc_addresses_list, 1, 0, 1, 1);
 
-                let bcc_addresses_label = gtk::Label::new(Some(&"bcc"));
-                bcc_addresses_label.style_context().add_class("addresses_label");
-                let bcc_addresses_list = gtk::Label::new(None);
-                bcc_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
-                bcc_addresses_list.set_hexpand(true);
-                bcc_addresses_list.set_halign(gtk::Align::Start);
-                let bcc_addresses_grid = gtk::Grid::new();
-                bcc_addresses_grid.style_context().add_class("bcc");
-                bcc_addresses_grid.style_context().add_class("addresses");
-                bcc_addresses_grid.attach(&bcc_addresses_label, 0, 0, 1, 1);
-                bcc_addresses_grid.attach(&bcc_addresses_list, 1, 0, 1, 1);
+                    let bcc_addresses_label = gtk::Label::new(Some(&"bcc"));
+                    bcc_addresses_label.style_context().add_class("addresses_label");
+                    let bcc_addresses_list = gtk::Label::new(None);
+                    bcc_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
+                    bcc_addresses_list.set_hexpand(true);
+                    bcc_addresses_list.set_halign(gtk::Align::Start);
+                    let bcc_addresses_grid = gtk::Grid::new();
+                    bcc_addresses_grid.style_context().add_class("bcc");
+                    bcc_addresses_grid.style_context().add_class("addresses");
+                    bcc_addresses_grid.attach(&bcc_addresses_label, 0, 0, 1, 1);
+                    bcc_addresses_grid.attach(&bcc_addresses_list, 1, 0, 1, 1);
 
-                let header_summary_fields = gtk::Grid::new();
-                header_summary_fields.set_row_spacing(1);
-                header_summary_fields.set_hexpand(true);
-                header_summary_fields.set_valign(gtk::Align::Start);
-                header_summary_fields.set_orientation(gtk::Orientation::Vertical);
-                header_summary_fields.style_context().add_class("header_summary_fields");
-                header_summary_fields.attach(&subject_label, 0, 0, 1, 1);
-                header_summary_fields.attach(&from_addresses_list, 0, 1, 1, 1);
-                header_summary_fields.attach(&to_addresses_grid, 0, 2, 1, 1);
-                header_summary_fields.attach(&cc_addresses_grid, 0, 3, 1, 1);
-                header_summary_fields.attach(&bcc_addresses_grid, 0, 4, 1, 1);
+                    let header_summary_fields = gtk::Grid::new();
+                    header_summary_fields.set_row_spacing(1);
+                    header_summary_fields.set_hexpand(true);
+                    header_summary_fields.set_valign(gtk::Align::Start);
+                    header_summary_fields.set_orientation(gtk::Orientation::Vertical);
+                    header_summary_fields.style_context().add_class("header_summary_fields");
+                    header_summary_fields.attach(&subject_label, 0, 0, 1, 1);
+                    header_summary_fields.attach(&from_addresses_list, 0, 1, 1, 1);
+                    header_summary_fields.attach(&to_addresses_grid, 0, 2, 1, 1);
+                    header_summary_fields.attach(&cc_addresses_grid, 0, 3, 1, 1);
+                    header_summary_fields.attach(&bcc_addresses_grid, 0, 4, 1, 1);
 
-                let datetime_received_label = gtk::Label::new(None);
-                datetime_received_label.style_context().add_class("received");
-                datetime_received_label.set_valign(gtk::Align::Start);
+                    let datetime_received_label = gtk::Label::new(None);
+                    datetime_received_label.style_context().add_class("received");
+                    datetime_received_label.set_valign(gtk::Align::Start);
 
-                let attachment_indicator = gtk::Image::from_icon_name(&"mail-attachment-symbolic");
-                attachment_indicator.style_context().add_class("attachment_indicator");
-                attachment_indicator.set_valign(gtk::Align::Start);
-                attachment_indicator.set_sensitive(false);
-                attachment_indicator.set_tooltip_text(Some(&"This message contains one or more attachments"));
+                    let attachment_indicator = gtk::Image::from_icon_name(&"mail-attachment-symbolic");
+                    attachment_indicator.style_context().add_class("attachment_indicator");
+                    attachment_indicator.set_valign(gtk::Align::Start);
+                    attachment_indicator.set_sensitive(false);
+                    attachment_indicator.set_tooltip_text(Some(&"This message contains one or more attachments"));
 
-                let message_header = gtk::Grid::new();
-                message_header.set_can_focus(false);
-                message_header.set_orientation(gtk::Orientation::Horizontal);
-                message_header.attach(&header_summary_fields, 0, 0, 1, 1);
-                message_header.attach(&attachment_indicator, 1, 0, 1, 1);
-                message_header.attach(&datetime_received_label, 2, 0, 1, 1);
+                    let message_header = gtk::Grid::new();
+                    message_header.set_can_focus(false);
+                    message_header.set_orientation(gtk::Orientation::Horizontal);
+                    message_header.attach(&header_summary_fields, 0, 0, 1, 1);
+                    message_header.attach(&attachment_indicator, 1, 0, 1, 1);
+                    message_header.attach(&datetime_received_label, 2, 0, 1, 1);
 
-                let message_view = gtk::TextView::new();
+                    let message_view = gtk::TextView::new();
 
-                let buffer = message_view.buffer();
+                    let buffer = message_view.buffer();
 
-                let attachments_list = gtk::Grid::new();
-                attachments_list.set_orientation(gtk::Orientation::Vertical);
+                    let attachments_list = gtk::Grid::new();
+                    attachments_list.set_orientation(gtk::Orientation::Vertical);
 
-                let view = message_view::MessageView::new();
+                    let view = message_view::MessageView::new();
 
-                let grid = gtk::Grid::new();
-                grid.set_orientation(gtk::Orientation::Vertical);
-                grid.attach(&message_header, 0, 0, 1, 1);
-                grid.attach(&attachments_list, 0, 1, 1, 1);
-                grid.attach(&view, 0, 2, 1, 1);
+                    let grid = gtk::Grid::new();
+                    grid.set_orientation(gtk::Orientation::Vertical);
+                    grid.attach(&message_header, 0, 0, 1, 1);
+                    grid.attach(&attachments_list, 0, 1, 1, 1);
+                    grid.attach(&view, 0, 2, 1, 1);
 
-                box_row.set_child(Some(&grid));
+                    box_row.set_child(Some(&grid));
 
-                if message.subject.trim().is_empty() {
-                    subject_label.hide();
-                } else {
-                    subject_label.set_text(&message.subject);
-                }
+                    if message.subject.trim().is_empty() {
+                        subject_label.hide();
+                    } else {
+                        subject_label.set_text(&message.subject);
+                    }
 
-                if message.to.trim().is_empty() {
-                    to_addresses_grid.hide();
-                } else {
-                    to_addresses_list.set_text(&message.to);
-                }
+                    if message.to.trim().is_empty() {
+                        to_addresses_grid.hide();
+                    } else {
+                        to_addresses_list.set_text(&message.to);
+                    }
 
-                if message.from.trim().is_empty() {
-                    from_addresses_list.hide();
-                } else {
-                    from_addresses_list.set_text(&message.from);
-                }
+                    if message.from.trim().is_empty() {
+                        from_addresses_list.hide();
+                    } else {
+                        from_addresses_list.set_text(&message.from);
+                    }
 
-                if message.cc.trim().is_empty() {
-                    cc_addresses_grid.hide();
-                } else {
-                    cc_addresses_list.set_text(&message.cc);
-                }
+                    if message.cc.trim().is_empty() {
+                        cc_addresses_grid.hide();
+                    } else {
+                        cc_addresses_list.set_text(&message.cc);
+                    }
 
-                if message.bcc.trim().is_empty() {
-                    bcc_addresses_grid.hide();
-                } else {
-                    bcc_addresses_list.set_text(&message.bcc);
-                }
+                    if message.bcc.trim().is_empty() {
+                        bcc_addresses_grid.hide();
+                    } else {
+                        bcc_addresses_list.set_text(&message.bcc);
+                    }
 
-                attachment_indicator.hide();
+                    attachment_indicator.hide();
 
-                //@TODO implement an autoupdating timestamp
-                datetime_received_label.set_text(&message.get_relative_time_ago());
-                //@TODO
-                datetime_received_label.set_tooltip_text(Some(&message.time_received.to_string()));
+                    //@TODO implement an autoupdating timestamp
+                    datetime_received_label.set_text(&message.get_relative_time_ago());
+                    //@TODO
+                    datetime_received_label.set_tooltip_text(Some(&message.time_received.to_string()));
 
-                view.load_content(message.content.as_ref().unwrap_or(&"".to_string()));
+                    view.load_content(message.content.as_ref().unwrap_or(&"".to_string()));
 
-                box_row.upcast::<gtk::Widget>()
-            });
-            */
+                    box_row.upcast::<gtk::Widget>()
+                });
         }
     }
 
