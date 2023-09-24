@@ -441,15 +441,11 @@ mod imp {
         }
 
         fn size_allocate(&self, width: i32, height: i32, baseline: i32) {
-            let obj = self.obj();
-
-            let allocation = gtk::Allocation::new(0, 0, width, height);
-            obj.size_allocate(&allocation, baseline);
-
             self.configure_adjustment(height as u32);
             self.update_visible_children();
             self.size_allocate_children(width);
 
+            let obj = self.obj();
             obj.queue_draw();
         }
     }
