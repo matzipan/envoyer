@@ -13,12 +13,8 @@ void *setup_litehtml(const char *master_stylesheet, const char *document_string,
                      void *callbacks_instance) {
     litehtml_container *container = new litehtml_container(callbacks_instance);
 
-    litehtml::context *litehtml_context = new litehtml::context();
-
-    litehtml_context->load_master_stylesheet(master_stylesheet);
-
     auto document = litehtml::document::createFromString(
-        document_string, container, litehtml_context);
+        document_string, container, master_stylesheet);
 
     auto context = new context_struct{
         .owning_ptr = std::move(document),
