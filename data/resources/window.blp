@@ -46,7 +46,7 @@ template $Window : Adw.ApplicationWindow {
             };
           };
         };
-        content: Adw.NavigationPage inbox_page {
+        content: Adw.NavigationPage threads_page {
           title: _("Inbox");
           tag: "inbox";
           child: Adw.ToolbarView {
@@ -54,12 +54,12 @@ template $Window : Adw.ApplicationWindow {
             Adw.HeaderBar {
               [start]
               Gtk.ToggleButton start_inbox_search_btn {
-                active: bind inbox_search_bar.search-mode-enabled bidirectional;
+                active: bind threads_list_search_bar.search-mode-enabled bidirectional;
                 icon-name: "edit-find-symbolic";
               }
               [end]
               Gtk.ToggleButton end_inbox_search_btn {
-                active: bind inbox_search_bar.search-mode-enabled bidirectional;
+                active: bind threads_list_search_bar.search-mode-enabled bidirectional;
                 icon-name: "edit-find-symbolic";
                 visible: false;
               }
@@ -69,8 +69,8 @@ template $Window : Adw.ApplicationWindow {
               }
             }
             [top]
-            Gtk.SearchBar inbox_search_bar {
-              key-capture-widget: inbox_page;
+            Gtk.SearchBar threads_list_search_bar {
+              key-capture-widget: threads_page;
               child: Adw.Clamp {
                 maximum-size: 400;
                 child: Gtk.SearchEntry inbox_search_entry {
@@ -88,7 +88,7 @@ template $Window : Adw.ApplicationWindow {
               }
               child: Gtk.ScrolledWindow {
                 hscrollbar-policy: never;
-                child: Gtk.ListBox inbox_list {
+                child: Gtk.ListBox threads_list {
                   selection-mode: browse;
                   row-activated => $inbox_row_activated_cb();
                   styles ["navigation-sidebar"]
