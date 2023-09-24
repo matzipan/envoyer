@@ -21,9 +21,10 @@ mod ui;
 mod config;
 
 use gettextrs::{gettext, LocaleCategory};
-use gtk::glib;
+use gtk::{gio, glib};
 
-use self::config::{GETTEXT_PACKAGE, LOCALEDIR};
+
+use self::config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
 
 use log::{Level, LevelFilter, Metadata, Record};
 
@@ -57,9 +58,8 @@ fn main() -> glib::ExitCode {
 
     glib::set_application_name(&gettext("Envoyer"));
 
-    // Not really using resources now and can't really bothered with it
-    // let res = gio::Resource::load(RESOURCES_FILE).expect("Could not load
-    // gresource file"); gio::resources_register(&res);
+    let res = gio::Resource::load(RESOURCES_FILE).expect("Could not load gresource file");
+    gio::resources_register(&res);
 
     gtk::init().expect("Failed to initialize GTK Application");
 
