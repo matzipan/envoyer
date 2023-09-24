@@ -15,6 +15,14 @@ nice. Go learn Rust!
 
 ## Requirements
 
+Install flatpak runtimes:
+
+```shall
+flatpak install org.gnome.Platform/x86_64/45
+flatpak install org.freedesktop.Sdk.Extension.rust-nightly/x86_64/23.08
+flatpak install org.freedesktop.Sdk.Extension.llvm16/x86_64/23.08
+```
+
 Make sure to initialize the git submodules:
 
 ```shell
