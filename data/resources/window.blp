@@ -5,7 +5,7 @@ template $Window : Adw.ApplicationWindow {
   width-request: 360;
   height-request: 200;
   default-width: 1200;
-  default-height: 600;
+  default-height: 600; 
   title: _("Mail");
   content: Adw.NavigationSplitView outer_view {
     min-sidebar-width: 470;
@@ -79,11 +79,10 @@ template $Window : Adw.ApplicationWindow {
               };
             }
             content: Gtk.ScrolledWindow {
-                hscrollbar-policy: never;
-                child: Gtk.ListBox threads_list {
-                  selection-mode: browse;
-                  row-activated => $inbox_row_activated_cb();
-                  styles ["navigation-sidebar"]
+              hscrollbar-policy: never;
+              child: $DynamicListView threads_list_view {
+                height_per_row: 50;
+                styles ["navigation-sidebar"]
               };
             };
           };
@@ -175,7 +174,6 @@ template $Window : Adw.ApplicationWindow {
     unapply => $two_pane_unapply_cb();
     setters {
       outer_view.collapsed: true;
-      inbox_list.selection-mode: none;
       inner_view.sidebar-width-fraction: 0.33;
     }
   }
@@ -184,11 +182,9 @@ template $Window : Adw.ApplicationWindow {
     unapply => $one_pane_unapply_cb();
     setters {
       outer_view.collapsed: true;
-      inbox_list.selection-mode: none;
       inner_view.sidebar-width-fraction: 0.33;
 
       inner_view.collapsed: true;
-      folders_list.selection-mode: none;
 
       start_inbox_search_btn.visible: false;
       end_inbox_search_btn.visible: true;
