@@ -51,7 +51,7 @@ To build the application then:
 
 ```shell
 mkdir build && cd build
-meson --prefix=/app ..
+meson setup --prefix=/app ..
 ninja
 ```
 
