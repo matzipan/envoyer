@@ -1,3 +1,6 @@
+pub mod dynamic_list_view;
+pub mod folder_conversation_item;
+
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib, gsk, pango};
@@ -18,32 +21,8 @@ use crate::controllers::{Application, ApplicationMessage};
 use crate::models;
 use crate::models::folder_conversations_list::row_data::ConversationRowData;
 
-use self::dynamic_list_view::DynamicListView;
+use self::dynamic_list_view::{DynamicListView, DynamicListViewStore};
 use self::folder_conversation_item::FolderConversationItem;
-
-pub mod dynamic_list_view;
-
-#[derive(Clone, Debug, Default)]
-struct DynamicListViewStore<KeyType, ItemType> {
-    map: HashMap<KeyType, ItemType>,
-}
-
-impl<KeyType, ItemType> DynamicListViewStore<KeyType, ItemType>
-where
-    KeyType: Eq + Hash,
-{
-    fn len(&self) -> usize {
-        self.map.len()
-    }
-
-    fn insert(&mut self, item_position: KeyType, child: ItemType) -> Option<ItemType> {
-        self.map.insert(item_position, child)
-    }
-
-    fn get(&self, key: &KeyType) -> Option<&ItemType> {
-        self.map.get(key)
-    }
-}
 
 pub mod folders_list_item {
     use super::*;
@@ -102,8 +81,6 @@ pub mod folders_list_item {
         }
     }
 }
-
-pub mod folder_conversation_item;
 
 pub mod message_view {
     use super::*;

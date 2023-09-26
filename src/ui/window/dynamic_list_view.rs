@@ -472,3 +472,25 @@ impl DynamicListView {
         self_.model()
     }
 }
+
+#[derive(Clone, Debug, Default)]
+pub struct DynamicListViewStore<KeyType, ItemType> {
+    map: HashMap<KeyType, ItemType>,
+}
+
+impl<KeyType, ItemType> DynamicListViewStore<KeyType, ItemType>
+where
+    KeyType: Eq + Hash,
+{
+    fn len(&self) -> usize {
+        self.map.len()
+    }
+
+    fn insert(&mut self, item_position: KeyType, child: ItemType) -> Option<ItemType> {
+        self.map.insert(item_position, child)
+    }
+
+    fn get(&self, key: &KeyType) -> Option<&ItemType> {
+        self.map.get(key)
+    }
+}
