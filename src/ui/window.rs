@@ -29,6 +29,8 @@ use self::folder_conversation_item::FolderConversationItem;
 use self::folders_list_item::FoldersListItem;
 use self::message_view::MessageView;
 
+use crate::models::folders_list::get_folder_presentation_name;
+
 mod imp {
     use gtk::{
         glib::{ParamSpec, Value},
@@ -150,7 +152,7 @@ mod imp {
 
                 let name_label = gtk::Label::new(None);
 
-                name_label.set_text(&folder.folder_name);
+                name_label.set_text(get_folder_presentation_name(folder));
                 name_label.set_halign(gtk::Align::Start);
 
                 box_item.append(&name_label);
