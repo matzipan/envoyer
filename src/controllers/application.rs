@@ -1,8 +1,8 @@
+use adw::subclass::prelude::*;
 use gtk::gio::{prelude::*, SimpleAction};
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gdk, gio, glib};
-use adw::subclass::prelude::*;
 
 use chrono::prelude::*;
 use futures::prelude::*;
@@ -490,7 +490,7 @@ mod imp {
                         }
                     }
                 }
-                
+
                 glib::ControlFlow::Continue
             });
 
@@ -579,7 +579,7 @@ impl Application {
         let provider = gtk::CssProvider::new();
         provider.load_from_data(stylesheet_string);
         if let Some(display) = gdk::Display::default() {
-            gtk::StyleContext::add_provider_for_display(&display, &provider, gtk::STYLE_PROVIDER_PRIORITY_APPLICATION);
+            gtk::style_context_add_provider_for_display(&display, &provider, gtk::STYLE_PROVIDER_PRIORITY_APPLICATION);
         }
     }
 

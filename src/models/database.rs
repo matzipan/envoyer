@@ -170,7 +170,7 @@ impl From<melib::email::Envelope> for NewMessage {
             folder_id: 0,
             subject: String::from(envelope.subject()),
             // We go straight for try_into().unwrap() because we know the timestamp won't take 64 bits any time soon
-            time_received: chrono::NaiveDateTime::from_timestamp(envelope.datetime() as i64, 0), //@TODO
+            time_received: chrono::NaiveDateTime::from_timestamp_opt(envelope.datetime() as i64, 0).expect("Invalid date time"), //@TODO
             from: envelope.field_from_to_string(),
             to: envelope.field_to_to_string(),
             cc: envelope.field_cc_to_string(),

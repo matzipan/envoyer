@@ -24,14 +24,14 @@ use crate::controllers::{Application, ApplicationMessage};
 use crate::models;
 use crate::models::folder_conversations_list::row_data::ConversationRowData;
 
-use self::dynamic_list_view::{DynamicListView, DynamicListViewStore};
+use self::dynamic_list_view::DynamicListView;
 use self::folder_conversation_item::FolderConversationItem;
 use self::folders_list_item::FoldersListItem;
 use self::message_view::MessageView;
 
 mod imp {
     use gtk::{
-        glib::{closure_local, ParamSpec, Value},
+        glib::{ParamSpec, Value},
         CompositeTemplate,
     };
 
@@ -179,7 +179,6 @@ mod imp {
                 box_row.upcast::<gtk::Widget>()
             });
 
-            let sender_clone = self.sender.clone();
             let conversation_viewer_stack = self.conversation_viewer_stack.get().clone();
             let conversation_viewer_spinner = self.conversation_viewer_spinner.get().clone();
 
