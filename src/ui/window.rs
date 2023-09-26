@@ -669,47 +669,4 @@ impl Window {
     // public new void grab_focus () {
     //     listbox.grab_focus ();
     // }
-
-    // let (roots, threads, envelopes) =
-    // self.identities.lock().expect("Unable to acquire identities lock")[0]
-    //     .clone()
-    //     .fetch_threads();
-
-    // let iter = roots.into_iter();
-    // for thread in iter {
-    //     let thread_node =
-    // &threads.thread_nodes()[&threads.thread_ref(thread).root()];
-    //     let root_envelope_hash = if let Some(h) =
-    // thread_node.message().or_else(|| {         if
-    // thread_node.children().is_empty() {             return None;
-    //         }
-    //         let mut iter_ptr = thread_node.children()[0];
-    //         while threads.thread_nodes()[&iter_ptr].message().is_none() {
-    //             if
-    // threads.thread_nodes()[&iter_ptr].children().is_empty() {
-    //                 return None;
-    //             }
-    //             iter_ptr =
-    // threads.thread_nodes()[&iter_ptr].children()[0];         }
-    //         threads.thread_nodes()[&iter_ptr].message()
-    //     }) {
-    //         h
-    //     } else {
-    //         continue;
-    //     };
-
-    //     let row_data = FolderConversationRowData::new(&"Subject
-    // placeholder");     unsafe {
-    //         (*row_data.as_ptr()).get_impl().subject.replace(Some(
-    //
-    // threads.thread_nodes()[&threads.thread_ref(thread).root()]
-    //                 .message()
-    //                 .as_ref()
-    //                 .map(|m|
-    // envelopes.read().unwrap()[m].subject().to_string())
-    //                 .unwrap_or_else(|| "None".to_string()),
-    //         ));
-    //     }
-
-    //     self.threads_model.append(&row_data)
 }
