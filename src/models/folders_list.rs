@@ -11,6 +11,69 @@ use std::rc::Rc;
 use crate::models;
 use crate::services;
 
+use super::Folder;
+
+enum FolderType {
+    Inbox,
+    Important,
+    Starred,
+    Sent,
+    Drafts,
+    Archive,
+    All,
+    Spam,
+    Bin,
+    Other,
+}
+
+fn get_order_index_for_folder_type(folder_type: FolderType) -> u32 {
+    match folder_type {
+        FolderType::Inbox => 1,
+        FolderType::Important => 2,
+        FolderType::Starred => 3,
+        FolderType::Sent => 4,
+        FolderType::Drafts => 5,
+        FolderType::Archive => 6,
+        FolderType::All => 7,
+        FolderType::Spam => 8,
+        FolderType::Bin => 9,
+        FolderType::Other => 10,
+    }
+}
+
+fn get_folder_type_from_folder(folder: &Folder) -> FolderType {
+    match folder.folder_name.as_str() {
+        "INBOX" => FolderType::Inbox,
+        "Important" => FolderType::Important,
+        "Sent" => FolderType::Sent,
+        "Spam" => FolderType::Spam,
+        "Junk" => FolderType::Spam,
+        "Drafts" => FolderType::Drafts,
+        "Archive" => FolderType::Archive,
+        "All" => FolderType::All,
+        "Starred" => FolderType::Starred,
+        "Bin" => FolderType::Bin,
+        "Trash" => FolderType::Bin,
+        &_ => FolderType::Other,
+    }
+}
+
+pub fn get_folder_presentation_name(folder: &Folder) -> &str {
+    let folder_type = get_folder_type_from_folder(folder);
+    match folder_type {
+        FolderType::Inbox => "Inbox",
+        FolderType::Important => "Important",
+        FolderType::Starred => "Starred",
+        FolderType::Sent => "Sent",
+        FolderType::Drafts => "Drafts",
+        FolderType::Archive => "Archive",
+        FolderType::All => "All",
+        FolderType::Spam => "Spam",
+        FolderType::Bin => "Bin",
+        FolderType::Other => &folder.folder_name,
+    }
+}
+
 pub mod model {
     use super::*;
     use row_data::FolderRowData;
@@ -93,16 +156,21 @@ pub mod model {
                     .expect("Unable to get bare identities"),
             );
 
+            let mut folders_list = self_
+                .store
+                .borrow()
+                .as_ref()
+                .unwrap()
+                .get_folders(&self_.bare_identities.borrow()[0])
+                .expect("Unable to get folders");
+
+            folders_list.sort_unstable_by_key(|folder| {
+                let folder_type = get_folder_type_from_folder(folder);
+                get_order_index_for_folder_type(folder_type)
+            });
+
             // @TODO add support for multiple identities
-            self_.folders.replace(
-                self_
-                    .store
-                    .borrow()
-                    .as_ref()
-                    .unwrap()
-                    .get_folders(&self_.bare_identities.borrow()[0])
-                    .expect("Unable to get folders"),
-            );
+            self_.folders.replace(folders_list);
 
             let new_count = self_.n_items();
 
