@@ -3,6 +3,7 @@
 
 use crate::models;
 
+use diesel::Connection;
 use futures::Future;
 use melib;
 use melib::backends::imap::{
@@ -20,9 +21,12 @@ use std::time::{Duration, SystemTime};
 
 use std::pin::Pin;
 
+type ConnectionMutexType = Arc<FutureMutex<ImapConnection>>;
+
 #[derive(Debug)]
 pub struct ImapBackend {
-    pub connection: Arc<FutureMutex<ImapConnection>>,
+    pub connection: ConnectionMutexType,
+    pub messages_fetch_connection: ConnectionMutexType,
     pub server_conf: ImapServerConf,
 }
 
@@ -235,6 +239,11 @@ pub fn create_connection(server_conf: &ImapServerConf, event_consumer: BackendEv
 
 pub type ResultFuture<T> = Result<Pin<Box<dyn Future<Output = Result<T, MeliError>> + Send + 'static>>, MeliError>;
 
+pub enum ConnectionType {
+    Backend,
+    MessagesFetch,
+}
+
 impl ImapBackend {
     pub fn new(
         server_hostname: String,
@@ -245,7 +254,6 @@ impl ImapBackend {
         use_tls: bool,
         use_starttls: bool,
         danger_accept_invalid_certs: bool,
-        event_consumer: BackendEventConsumer,
     ) -> Result<Box<ImapBackend>, MeliError> {
         let server_conf = ImapServerConf {
             server_hostname,
@@ -266,13 +274,24 @@ impl ImapBackend {
         };
 
         Ok(Box::new(ImapBackend {
-            connection: Arc::new(FutureMutex::new(create_connection(&server_conf, event_consumer))),
+            connection: Arc::new(FutureMutex::new(create_connection(
+                &server_conf,
+                BackendEventConsumer::new(Arc::new(|_, _| {})),
+            ))),
+            messages_fetch_connection: Arc::new(FutureMutex::new(create_connection(
+                &server_conf,
+                BackendEventConsumer::new(Arc::new(|_, _| {})),
+            ))),
             server_conf,
         }))
     }
 
-    pub fn is_online(&self) -> ResultFuture<()> {
-        let connection = self.connection.clone();
+    pub fn is_online(&self, connection_type: ConnectionType) -> ResultFuture<()> {
+        let connection = match connection_type {
+            ConnectionType::Backend => self.connection.clone(),
+            ConnectionType::MessagesFetch => self.messages_fetch_connection.clone(),
+        };
+
         let timeout_dur = self.server_conf.timeout;
         Ok(Box::pin(async move {
             match timeout(timeout_dur, connection.lock()).await {
@@ -373,7 +392,7 @@ impl ImapBackend {
     }
 
     pub fn fetch_message_content(&self, imap_path: &String, uid: i64) -> ResultFuture<String> {
-        let connection_clone = self.connection.clone();
+        let connection_clone = self.messages_fetch_connection.clone();
         let timeout_dur = self.server_conf.timeout;
         let imap_path_clone = imap_path.clone();
 

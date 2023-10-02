@@ -55,7 +55,6 @@ impl Identity {
             true,
             false,
             true,
-            BackendEventConsumer::new(Arc::new(|_, _| {})),
         )
         .unwrap();
 
@@ -186,7 +185,7 @@ impl Identity {
 
     async fn fetch_folders(self: Rc<Self>) -> Result<Vec<Box<melib::backends::imap::ImapMailbox>>, String> {
         self.backend
-            .is_online()
+            .is_online(imap::ConnectionType::Backend)
             .map_err(|e| e.to_string())?
             .await
             .map_err(|e| e.to_string())?;
@@ -326,7 +325,7 @@ impl Identity {
 
         debug!("Syncing messages for folder {}, checking if online", folder.folder_name);
         self.backend
-            .is_online()
+            .is_online(imap::ConnectionType::Backend)
             .map_err(|e| e.to_string())?
             .await
             .map_err(|e| e.to_string())?;
@@ -406,7 +405,7 @@ impl Identity {
         );
 
         self.backend
-            .is_online()
+            .is_online(imap::ConnectionType::MessagesFetch)
             .map_err(|e| e.to_string())?
             .await
             .map_err(|e| e.to_string())?;
