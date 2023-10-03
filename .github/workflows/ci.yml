@@ -18,14 +18,14 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: 'true'
-    # - name: Build
-    #   uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-    #   with:
-    #     bundle: com.github.matzipan.envoyer.flatpak
-    #     manifest-path: ./build-aux/flatpak.yml
-    #     cache-key: flatpak-builder-${{ github.ref }}
+    - name: Build
+      uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      with:
+        bundle: com.github.matzipan.envoyer.flatpak
+        manifest-path: ./build-aux/flatpak.yml
+        cache-key: flatpak-builder-${{ github.ref }}
     - name: Run rust-clippy
-      uses: matzipan/flatpak-github-actions/flatpak-builder@0785c7b4e777aa219b059b357a1bef90fab05102
+      uses: matzipan/flatpak-github-actions/flatpak-builder@fe8609e7f2af03a2bf194c584ad206e4012da398
       with:
         manifest-path: ./build-aux/flatpak.yml
         run-command:
