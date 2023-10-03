@@ -24,6 +24,19 @@ jobs:
         bundle: com.github.matzipan.envoyer.flatpak
         manifest-path: ./build-aux/flatpak.yml
         cache-key: flatpak-builder-${{ github.ref }}
+    - name: Run rust-clippy
+      uses: matzipan/flatpak-github-actions/flatpak-builder@9e90d7426da16972844441ad197e9a472e20a015
+      with:
+        run-command: >
+          bash -c "cargo clippy --all-features --message-format=json |
+            clippy-sarif | tee rust-clippy-results.sarif | sarif-fmt"
+      continue-on-error: true
+
+    - name: Upload analysis results to GitHub
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: rust-clippy-results.sarif
+        wait-for-processing: true
     # - name: Run tests
     #   working-directory: envoyer
     #   run: cargo test --verbose
