@@ -25,7 +25,7 @@ jobs:
     #     manifest-path: ./build-aux/flatpak.yml
     #     cache-key: flatpak-builder-${{ github.ref }}
     - name: Run rust-clippy
-      uses: matzipan/flatpak-github-actions/flatpak-builder@d1855cc06d0b0d883fbb031262a88a1678c69006
+      uses: matzipan/flatpak-github-actions/flatpak-builder@44d871e2057fc89e613b5cd2307c429088b3ac4c
       with:
         run-command: >
           bash -c "cargo clippy --all-features --message-format=json |
