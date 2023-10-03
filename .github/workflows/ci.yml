@@ -30,7 +30,6 @@ jobs:
         run-command:
           bash -c "cargo clippy --all-features --message-format=json |
             tee rust-clippy-results.json"
-        cache-key: flatpak-builder-${{ github.ref }}
       continue-on-error: true
     - name: Convert clippy output for upload to Github
       run:
