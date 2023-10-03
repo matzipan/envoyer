@@ -19,6 +19,8 @@ build-options:
   append-path: "/usr/lib/sdk/rust-stable/bin"
   prepend-path: "/usr/lib/sdk/llvm16/bin"
   prepend-ld-library-path: "/usr/lib/sdk/llvm16/lib"  
+  env:
+    CLANG_LIB_PATH: "/usr/lib/sdk/llvm16/lib/clang/16"
   build-args:
     - --share=network
     - --socket=session-bus
