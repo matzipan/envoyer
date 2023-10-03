@@ -3,5 +3,5 @@ db.sqlite
 sdk
 .flatpak-builder
 build
-src/config.rs
+app/src/config.rs
 workdir
