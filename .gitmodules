@@ -1,3 +1,3 @@
 [submodule "vendor/litehtml"]
-	path = vendor/litehtml
+	path = app/vendor/litehtml
 	url = git@github.com:matzipan/litehtml.git

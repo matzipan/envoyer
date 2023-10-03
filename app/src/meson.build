@@ -13,13 +13,13 @@ config = configure_file(
 # Copy the config.rs output to the source directory.
 run_command(
   'cp',
-  meson.project_build_root() / 'src' / 'config.rs',
-  meson.project_source_root() / 'src' / 'config.rs',
+  meson.project_build_root() / 'app' / 'src' / 'config.rs',
+  meson.project_source_root() / 'app' / 'src' / 'config.rs',
   check: true
 )
 
 cargo_options = [ '--manifest-path', meson.project_source_root() / 'Cargo.toml' ]
-cargo_options += [ '--target-dir', meson.project_build_root() / 'src' ]
+cargo_options += [ '--target-dir', meson.project_build_root() / 'app' / 'src' ]
 
 if get_option('profile') == 'default'
   cargo_options += [ '--release' ]
@@ -47,6 +47,6 @@ cargo_build = custom_target(
     cargo, 'build',
     cargo_options,
     '&&',
-    'cp', 'src' / rust_target / meson.project_name(), '@OUTPUT@',
+    'cp', 'app' / 'src' / rust_target / 'envoyer', '@OUTPUT@',
   ]
 )
