@@ -36,7 +36,7 @@ jobs:
       run:
         curl -sSL https://github.com/psastras/sarif-rs/releases/download/clippy-sarif-latest/clippy-sarif-x86_64-unknown-linux-gnu -o clippy-sarif &&
         curl -sSL https://github.com/psastras/sarif-rs/releases/download/sarif-fmt-latest/sarif-fmt-x86_64-unknown-linux-gnu -o sarif-fmt &&
-        cat rust-clippy-results.json | clippy-sarif | sarif-fmt
+        cat rust-clippy-results.json | ./clippy-sarif | ./sarif-fmt
 
 
     - name: Upload analysis results to GitHub
