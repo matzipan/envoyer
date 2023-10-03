@@ -6,23 +6,20 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
   flatpak:
     name: "Flatpak"
     runs-on: ubuntu-latest
     container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-43
+      image: bilelmoussaoui/flatpak-github-actions:gnome-45
       options: --privileged
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'true'
     - name: Build
-      uses: flatpak/flatpak-github-actions/flatpak-builder@v3
+      uses: flatpak/flatpak-github-actions/flatpak-builder@v6
       with:
         bundle: com.github.matzipan.envoyer.flatpak
         manifest-path: ./build-aux/flatpak.yml
