@@ -81,4 +81,6 @@ fn main() {
     println!("cargo:rerun-if-changed=lib/litehtml_container/container.cpp");
     println!("cargo:rerun-if-changed=lib/litehtml_container/container.h");
     println!("cargo:rerun-if-changed=src/litehtml_callbacks.rs");
+
+    println!("cargo:rerun-if-changed=migrations");
 }
