@@ -5,8 +5,8 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
+    let clang_lib_path = env::var("CLANG_LIB_PATH").unwrap();
     let out_path = env::var("OUT_DIR").unwrap();
-
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
     let litehtml_callbacks_header_file = PathBuf::from(&out_path)
@@ -30,6 +30,7 @@ fn main() {
         .expect("Unable to generate bindings")
         .write_to_file(&litehtml_callbacks_header_file);
 
+    let clang_include_path = format!("{}/include", clang_lib_path);
     let include_path = format!("{}/include", out_path);
 
     // Build litehtml as a CMake library
@@ -51,8 +52,7 @@ fn main() {
         .opaque_type("std::.*")
         .enable_cxx_namespaces()
         .clang_args(&[
-            // I'm not sure how to avoid hardcoding this flatpak path
-            "-I/usr/lib/sdk/llvm12/lib/clang/12.0.1/include",
+            &format!("-I{}", &clang_include_path),
             &format!("-I{}", &include_path),
             "--std=c++14",
         ])
