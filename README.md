@@ -11,9 +11,9 @@ has since become a vehicle for me to learn and experiment. It will likely never
 be finished. Anyway, the experience of rewriting this in Rust has been very
 nice. Go learn Rust!
 
-## Building
+## Developing
 
-## Requirements
+### Requirements
 
 Install flatpak runtimes:
 
@@ -67,7 +67,15 @@ Then you will simply be able to run the application from the `PATH` by simply ru
 envoyer
 ```
 
-### License
+### Testing
+
+A test server is available to test the application against. To start the server, run the command below. `docker` needs to be available.
+
+```
+cargo run --bin test_server
+```
+
+## License
 
 Copyright 2016-2021 Andrei-Costin Zisu.
 
