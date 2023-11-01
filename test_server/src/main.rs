@@ -71,7 +71,7 @@ fn main() {
     info!("Starting greenmail server container");
     launcher
         .run(RunOpt {
-            image: "greenmail/standalone:2.0.0".into(),
+            image: "docker.io/greenmail/standalone:2.0.0".into(),
             name: Some(TEST_SERVER_CONTAINER_NAME.into()),
             publish: vec![
                 PublishPorts {
