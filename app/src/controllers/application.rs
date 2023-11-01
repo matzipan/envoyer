@@ -22,6 +22,9 @@ use crate::ui;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+//@TODO find a better place for this
+const TEST_SERVER_EMAIL: &str = "app_receiver@envoyer.test";
+
 #[derive(Debug)]
 pub enum ApplicationMessage {
     Setup {},
@@ -90,6 +93,23 @@ impl ApplicationMessage {
             gmail_refresh_token: response_token.refresh_token,
         }
     }
+
+    pub fn save_identity_message_for_test_server() -> ApplicationMessage {
+        ApplicationMessage::SaveIdentity {
+            email_address: TEST_SERVER_EMAIL.to_string(),
+            full_name: "Full name".to_string(),
+            account_name: "Test".to_string(),
+            identity_type: models::IdentityType::Imap,
+            expires_at: DateTime::<Utc>::MAX_UTC,
+            imap_server_hostname: "127.0.0.1".to_string(),
+            imap_server_port: 3993,
+            imap_password: TEST_SERVER_EMAIL.to_string(),
+            imap_use_tls: true,
+            imap_use_starttls: false,
+            gmail_access_token: String::new(),
+            gmail_refresh_token: String::new(),
+        }
+    }
 }
 
 fn send_notification(notifications_email_count: &Rc<RefCell<i32>>, new_messages: Vec<NewMessage>, application_obj: &Application) {
@@ -132,6 +152,7 @@ mod imp {
         pub application_message_sender: RefCell<Option<glib::Sender<ApplicationMessage>>>,
         pub store: RefCell<Option<Rc<services::Store>>>,
         pub notifications_email_count: Rc<RefCell<i32>>,
+        pub test_server_enabled: Rc<RefCell<bool>>,
     }
 
     #[glib::object_subclass]
@@ -147,29 +168,27 @@ mod imp {
         fn activate(&self) {
             debug!("Application activate");
 
-            {
+            let mut application_message;
+            if self.should_set_up_test_server() {
+                debug!("Test server setup not found. Configuring");
+
+                application_message = ApplicationMessage::save_identity_message_for_test_server();
+            } else {
                 let store_borrow = self.store.borrow();
                 let store = store_borrow.as_ref().expect("Unable to access store");
-                match store.initialize_database() {
-                    Ok(_) => {
-                        let application_message = match store.is_account_setup_needed() {
-                            true => ApplicationMessage::Setup {},
-                            false => ApplicationMessage::LoadIdentities { initialize: false },
-                        };
 
-                        self.application_message_sender
-                            .borrow()
-                            .as_ref()
-                            .expect("Unable to access application message sender")
-                            .send(application_message)
-                            .expect("Unable to send application message");
-                    }
-                    Err(e) => {
-                        //@TODO show an error dialog
-                        error!("Error encountered when initializing the database: {}", &e);
-                    }
+                application_message = match store.is_account_setup_needed() {
+                    true => ApplicationMessage::Setup {},
+                    false => ApplicationMessage::LoadIdentities { initialize: false },
                 }
             }
+
+            self.application_message_sender
+                .borrow()
+                .as_ref()
+                .expect("Unable to access application message sender")
+                .send(application_message)
+                .expect("Unable to send application message");
 
             self.parent_activate();
 
@@ -184,16 +203,27 @@ mod imp {
         fn startup(&self) {
             debug!("Application startup");
             self.parent_startup();
-            let app = self.obj();
 
-            // Set icons for shell
             gtk::Window::set_default_icon_name(APP_ID);
 
-            app.setup_css();
-            app.setup_gactions();
-            app.setup_accels();
+            let obj = self.obj();
+            obj.setup_css();
+            obj.setup_gactions();
+            obj.setup_accels();
 
             self.run();
+            self.setup_database();
+        }
+
+        fn command_line(&self, command_line: &gio::ApplicationCommandLine) -> glib::ExitCode {
+            if command_line.options_dict().contains(&"with-test-server") {
+                debug!("Enabling test server setup");
+                self.enable_test_server_setup();
+            }
+
+            self.obj().activate();
+
+            glib::ExitCode::SUCCESS
         }
     }
 
@@ -568,6 +598,34 @@ mod imp {
                 }
             });
             application_obj.add_action(&action_show_conversation_for_email_id);
+        }
+
+        fn setup_database(&self) {
+            let store_borrow = self.store.borrow();
+            let store = store_borrow.as_ref().expect("Unable to access store");
+
+            store.initialize_database();
+        }
+
+        fn enable_test_server_setup(&self) {
+            self.test_server_enabled.replace(true);
+        }
+
+        fn should_set_up_test_server(&self) -> bool {
+            *self.test_server_enabled.borrow() && !self.is_test_server_set_up_already()
+        }
+
+        fn is_test_server_set_up_already(&self) -> bool {
+            let store_borrow = self.store.borrow();
+            let store = store_borrow.as_ref().expect("Unable to access store");
+
+            store
+                .get_bare_identities()
+                .expect("Unable to fetch identities")
+                .into_iter()
+                .filter(|identity| &identity.email_address == TEST_SERVER_EMAIL)
+                .count()
+                != 0
         }
     }
 }
