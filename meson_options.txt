@@ -3,8 +3,8 @@ option(
   type: 'combo',
   choices: [
     'default',
-    'development'
+    'devel'
   ],
   value: 'default',
-  description: 'The build profile for Envoyer. One of "default" or "development".'
+  description: 'The build profile for Envoyer. One of "default" or "devel".'
 )
