@@ -23,10 +23,11 @@ use gettextrs::{gettext, LocaleCategory};
 use gtk::{gio, glib};
 
 use adw;
+use adw::prelude::*;
 
-use self::config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE};
+use self::config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE, PROFILE};
 
-use log::{Level, LevelFilter, Metadata, Record};
+use log::{Level, LevelFilter, Metadata, Record, debug};
 
 struct SimpleLogger;
 
@@ -65,5 +66,19 @@ fn main() -> glib::ExitCode {
     adw::init().unwrap();
 
     let app = controllers::Application::default();
+
+    if PROFILE == "devel" {
+        debug!("Detected development build");
+        
+        app.add_main_option(
+            "with-test-server",
+            b't'.into(),
+            glib::OptionFlags::NONE,
+            glib::OptionArg::None,
+            &gettext("Sets up connection for test server"),
+            None,
+        );
+    }
+
     app.run()
 }
