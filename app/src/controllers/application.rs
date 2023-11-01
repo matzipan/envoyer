@@ -614,6 +614,7 @@ impl Default for Application {
         glib::Object::builder()
             .property("application-id", APP_ID)
             .property("resource-base-path", "/com/github/matzipan/envoyer/")
+            .property("flags", gio::ApplicationFlags::HANDLES_COMMAND_LINE)
             .build()
     }
 }

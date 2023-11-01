@@ -75,6 +75,12 @@ A test server is available to test the application against. To start the server,
 cargo run --bin test_server
 ```
 
+Then running `envoyer` like so should get it to connect to the test server:
+
+```
+envoyer --with-test-server
+```
+
 ## License
 
 Copyright 2016-2021 Andrei-Costin Zisu.
