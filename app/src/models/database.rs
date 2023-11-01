@@ -190,10 +190,11 @@ impl From<melib::email::Envelope> for NewMessage {
     }
 }
 
-#[derive(Debug, AsExpression, FromSqlRow, Clone)]
+#[derive(PartialEq, Debug, AsExpression, FromSqlRow, Clone)]
 #[diesel(sql_type = diesel::sql_types::Text)]
 pub enum IdentityType {
     Gmail,
+    Imap,
 }
 
 impl<DB> diesel::deserialize::FromSql<diesel::sql_types::Text, DB> for IdentityType
@@ -205,6 +206,7 @@ where
         let deserialized = String::from_sql(bytes).expect("Unable to deserialize corrupt identity type");
         match deserialized.as_ref() {
             "Gmail" => Ok(IdentityType::Gmail),
+            "Imap" => Ok(IdentityType::Imap),
             x => Err(format!("Unrecognized identity type {}", x).into()),
         }
     }
@@ -217,6 +219,7 @@ where
     fn to_sql<'b>(&'b self, out: &mut diesel::serialize::Output<'b, '_, diesel::sqlite::Sqlite>) -> diesel::serialize::Result {
         match *self {
             IdentityType::Gmail => out.set_value("Gmail".to_owned()),
+            IdentityType::Imap => out.set_value("Imap".to_owned()),
         };
 
         Ok(diesel::serialize::IsNull::No)
@@ -228,20 +231,32 @@ where
 pub struct BareIdentity {
     pub id: i32,
     pub email_address: String,
-    pub gmail_refresh_token: String,
     pub identity_type: IdentityType,
-    pub expires_at: chrono::NaiveDateTime,
     pub full_name: String,
     pub account_name: String,
+    pub imap_server_hostname: String,
+    // Ports are u16 but diesel doesn't have out of the box support for u16 so it's simpler
+    pub imap_server_port: i32,
+    pub imap_password: Option<String>,
+    pub imap_use_tls: bool,
+    pub imap_use_starttls: bool,
+    pub gmail_refresh_token: String,
+    pub expires_at: chrono::NaiveDateTime,
 }
 
 #[derive(Insertable, Debug)]
 #[diesel(table_name = identities)]
 pub struct NewBareIdentity<'a> {
     pub email_address: &'a String,
-    pub gmail_refresh_token: &'a String,
     pub identity_type: IdentityType,
-    pub expires_at: &'a chrono::NaiveDateTime, //@TODO is this for refresh token or for access token?
     pub full_name: &'a String,
     pub account_name: &'a String,
+    pub imap_server_hostname: &'a String,
+    // Ports are u16 but diesel doesn't have out of the box support for u16 so it's simpler
+    pub imap_server_port: i32,
+    pub imap_password: Option<&'a String>,
+    pub imap_use_tls: bool,
+    pub imap_use_starttls: bool,
+    pub gmail_refresh_token: &'a String,
+    pub expires_at: &'a chrono::NaiveDateTime, //@TODO is this for refresh token or for access token?
 }

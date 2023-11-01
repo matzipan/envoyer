@@ -6,6 +6,7 @@ use melib::{backends::BackendMailbox, BackendEventConsumer};
 
 use std::boxed::Box;
 use std::collections::HashMap;
+use std::convert::TryInto;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::time::Instant;
@@ -14,6 +15,7 @@ use crate::backends::imap;
 use crate::controllers::ApplicationMessage;
 use crate::google_oauth;
 use crate::models;
+use crate::models::IdentityType;
 use crate::services;
 
 pub enum SyncType {
@@ -37,24 +39,42 @@ impl Identity {
     ) -> Identity {
         info!("Creating identity with address {}", bare_identity.email_address);
 
-        //@TODO do the thread token response fetch asynchronously so that the
-        //@TODO application does not have to wait for this to start up
-        let access_token_response = google_oauth::refresh_access_token(&bare_identity.gmail_refresh_token)
-            .await
-            .unwrap();
+        let mut use_oauth2 = false;
+        let password = match bare_identity.identity_type {
+            IdentityType::Gmail => {
+                // @TODO do the thread token response fetch asynchronously so that
+                // the application does not have to wait for this to start up
+                let access_token_response = google_oauth::refresh_access_token(&bare_identity.gmail_refresh_token)
+                    .await
+                    .unwrap();
+
+                use_oauth2 = true;
+
+                format!(
+                    "user={}\x01auth=Bearer {}\x01\x01",
+                    &bare_identity.email_address, &access_token_response.access_token
+                )
+            }
+            IdentityType::Imap => bare_identity
+                .imap_password
+                .clone()
+                .expect("Unable to find IMAP password for IMAP account type"),
+        };
+
+        if bare_identity.identity_type == IdentityType::Gmail {}
 
         let imap_backend = imap::ImapBackend::new(
-            "imap.gmail.com".to_string(),
-            993,
+            bare_identity.imap_server_hostname.clone(),
+            bare_identity
+                .imap_server_port
+                .try_into()
+                .expect("Unable to cast to cast port value"),
             bare_identity.email_address.clone(),
-            format!(
-                "user={}\x01auth=Bearer {}\x01\x01",
-                &bare_identity.email_address, &access_token_response.access_token
-            ),
-            true,
-            true,
-            false,
-            true,
+            password,
+            use_oauth2,
+            bare_identity.imap_use_tls,
+            bare_identity.imap_use_starttls,
+            true, // @TODO
         )
         .unwrap();
 

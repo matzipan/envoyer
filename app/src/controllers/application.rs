@@ -33,6 +33,11 @@ pub enum ApplicationMessage {
         gmail_access_token: String,
         gmail_refresh_token: String,
         expires_at: DateTime<Utc>,
+        imap_server_hostname: String,
+        imap_server_port: u16,
+        imap_password: String,
+        imap_use_tls: bool,
+        imap_use_starttls: bool,
     },
     LoadIdentities {
         initialize: bool,
@@ -60,6 +65,31 @@ pub enum ApplicationMessage {
     ShowConversationContainingEmail {
         email_id: i32,
     },
+}
+
+impl ApplicationMessage {
+    pub fn save_identity_message_for_gmail(
+        email_address: String,
+        full_name: String,
+        account_name: String,
+        response_token: google_oauth::GoogleTokensResponse,
+    ) -> ApplicationMessage {
+        ApplicationMessage::SaveIdentity {
+            email_address,
+            // For Google we use the tokens for authentication
+            full_name,
+            identity_type: models::IdentityType::Gmail,
+            account_name,
+            expires_at: response_token.expires_at,
+            imap_server_hostname: "imap.gmail.com".to_string(),
+            imap_server_port: 993,
+            imap_password: String::new(),
+            imap_use_tls: true,
+            imap_use_starttls: false,
+            gmail_access_token: response_token.access_token,
+            gmail_refresh_token: response_token.refresh_token,
+        }
+    }
 }
 
 fn send_notification(notifications_email_count: &Rc<RefCell<i32>>, new_messages: Vec<NewMessage>, application_obj: &Application) {
@@ -231,19 +261,29 @@ mod imp {
                         full_name,
                         account_name,
                         identity_type,
+                        expires_at,
+                        imap_server_hostname,
+                        imap_server_port,
+                        imap_password,
+                        imap_use_tls,
+                        imap_use_starttls,
                         gmail_access_token: _,
                         gmail_refresh_token,
-                        expires_at,
                     } => {
                         info!("SaveIdentity for {}", email_address);
 
-                        let new_bare_identity = models::NewBareIdentity {
+                        let new_bare_identity: models::NewBareIdentity<'_> = models::NewBareIdentity {
                             email_address: &email_address,
-                            gmail_refresh_token: &gmail_refresh_token,
-                            identity_type: identity_type,
-                            expires_at: &expires_at.naive_utc(),
+                            identity_type,
                             full_name: &full_name,
                             account_name: &account_name,
+                            imap_server_hostname: &imap_server_hostname,
+                            imap_server_port: imap_server_port.into(),
+                            imap_password: Some(&imap_password),
+                            imap_use_tls,
+                            imap_use_starttls,
+                            gmail_refresh_token: &gmail_refresh_token,
+                            expires_at: &expires_at.naive_utc(),
                         };
 
                         store_clone.store_bare_identity(&new_bare_identity).map_err(|x| error!("{}", x));
@@ -439,15 +479,12 @@ mod imp {
                                 .and_then(google_oauth::request_tokens)
                                 .and_then(|response_token| async move {
                                     application_message_sender
-                                        .send(ApplicationMessage::SaveIdentity {
-                                            email_address: email_address,
-                                            full_name: full_name,
-                                            identity_type: models::IdentityType::Gmail,
-                                            account_name: account_name,
-                                            gmail_access_token: response_token.access_token,
-                                            gmail_refresh_token: response_token.refresh_token,
-                                            expires_at: response_token.expires_at,
-                                        })
+                                        .send(ApplicationMessage::save_identity_message_for_gmail(
+                                            email_address,
+                                            full_name,
+                                            account_name,
+                                            response_token,
+                                        ))
                                         .map_err(|e| e.to_string())?;
 
                                     Ok(())

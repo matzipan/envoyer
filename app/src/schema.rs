@@ -29,11 +29,16 @@ table! {
     identities (id) {
         id -> Integer,
         email_address -> Text,
-        gmail_refresh_token -> Text,
         identity_type -> Text,
-        expires_at -> Timestamp,
         full_name -> Text,
         account_name -> Text,
+        imap_server_hostname -> Text,
+        imap_server_port -> Integer,
+        imap_password -> Nullable<Text>,
+        imap_use_tls -> Bool,
+        imap_use_starttls -> Bool,
+        gmail_refresh_token -> Text,
+        expires_at -> Timestamp,
     }
 }
 
