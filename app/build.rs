@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 fn main() {
     let clang_lib_path = env::var("CLANG_LIB_PATH").expect(
-        "CLANG_LIB_PATH is not set.\
+        "CLANG_LIB_PATH is not set. \
          Make sure you are building from the flatpak environment",
     );
     let out_path = env::var("OUT_DIR").unwrap();
