@@ -1,5 +1,5 @@
-use cc;
-use cmake;
+
+
 
 use std::env;
 use std::path::PathBuf;
@@ -31,7 +31,7 @@ fn main() {
         .with_header("namespace litehtml_rust {struct Callbacks;}")
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file(&litehtml_callbacks_header_file);
+        .write_to_file(litehtml_callbacks_header_file);
 
     let clang_include_path = format!("{}/include", clang_lib_path);
     let include_path = format!("{}/include", out_path);
