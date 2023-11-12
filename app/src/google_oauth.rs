@@ -55,7 +55,7 @@ pub async fn refresh_access_token(refresh_token: &String) -> Result<GoogleTokenR
     let client = HttpClient::new().unwrap();
 
     let request = GoogleAccessTokenRefreshRequest {
-        refresh_token: &refresh_token,
+        refresh_token,
         client_id: &CLIENT_ID.to_string(),
         client_secret: &CLIENT_SECRET.to_string(),
         grant_type: &"refresh_token".to_string(),

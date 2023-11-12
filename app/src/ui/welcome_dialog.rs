@@ -35,7 +35,7 @@ pub struct WelcomeDialog {
 impl WelcomeDialog {
     pub fn new(sender: glib::Sender<ApplicationMessage>) -> WelcomeDialog {
         let dialog = Self {
-            sender: sender,
+            sender,
             // Workaround for the desktop manager seemingly taking over headerbars?
             gtk_dialog: gtk::Dialog::with_buttons(
                 Some(""),
