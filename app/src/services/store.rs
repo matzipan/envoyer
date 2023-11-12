@@ -1,4 +1,6 @@
 use crate::backends;
+use crate::config::PROFILE;
+use crate::controllers::ApplicationProfile;
 use crate::models;
 use crate::schema;
 
@@ -54,7 +56,10 @@ fn get_database_path() -> Option<String> {
                 .and_then(allow_only_absolute)
                 .map(|path| path.join(".local/share"))
         })
-        .map(|path| path.join("db.sqlite"))
+        .map(|path| match PROFILE {
+            ApplicationProfile::Default => path.join("db.sqlite"),
+            ApplicationProfile::Devel => path.join("db-devel.sqlite"),
+        })
         .map(|path| path.into_os_string().into_string().unwrap())
 }
 
