@@ -5,7 +5,10 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    let clang_lib_path = env::var("CLANG_LIB_PATH").unwrap();
+    let clang_lib_path = env::var("CLANG_LIB_PATH").expect(
+        "CLANG_LIB_PATH is not set.\
+         Make sure you are building from the flatpak environment",
+    );
     let out_path = env::var("OUT_DIR").unwrap();
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
