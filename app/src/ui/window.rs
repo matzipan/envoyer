@@ -20,7 +20,7 @@ use std::rc::Rc;
 
 use crate::bindings;
 use crate::config::{APP_ID, PROFILE};
-use crate::controllers::{Application, ApplicationMessage};
+use crate::controllers::{Application, ApplicationMessage, ApplicationProfile};
 use crate::models;
 use crate::models::folder_conversations_list::row_data::ConversationRowData;
 
@@ -115,8 +115,7 @@ mod imp {
             self.parent_constructed();
             let obj = self.obj();
 
-            // Devel Profile
-            if PROFILE == "Devel" {
+            if PROFILE == ApplicationProfile::Devel {
                 obj.add_css_class("devel");
             }
 

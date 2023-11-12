@@ -19,15 +19,16 @@ mod ui;
 #[rustfmt::skip]
 mod config;
 
+use controllers::ApplicationProfile;
 use gettextrs::{gettext, LocaleCategory};
 use gtk::{gio, glib};
 
 use adw;
 use adw::prelude::*;
 
-use self::config::{GETTEXT_PACKAGE, LOCALEDIR, RESOURCES_FILE, PROFILE};
+use self::config::{GETTEXT_PACKAGE, LOCALEDIR, PROFILE, RESOURCES_FILE};
 
-use log::{Level, LevelFilter, Metadata, Record, debug};
+use log::{debug, Level, LevelFilter, Metadata, Record};
 
 struct SimpleLogger;
 
@@ -67,9 +68,9 @@ fn main() -> glib::ExitCode {
 
     let app = controllers::Application::default();
 
-    if PROFILE == "devel" {
+    if PROFILE == ApplicationProfile::Devel {
         debug!("Detected development build");
-        
+
         app.add_main_option(
             "with-test-server",
             b't'.into(),
