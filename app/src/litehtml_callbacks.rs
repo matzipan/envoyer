@@ -62,7 +62,7 @@ impl Callbacks {
     }
 
     pub fn nodes(&self) -> &Vec<gsk::RenderNode> {
-        return &self.render_nodes;
+        &self.render_nodes
     }
 
     pub fn clear_nodes(&mut self) {
@@ -191,12 +191,12 @@ impl Callbacks {
 
         self.populate_font_metrics(&font_description_key, font_metrics);
 
-        return font_description_key;
+        font_description_key
     }
 
     #[no_mangle]
     pub extern "C" fn get_default_font_name(&self) -> *const libc::c_char {
-        return self.default_font.as_ptr();
+        self.default_font.as_ptr()
     }
 
     #[no_mangle]
@@ -223,6 +223,6 @@ impl Callbacks {
             return width;
         }
 
-        return 0;
+        0
     }
 }

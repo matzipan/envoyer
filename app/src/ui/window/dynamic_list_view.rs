@@ -58,7 +58,7 @@ mod imp {
             child_option = child.next_sibling();
         }
 
-        return children_count;
+        children_count
     }
 
     // The actual data structure that stores our values. This is not accessible

@@ -79,12 +79,12 @@ impl Identity {
         .unwrap();
 
         info!("Identity for {} created", bare_identity.email_address);
-        return Identity {
+        Identity {
             bare_identity: Rc::new(bare_identity),
             backend: Rc::new(imap_backend),
             store,
             application_message_sender,
-        };
+        }
     }
 
     pub async fn initialize(self: Rc<Self>) -> Result<(), String> {
