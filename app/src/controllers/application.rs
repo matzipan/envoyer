@@ -25,6 +25,12 @@ use std::rc::Rc;
 //@TODO find a better place for this
 const TEST_SERVER_EMAIL: &str = "app_receiver@envoyer.test";
 
+#[derive(Debug, PartialEq)]
+pub enum ApplicationProfile {
+    Default,
+    Devel,
+}
+
 #[derive(Debug)]
 pub enum ApplicationMessage {
     Setup {},
@@ -697,7 +703,7 @@ impl Application {
 
     pub fn run(&self) -> glib::ExitCode {
         info!("Envoyer ({})", APP_ID);
-        info!("Version: {} ({})", VERSION, PROFILE);
+        info!("Version: {} ({:?})", VERSION, PROFILE);
         info!("Datadir: {}", PKGDATADIR);
 
         ApplicationExtManual::run(self)
