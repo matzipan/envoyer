@@ -38,7 +38,7 @@ pub struct Message {
     pub references: String,
     pub in_reply_to: String,
     pub uid: i64,
-    pub modification_sequence: i64,
+    pub modification_sequence: Option<i64>,
     pub seen: bool,
     pub flagged: bool,
     pub draft: bool,
@@ -153,7 +153,7 @@ pub struct NewMessage {
     pub references: String,
     pub in_reply_to: String,
     pub uid: i64,
-    pub modification_sequence: i64,
+    pub modification_sequence: Option<i64>,
     pub seen: bool,
     pub flagged: bool,
     pub draft: bool,
@@ -179,8 +179,8 @@ impl From<melib::email::Envelope> for NewMessage {
             in_reply_to: envelope
                 .in_reply_to()
                 .map_or("".to_string(), |x| String::from_utf8(x.0.clone()).unwrap()),
-            uid: 0,                   //@TODO
-            modification_sequence: 0, //@TODO
+            uid: 0, //@TODO
+            modification_sequence: Some(0),
             seen: flags.contains(melib::email::Flag::SEEN),
             flagged: flags.contains(melib::email::Flag::FLAGGED),
             draft: flags.contains(melib::email::Flag::DRAFT),

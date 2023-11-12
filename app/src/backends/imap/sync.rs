@@ -8,6 +8,7 @@ use melib::MeliError;
 
 use log::debug;
 
+use std::borrow::Cow;
 use std::convert::TryInto;
 use std::time::Instant;
 
@@ -174,8 +175,13 @@ async fn fetch_messages_overview_in_uid_range(
             //     message_sequence_number: 0,
             //     references: None,
 
-            //@TODO conversion from i64 to u64
-            new_message.modification_sequence = message.modseq.unwrap().0.get().try_into().unwrap();
+            new_message.modification_sequence = message
+                .modseq
+                // The DB uses i64 but the backend gives us NonZeroU64 so we have to do this conversion
+                .map(|modseq| TryInto::<i64>::try_into(u64::from(modseq.0)))
+                .transpose()
+                // Abusing the types a little bit to coerce into a valid MeliError
+                .or_else(|_| Err(Cow::from("Unable to convert modification sequence type")))?;
 
             messages_list.push(new_message);
         }
