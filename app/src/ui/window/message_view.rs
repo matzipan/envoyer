@@ -25,7 +25,7 @@ mod imp {
         fn new() -> Self {
             Self {
                 litehtml_callbacks: Rc::new(RefCell::new(litehtml_callbacks::Callbacks::new())),
-                litehtml_context: Rc::new(RefCell::new(0 as *mut core::ffi::c_void)),
+                litehtml_context: Rc::new(RefCell::new(std::ptr::null_mut::<core::ffi::c_void>())),
                 loaded: Rc::new(RefCell::new(false)),
             }
         }
