@@ -3,7 +3,6 @@
 
 use crate::models;
 
-
 use futures::Future;
 use melib;
 use melib::backends::imap::{
