@@ -57,7 +57,7 @@ table! {
         references -> Text,
         in_reply_to -> Text,
         uid -> BigInt,
-        modification_sequence -> BigInt,
+        modification_sequence -> Nullable<BigInt>,
         seen -> Bool,
         flagged -> Bool,
         draft -> Bool,
