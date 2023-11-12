@@ -3,7 +3,7 @@
 
 use crate::models;
 
-use diesel::Connection;
+
 use futures::Future;
 use melib;
 use melib::backends::imap::{

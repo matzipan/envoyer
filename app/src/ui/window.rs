@@ -26,7 +26,7 @@ use crate::models::folder_conversations_list::row_data::ConversationRowData;
 
 use self::dynamic_list_view::DynamicListView;
 use self::folder_conversation_item::FolderConversationItem;
-use self::folders_list_item::FoldersListItem;
+
 use self::message_view::MessageView;
 
 use crate::models::folders_list::get_folder_presentation_name;

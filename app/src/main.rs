@@ -23,7 +23,7 @@ use controllers::ApplicationProfile;
 use gettextrs::{gettext, LocaleCategory};
 use gtk::{gio, glib};
 
-use adw;
+
 use adw::prelude::*;
 
 use self::config::{GETTEXT_PACKAGE, LOCALEDIR, PROFILE, RESOURCES_FILE};

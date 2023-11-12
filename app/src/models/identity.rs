@@ -2,13 +2,13 @@ use log::{debug, error, info};
 
 use gtk::glib;
 
-use melib::{backends::BackendMailbox, BackendEventConsumer};
+use melib::backends::BackendMailbox;
 
 use std::boxed::Box;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::rc::Rc;
-use std::sync::Arc;
+
 use std::time::Instant;
 
 use crate::backends::imap;

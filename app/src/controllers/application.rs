@@ -1,7 +1,7 @@
 use adw::subclass::prelude::*;
 use gtk::gio::{prelude::*, SimpleAction};
 use gtk::prelude::*;
-use gtk::subclass::prelude::*;
+
 use gtk::{gdk, gio, glib};
 
 use chrono::prelude::*;
