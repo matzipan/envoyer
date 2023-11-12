@@ -106,7 +106,7 @@ pub enum UntaggedResponse {
 }
 
 fn process_untagged_line(line: &[u8]) -> Result<Option<UntaggedResponse>, String> {
-    debug!("Processing untagged line: {}", std::str::from_utf8(&line).unwrap().trim());
+    debug!("Processing untagged line: {}", std::str::from_utf8(line).unwrap().trim());
     match melib::backends::imap::untagged_responses(line).map(|(_, v, _)| v) {
         Ok(None) => Ok(None),
         Err(_) => {
@@ -189,7 +189,7 @@ async fn idle(
                         if should_drop {
                             debug!(
                                 "Dropping command confirmation or continuation: {}",
-                                std::str::from_utf8(&line).unwrap().trim()
+                                std::str::from_utf8(line).unwrap().trim()
                             );
                         }
 

@@ -145,7 +145,7 @@ mod imp {
                 let folder_borrow = folder_rc.borrow();
                 let folder = folder_borrow.as_ref().expect("Model contents invalid");
 
-                let box_item = folders_list_item::FoldersListItem::new_with_folder(&folder);
+                let box_item = folders_list_item::FoldersListItem::new_with_folder(folder);
 
                 box_item.style_context().add_class("folders_list_item");
 
@@ -175,7 +175,7 @@ mod imp {
                 let conversation_borrow = conversation_rc.borrow();
                 let conversation = conversation_borrow.as_ref().expect("Model contents invalid");
 
-                let box_row = FolderConversationItem::new_with_item_index_and_conversation(item_index, &conversation);
+                let box_row = FolderConversationItem::new_with_item_index_and_conversation(item_index, conversation);
 
                 box_row.upcast::<gtk::Widget>()
             });
@@ -207,7 +207,7 @@ mod imp {
                     let message_borrow = message_rc.borrow();
                     let message = message_borrow.as_ref().expect("Model contents invalid");
 
-                    let box_row = conversation_message_item::ConversationMessageItem::new_with_message(&message);
+                    let box_row = conversation_message_item::ConversationMessageItem::new_with_message(message);
                     box_row.style_context().add_class("conversation_message_item");
                     box_row.set_selectable(false);
 
@@ -223,7 +223,7 @@ mod imp {
                     from_addresses_list.style_context().add_class("from");
                     from_addresses_list.style_context().add_class("addresses");
 
-                    let to_addresses_label = gtk::Label::new(Some(&"to"));
+                    let to_addresses_label = gtk::Label::new(Some("to"));
                     to_addresses_label.style_context().add_class("addresses_label");
                     let to_addresses_list = gtk::Label::new(None);
                     to_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
@@ -235,7 +235,7 @@ mod imp {
                     to_addresses_grid.attach(&to_addresses_label, 0, 0, 1, 1);
                     to_addresses_grid.attach(&to_addresses_list, 1, 0, 1, 1);
 
-                    let cc_addresses_label = gtk::Label::new(Some(&"cc"));
+                    let cc_addresses_label = gtk::Label::new(Some("cc"));
                     cc_addresses_label.style_context().add_class("addresses_label");
                     let cc_addresses_list = gtk::Label::new(None);
                     cc_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
@@ -247,7 +247,7 @@ mod imp {
                     cc_addresses_grid.attach(&cc_addresses_label, 0, 0, 1, 1);
                     cc_addresses_grid.attach(&cc_addresses_list, 1, 0, 1, 1);
 
-                    let bcc_addresses_label = gtk::Label::new(Some(&"bcc"));
+                    let bcc_addresses_label = gtk::Label::new(Some("bcc"));
                     bcc_addresses_label.style_context().add_class("addresses_label");
                     let bcc_addresses_list = gtk::Label::new(None);
                     bcc_addresses_list.set_ellipsize(gtk::pango::EllipsizeMode::End);
@@ -275,11 +275,11 @@ mod imp {
                     datetime_received_label.style_context().add_class("received");
                     datetime_received_label.set_valign(gtk::Align::Start);
 
-                    let attachment_indicator = gtk::Image::from_icon_name(&"mail-attachment-symbolic");
+                    let attachment_indicator = gtk::Image::from_icon_name("mail-attachment-symbolic");
                     attachment_indicator.style_context().add_class("attachment_indicator");
                     attachment_indicator.set_valign(gtk::Align::Start);
                     attachment_indicator.set_sensitive(false);
-                    attachment_indicator.set_tooltip_text(Some(&"This message contains one or more attachments"));
+                    attachment_indicator.set_tooltip_text(Some("This message contains one or more attachments"));
 
                     let message_header = gtk::Grid::new();
                     message_header.set_can_focus(false);
@@ -290,7 +290,7 @@ mod imp {
 
                     let message_view = gtk::TextView::new();
 
-                    let buffer = message_view.buffer();
+                    let _buffer = message_view.buffer();
 
                     let attachments_list = gtk::Grid::new();
                     attachments_list.set_orientation(gtk::Orientation::Vertical);

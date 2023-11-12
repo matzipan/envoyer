@@ -92,7 +92,7 @@ pub mod model {
         }
 
         pub fn load_message(&self, id: i32) {
-            let self_ = imp::ConversationModel::from_obj(&self);
+            let self_ = imp::ConversationModel::from_obj(self);
 
             let previous_count = self_.n_items();
 

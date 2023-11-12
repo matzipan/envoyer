@@ -61,7 +61,7 @@ impl Identity {
                 .expect("Unable to find IMAP password for IMAP account type"),
         };
 
-        if bare_identity.identity_type == IdentityType::Gmail {}
+        bare_identity.identity_type == IdentityType::Gmail;
 
         let imap_backend = imap::ImapBackend::new(
             bare_identity.imap_server_hostname.clone(),
@@ -173,9 +173,9 @@ impl Identity {
         for folder in folders.iter().filter(|x| x.folder_name != "INBOX") {
             // @TODO if the folders changed in the meanwhile and the last sync somehow
             // failed, we need to check if the folder actually exists
-            let sync_result = self.clone().sync_messages_for_folder(&folder, SyncType::Update).await;
+            let sync_result = self.clone().sync_messages_for_folder(folder, SyncType::Update).await;
 
-            self.clone().handle_sync_messages_for_folder_result(&folder, sync_result);
+            self.clone().handle_sync_messages_for_folder_result(folder, sync_result);
         }
 
         Ok(())
@@ -270,7 +270,7 @@ impl Identity {
                         &mailbox_path,
                         self.bare_identity.as_ref().email_address
                     );
-                    self.store.store_folder_for_mailbox(self.bare_identity.as_ref(), &mailbox_value)?;
+                    self.store.store_folder_for_mailbox(self.bare_identity.as_ref(), mailbox_value)?;
                 }
             }
         }
@@ -281,7 +281,7 @@ impl Identity {
                 &folder_path,
                 self.bare_identity.as_ref().email_address
             );
-            self.store.remove_folder(self.bare_identity.as_ref(), &folder_value)?;
+            self.store.remove_folder(self.bare_identity.as_ref(), folder_value)?;
         }
 
         //@TODO trigger application event to reload folders

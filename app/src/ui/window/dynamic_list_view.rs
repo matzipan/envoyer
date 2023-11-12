@@ -41,7 +41,7 @@ mod imp {
 
             let row = child.downcast_ref::<RowWidgetType>().unwrap();
 
-            if !f(&row) {
+            if !f(row) {
                 break;
             }
         }
@@ -140,7 +140,7 @@ mod imp {
                 let signal_handler_id_cell = self.adjustment_value_changed_signal_handler_id.borrow();
                 let signal_handler_id = signal_handler_id_cell.as_ref().expect("Signal handler should be set at this point");
 
-                vertical_adjustment.block_signal(&signal_handler_id);
+                vertical_adjustment.block_signal(signal_handler_id);
 
                 vertical_adjustment.configure(
                     vertical_adjustment.value(),
@@ -151,7 +151,7 @@ mod imp {
                     height as f64,
                 );
 
-                vertical_adjustment.unblock_signal(&signal_handler_id);
+                vertical_adjustment.unblock_signal(signal_handler_id);
             }
         }
 
@@ -436,7 +436,7 @@ mod imp {
             }
         }
 
-        fn size_allocate(&self, width: i32, height: i32, baseline: i32) {
+        fn size_allocate(&self, width: i32, height: i32, _baseline: i32) {
             self.configure_adjustment(height as u32);
             self.update_visible_children();
             self.size_allocate_children(width);
