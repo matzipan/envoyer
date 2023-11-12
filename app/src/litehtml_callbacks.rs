@@ -1,8 +1,6 @@
 use gtk::prelude::*;
 use gtk::{gdk, graphene, gsk, pango};
 
-
-
 use log::debug;
 use std::ffi::{CStr, CString};
 
