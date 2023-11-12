@@ -174,7 +174,7 @@ mod imp {
         fn activate(&self) {
             debug!("Application activate");
 
-            let mut application_message;
+            let application_message;
             if self.should_set_up_test_server() {
                 debug!("Test server setup not found. Configuring");
 
@@ -222,7 +222,7 @@ mod imp {
         }
 
         fn command_line(&self, command_line: &gio::ApplicationCommandLine) -> glib::ExitCode {
-            if command_line.options_dict().contains(&"with-test-server") {
+            if command_line.options_dict().contains("with-test-server") {
                 debug!("Enabling test server setup");
                 self.enable_test_server_setup();
             }

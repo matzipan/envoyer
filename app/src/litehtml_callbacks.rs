@@ -75,7 +75,7 @@ impl Callbacks {
 
         let text = c_str.to_str().unwrap();
 
-        if text.trim().len() == 0 {
+        if text.trim().is_empty() {
             debug!("Skipping drawing whitespace");
 
             return;
@@ -89,7 +89,7 @@ impl Callbacks {
             let font_map = pangocairo::FontMap::default();
             let context = font_map.create_context();
 
-            let font = context.load_font(&font_description).unwrap();
+            let font = context.load_font(font_description).unwrap();
 
             let layout = pango::Layout::new(&context);
 
@@ -126,9 +126,9 @@ impl Callbacks {
 
         let font_map = pangocairo::FontMap::default();
         let context = font_map.create_context();
-        context.set_font_description(Some(&font_description));
+        context.set_font_description(Some(font_description));
 
-        let font = context.load_font(&font_description).unwrap();
+        let font = context.load_font(font_description).unwrap();
 
         let (ink_rect, logical_rect) = font.glyph_extents(0 as pango::Glyph);
 
@@ -167,7 +167,7 @@ impl Callbacks {
 
             self.populate_font_metrics(font_description_key, font_metrics);
 
-            return font_description_key.clone();
+            return *font_description_key;
         }
 
         let font_description_key = self.next_font_key;
@@ -213,8 +213,8 @@ impl Callbacks {
 
             let layout = pango::Layout::new(&context);
 
-            layout.set_text(&text);
-            layout.set_font_description(Some(&font_description));
+            layout.set_text(text);
+            layout.set_font_description(Some(font_description));
 
             let (width, _) = layout.size();
 

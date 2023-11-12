@@ -42,7 +42,7 @@ impl ImapBackend {
 
                     let now = Instant::now();
 
-                    let new_messages = fetch_messages_overview_in_uid_range(&mut *connection, 1, select_response.uidnext - 1).await?;
+                    let new_messages = fetch_messages_overview_in_uid_range(&mut connection, 1, select_response.uidnext - 1).await?;
 
                     debug!(
                         "Finished fresh fetch. Found {} new messages with UID validity {}. Took {} seconds.",
@@ -79,10 +79,10 @@ impl ImapBackend {
                     } else {
                         debug!("Fetching new messages");
                         let new_messages =
-                            fetch_messages_overview_in_uid_range(&mut *connection, max_uid + 1, select_response.uidnext - 1).await?;
+                            fetch_messages_overview_in_uid_range(&mut connection, max_uid + 1, select_response.uidnext - 1).await?;
 
                         debug!("Found {} new messages. Fetching flag updates", new_messages.len());
-                        let flag_updates = fetch_flags_updates_in_uid_range(&mut *connection, 1, max_uid).await?;
+                        let flag_updates = fetch_flags_updates_in_uid_range(&mut connection, 1, max_uid).await?;
 
                         debug!("Finished in {} seconds.", now.elapsed().as_secs());
 
@@ -136,9 +136,9 @@ async fn fetch_messages_overview_in_uid_range(
     let mut response = Vec::with_capacity(8 * 1024);
     let mut messages_list = Vec::new();
 
-    let mut iterator = UidFetchIterator::new(uid_range_start, uid_range_end);
+    let iterator = UidFetchIterator::new(uid_range_start, uid_range_end);
 
-    while let Some((fetch_range_start, fetch_range_end)) = iterator.next() {
+    for (fetch_range_start, fetch_range_end) in iterator {
         let mut messages = connection
             .uid_fetch(
                 format!("{}:{}", fetch_range_start, fetch_range_end),
@@ -181,7 +181,7 @@ async fn fetch_messages_overview_in_uid_range(
                 .map(|modseq| TryInto::<i64>::try_into(u64::from(modseq.0)))
                 .transpose()
                 // Abusing the types a little bit to coerce into a valid MeliError
-                .or_else(|_| Err(Cow::from("Unable to convert modification sequence type")))?;
+                .map_err(|_| Cow::from("Unable to convert modification sequence type"))?;
 
             messages_list.push(new_message);
         }

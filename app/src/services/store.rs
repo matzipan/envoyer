@@ -402,7 +402,7 @@ impl Store {
         let connection = &mut self.database_connection_pool.get().map_err(|e| e.to_string())?;
 
         // The key is the UID and the value is the database primary key
-        let mut store_folder_uids: HashMap<_, _> = schema::messages::table
+        let store_folder_uids: HashMap<_, _> = schema::messages::table
             .select((schema::messages::uid, schema::messages::id))
             .filter(schema::messages::folder_id.eq(folder.id))
             .load::<(i64, i32)>(connection)

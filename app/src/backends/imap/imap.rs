@@ -327,7 +327,7 @@ impl ImapBackend {
                 if !l.starts_with(b"*") {
                     continue;
                 }
-                if let Ok(mut mailbox) = list_mailbox_result(&l).map(|(_, v)| v) {
+                if let Ok(mut mailbox) = list_mailbox_result(l).map(|(_, v)| v) {
                     if let Some(parent) = mailbox.parent {
                         if mailboxes.contains_key(&parent) {
                             mailboxes.entry(parent).and_modify(|e| e.children.push(mailbox.hash));
@@ -351,7 +351,7 @@ impl ImapBackend {
                     } else {
                         mailboxes.insert(mailbox.hash, mailbox);
                     }
-                } else if let Ok(status) = status_response(&l).map(|(_, v)| v) {
+                } else if let Ok(status) = status_response(l).map(|(_, v)| v) {
                     if let Some(mailbox_hash) = status.mailbox {
                         if mailboxes.contains_key(&mailbox_hash) {
                             let entry = mailboxes.entry(mailbox_hash).or_default();
@@ -363,7 +363,6 @@ impl ImapBackend {
                             }
                         }
                     }
-                } else {
                 }
             }
             mailboxes.retain(|_, v| v.hash != 0);
@@ -374,7 +373,7 @@ impl ImapBackend {
                 if !l.starts_with(b"*") {
                     continue;
                 }
-                if let Ok(subscription) = list_mailbox_result(&l).map(|(_, v)| v) {
+                if let Ok(subscription) = list_mailbox_result(l).map(|(_, v)| v) {
                     if let Some(f) = mailboxes.get_mut(&subscription.hash()) {
                         if f.special_usage() == melib::backends::SpecialUsageMailbox::Normal
                             && subscription.special_usage() != melib::backends::SpecialUsageMailbox::Normal
@@ -383,7 +382,6 @@ impl ImapBackend {
                         }
                         f.is_subscribed = true;
                     }
-                } else {
                 }
             }
 
@@ -403,7 +401,7 @@ impl ImapBackend {
 
             let mut response = Vec::with_capacity(8 * 1024);
 
-            let mut messages = connection
+            let messages = connection
                 .uid_fetch(format!("{}", uid), "(BODY.PEEK[])".to_string(), &mut response)
                 .await?;
 

@@ -53,7 +53,7 @@ mod imp {
             subject_label.style_context().add_class("subject");
             subject_label.set_xalign(0.0);
 
-            let attachment_image = gtk::Image::from_icon_name(&"mail-attachment-symbolic");
+            let attachment_image = gtk::Image::from_icon_name("mail-attachment-symbolic");
             attachment_image.set_sensitive(false);
             attachment_image.set_tooltip_text(Some("This thread contains one or more attachments"));
 
@@ -68,7 +68,7 @@ mod imp {
             top_grid.attach(&attachment_image, 1, 0, 1, 1);
 
             //@TODO make smaller star_image.
-            let star_image = gtk::Button::from_icon_name(&"starred");
+            let star_image = gtk::Button::from_icon_name("starred");
             star_image.style_context().add_class("star");
             star_image.set_sensitive(true);
             star_image.set_tooltip_text(Some("Mark this thread as starred"));

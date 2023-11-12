@@ -57,7 +57,7 @@ mod imp {
 
             let nodes = callbacks.nodes();
 
-            let container_node = gsk::ContainerNode::new(&nodes);
+            let container_node = gsk::ContainerNode::new(nodes);
 
             snapshot.append_node(&container_node);
         }
