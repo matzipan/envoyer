@@ -2510,7 +2510,7 @@ checksum = "2532096657941c2fea9c289d370a250971c689d4f143798ff67113ec042024a5"
 [[package]]
 name = "melib"
 version = "0.6.2"
-source = "git+https://github.com/matzipan/meli-envoyer?branch=envoyer-integration#07a2bf7d779b64f151ed7bf9465b13a15ca197ad"
+source = "git+https://github.com/matzipan/meli-envoyer?branch=envoyer-integration#3f152d10424670af39959e739a7709baee62f8bf"
 dependencies = [
  "async-stream 0.2.1",
  "base64 0.12.3",
