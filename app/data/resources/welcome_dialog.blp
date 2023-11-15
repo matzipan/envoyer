@@ -1,0 +1,187 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $WelcomeDialog : Dialog {
+    height-request: 800;
+    width-request: 800;
+    modal: true;
+
+    Adw.Clamp {
+        maximum-size: 400;
+        tightening-threshold: 200;
+
+        Stack stack {
+            StackPage {
+                name: "welcome-screen";
+                
+                child: Box welcome-screen {
+                    orientation: vertical;
+                    valign: center;
+                    halign: center;
+
+                    Label {
+                        label: "Welcome!";
+                        halign: start;
+                        styles ["title-1"]
+                    }
+                    Label {
+                        label: "Let's get you set up using the app. Enter your information below:";
+                        wrap: true;
+                        halign: start;
+                        margin-bottom: 20;
+                    }
+                    
+                    Grid {
+                        halign: start;
+                        valign: center;
+                        row-spacing: 5;
+                        column-spacing: 20;
+
+                        Label {
+                            label: "Email address";
+                            halign: start;
+                        }
+                        Entry {
+                            layout {
+                                row: 0;
+                                column: 2;
+                            }
+                        }
+                        
+                        Label {
+                            label: "Account name";
+                            halign: start;
+
+                            layout {
+                                row: 1;
+                                column: 0;
+                            }
+                        }
+                        
+                        Entry {
+                            width-request: 270;
+                            
+                            layout {
+                                row: 1;
+                                column: 2;
+                            }
+                        }
+                        
+                        Label {
+                            label: "Full name";
+                            halign: start;
+                            
+                            layout {
+                                row: 2;
+                                column: 0;
+                            }
+                        }
+                        
+                        Image {
+                            pixel-size: 15;
+                            tooltip-text: "Publicly visible. Used in the sender field of your e-mails.";
+                            icon-name: "dialog-information-symbolic";
+                            
+                            layout {
+                                row: 2;
+                                column: 1;
+                            }
+                        }
+                        
+                        
+                        Entry {
+                            layout {
+                                row: 2;
+                                column: 2;
+                            }
+                        }
+                    }
+                    
+                    Button {
+                        label: "Next";
+                        halign: end;
+                        margin-top: 30;
+                        clicked => $next_clicked() swapped;
+                    }
+                };
+            }
+            StackPage {
+                name: "authorization-screen";
+                
+                child: Box authorization-screen {
+                    orientation: vertical;
+                    valign: center;
+                    halign: center;
+
+                    Label {
+                        label: "Authorization";
+                        halign: start;
+                        styles ["title-1"]
+                    }
+                    
+                    Label {
+                        label: "Clicking the button will open a browser window requesting you to authorize Envoyer to read your e-mails.";
+                        wrap: true;
+                        halign: start;
+                    }
+                    
+                    Button {
+                        label: "Authorize";
+                        halign: end;
+                        margin-top: 30;
+                        clicked => $authorize_clicked() swapped;
+
+                    }
+                };
+            }
+            StackPage {
+                name: "check-browser";
+                
+                child: Box check-browser {
+                    orientation: vertical;
+                    valign: center;
+                    halign: center;
+
+                    Label {
+                        label: "Check your Internet browser";
+                        halign: start;
+                        styles ["title-1"]
+                    }
+                    
+                    Label {
+                        label: "A browser window was opened to authenticate with your e-mail provider. Please continue there.";
+                        wrap: true;
+                        halign: start;
+                    }
+                    
+                };
+            }
+            StackPage {
+                name: "please-wait";
+                
+                child: Box please-wait {
+                    orientation: vertical;
+                    valign: center;
+                    halign: center;
+
+                    Label {
+                        label: "Please wait";
+                        halign: start;
+                        styles ["title-1"]
+                    }
+                    
+                    Label {
+                        label: "Synchronizing with the server. It may take a while.";
+                        wrap: true;
+                        halign: start;
+                    }
+                    
+                    Spinner spinner {
+                        width-request: 40;
+                        height-request: 40;
+                    }
+                };
+            }
+        }
+    }
+}

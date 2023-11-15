@@ -33,13 +33,13 @@ use crate::models::folders_list::get_folder_presentation_name;
 
 mod imp {
     use gtk::{
-        glib::{ParamSpec, Value},
+        glib::{ParamSpec, Properties, Value},
         CompositeTemplate,
     };
 
     use super::*;
 
-    #[derive(glib::Properties, CompositeTemplate)]
+    #[derive(Properties, CompositeTemplate)]
     #[properties(wrapper_type = super::Window)]
     #[template(resource = "/com/github/matzipan/envoyer/window.ui")]
     pub struct Window {

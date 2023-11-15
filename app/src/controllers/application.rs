@@ -577,7 +577,7 @@ mod imp {
                     *notifications_email_count_clone.borrow_mut() = 0;
                 });
 
-                welcome_dialog.transient_for(main_window);
+                welcome_dialog.set_transient_for(Some(main_window));
             }
 
             let action_show_conversation_for_email_id =
