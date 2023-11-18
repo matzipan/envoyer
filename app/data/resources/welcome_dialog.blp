@@ -1,187 +1,267 @@
 using Gtk 4.0;
 using Adw 1;
 
-template $WelcomeDialog : Dialog {
-    height-request: 800;
-    width-request: 800;
+template $WelcomeDialog : Adw.Window {
+    default-width: 800;
+    default-height: 800;
     modal: true;
 
-    Adw.Clamp {
-        maximum-size: 400;
-        tightening-threshold: 200;
+    Adw.NavigationView navigation_view {
+        Adw.NavigationPage {
+            tag: "welcome-screen";
+            title: "Setup";
+            
+            child: Adw.ToolbarView {
 
-        Stack stack {
-            StackPage {
-                name: "welcome-screen";
-                
-                child: Box welcome-screen {
-                    orientation: vertical;
-                    valign: center;
-                    halign: center;
+                [top]
+                Adw.HeaderBar {}
 
-                    Label {
-                        label: "Welcome!";
-                        halign: start;
-                        styles ["title-1"]
-                    }
-                    Label {
-                        label: "Let's get you set up using the app. Enter your information below:";
-                        wrap: true;
-                        halign: start;
-                        margin-bottom: 20;
-                    }
-                    
-                    Grid {
-                        halign: start;
+                content: Adw.Clamp {
+                    maximum-size: 400;
+                    margin-top: 12;
+                    margin-bottom: 12;
+                    margin-start: 12;
+                    margin-end: 12;
+
+                    Box {
+                        orientation: vertical;
+                        halign: center;
                         valign: center;
-                        row-spacing: 5;
-                        column-spacing: 20;
 
                         Label {
-                            label: "Email address";
+                            label: "Welcome!";
+                            halign: start;
+                            styles ["title-1"]
+                        }
+                        Label {
+                            label: "Let's get you set up using the app. Enter your information below:";
+                            wrap: true;
+                            halign: start;
+                            margin-bottom: 20;
+                        }
+
+                        Adw.PreferencesGroup {
+                            Adw.EntryRow email_address_entry {
+                                title: "Email address";
+                            }
+
+                            Adw.EntryRow account_name_entry {
+                                title: "Account name";
+                            }
+
+                            Adw.EntryRow full_name_entry {
+                                title: "Full name";
+                                
+                                Image {
+                                    pixel-size: 15;
+                                    tooltip-text: "Publicly visible. Used in the sender field of your e-mails.";
+                                    icon-name: "dialog-information-symbolic";
+                                }   
+                            }
+                        }
+                        
+                        Button {
+                            label: "Next";
+                            halign: end;
+                            margin-top: 30;
+                            styles ["suggested-action", "pill"]
+
+                            clicked => $welcome_screen_next_clicked() swapped;
+                        }
+                    }
+                };
+            };
+        }
+        Adw.NavigationPage {
+            tag: "connection-details";
+            title: "Connection details";
+            
+            child: Adw.ToolbarView {
+
+                [top]
+                Adw.HeaderBar {}
+
+                content: Adw.Clamp {
+                    maximum-size: 400;
+                    margin-top: 12;
+                    margin-bottom: 12;
+                    margin-start: 12;
+                    margin-end: 12;
+                    
+                    Box {
+                        orientation: vertical;
+                        valign: center;
+                        halign: center;
+
+                        Label {
+                            label: "We were unable to automatically detect your account connectivity settings. Enter the information below:";
+                            wrap: true;
+                            hexpand: true;
+                            halign: start;
+                            margin-bottom: 20;
+                        }
+
+                        Adw.PreferencesGroup {
+                            Adw.EntryRow imap_server_hostname_entry {
+                                title: "IMAP server hostname";
+                            }
+
+                            Adw.EntryRow imap_server_port_entry {
+                                title: "IMAP server port";    
+                            }
+
+                            Adw.PasswordEntryRow imap_password_entry {
+                                title: "IMAP account password";
+                            }
+
+                            Adw.SwitchRow imap_use_tls_switch {
+                                title: "Use TLS";
+                                active: true;
+                            }
+
+                            Adw.SwitchRow imap_use_starttls_switch {
+                                title: "Use StartTLS";
+                                active: true;
+                            }
+                        }
+                        
+                        Button {
+                            label: "Next";
+                            halign: end;
+                            margin-top: 30;
+                            styles ["suggested-action", "pill"]
+
+                            clicked => $connection_details_next_clicked() swapped;
+                        }
+                    }
+                };
+            };
+        }
+        Adw.NavigationPage {
+            tag: "authorization-screen";
+            title: "Authorization";
+            
+            child: Adw.ToolbarView {
+
+                [top]
+                Adw.HeaderBar {}
+
+                content: Adw.Clamp {
+                    maximum-size: 400;
+                    margin-top: 12;
+                    margin-bottom: 12;
+                    margin-start: 12;
+                    margin-end: 12;
+                    
+                    Box {
+                        orientation: vertical;
+                        valign: center;
+                        halign: center;
+                        
+
+                        Label {
+                            label: "Authorization";
+                            halign: start;
+                            styles ["title-1"]
+                        }
+
+                        Label {
+                            label: "Clicking the button will open a browser window requesting you to authorize Envoyer to read your e-mails.";
+                            wrap: true;
                             halign: start;
                         }
-                        Entry {
-                            layout {
-                                row: 0;
-                                column: 2;
-                            }
+                        
+                        Button {
+                            label: "Authorize";
+                            halign: end;
+                            margin-top: 30;
+                            styles ["suggested-action", "pill"]
+
+                            clicked => $authorize_clicked() swapped;
+                        }
+                    }
+                };
+            };
+        }
+        Adw.NavigationPage {
+            tag: "check-browser";
+            
+            child: Adw.ToolbarView {
+
+                [top]
+                Adw.HeaderBar {
+                    show-title: false;
+                }
+
+                content: Adw.Clamp {
+                    maximum-size: 400;
+                    margin-top: 12;
+                    margin-bottom: 12;
+                    margin-start: 12;
+                    margin-end: 12;
+                    
+                    Box {
+                        orientation: vertical;
+                        valign: center;
+                        halign: center;
+
+                        Label {
+                            label: "Check your Internet browser";
+                            halign: start;
+                            styles ["title-1"]
                         }
                         
                         Label {
-                            label: "Account name";
+                            label: "A browser window was opened to authenticate with your e-mail provider. Please continue there.";
+                            wrap: true;
                             halign: start;
+                        }  
+                    }
+                };
+            };
+        }
+        Adw.NavigationPage {
+            tag: "please-wait";
+            
+            child: Adw.ToolbarView {
 
-                            layout {
-                                row: 1;
-                                column: 0;
-                            }
-                        }
-                        
-                        Entry {
-                            width-request: 270;
-                            
-                            layout {
-                                row: 1;
-                                column: 2;
-                            }
+                [top]
+                Adw.HeaderBar {
+                    show-title: false;
+                }
+
+                content: Adw.Clamp {
+                    maximum-size: 400;
+                    margin-top: 12;
+                    margin-bottom: 12;
+                    margin-start: 12;
+                    margin-end: 12;
+                    
+                    Box {
+                        orientation: vertical;
+                        valign: center;
+                        halign: center;
+
+                        Label {
+                            label: "Please wait";
+                            halign: start;
+                            styles ["title-1"]
                         }
                         
                         Label {
-                            label: "Full name";
+                            label: "Synchronizing with the server. It may take a while.";
+                            wrap: true;
                             halign: start;
-                            
-                            layout {
-                                row: 2;
-                                column: 0;
-                            }
                         }
                         
-                        Image {
-                            pixel-size: 15;
-                            tooltip-text: "Publicly visible. Used in the sender field of your e-mails.";
-                            icon-name: "dialog-information-symbolic";
-                            
-                            layout {
-                                row: 2;
-                                column: 1;
-                            }
-                        }
-                        
-                        
-                        Entry {
-                            layout {
-                                row: 2;
-                                column: 2;
-                            }
+                        Spinner spinner {
+                            width-request: 40;
+                            height-request: 40;
+                            margin-top: 30;
                         }
                     }
-                    
-                    Button {
-                        label: "Next";
-                        halign: end;
-                        margin-top: 30;
-                        clicked => $next_clicked() swapped;
-                    }
                 };
-            }
-            StackPage {
-                name: "authorization-screen";
-                
-                child: Box authorization-screen {
-                    orientation: vertical;
-                    valign: center;
-                    halign: center;
-
-                    Label {
-                        label: "Authorization";
-                        halign: start;
-                        styles ["title-1"]
-                    }
-                    
-                    Label {
-                        label: "Clicking the button will open a browser window requesting you to authorize Envoyer to read your e-mails.";
-                        wrap: true;
-                        halign: start;
-                    }
-                    
-                    Button {
-                        label: "Authorize";
-                        halign: end;
-                        margin-top: 30;
-                        clicked => $authorize_clicked() swapped;
-
-                    }
-                };
-            }
-            StackPage {
-                name: "check-browser";
-                
-                child: Box check-browser {
-                    orientation: vertical;
-                    valign: center;
-                    halign: center;
-
-                    Label {
-                        label: "Check your Internet browser";
-                        halign: start;
-                        styles ["title-1"]
-                    }
-                    
-                    Label {
-                        label: "A browser window was opened to authenticate with your e-mail provider. Please continue there.";
-                        wrap: true;
-                        halign: start;
-                    }
-                    
-                };
-            }
-            StackPage {
-                name: "please-wait";
-                
-                child: Box please-wait {
-                    orientation: vertical;
-                    valign: center;
-                    halign: center;
-
-                    Label {
-                        label: "Please wait";
-                        halign: start;
-                        styles ["title-1"]
-                    }
-                    
-                    Label {
-                        label: "Synchronizing with the server. It may take a while.";
-                        wrap: true;
-                        halign: start;
-                    }
-                    
-                    Spinner spinner {
-                        width-request: 40;
-                        height-request: 40;
-                    }
-                };
-            }
+           };
         }
     }
 }
