@@ -92,8 +92,8 @@ mod imp {
             let outer_grid = gtk::Grid::new();
             outer_grid.set_orientation(gtk::Orientation::Vertical);
             outer_grid.set_row_spacing(3);
-            outer_grid.set_margin_top(4);
-            outer_grid.set_margin_bottom(4);
+            outer_grid.set_margin_top(9);
+            outer_grid.set_margin_bottom(0);
             outer_grid.set_margin_start(8);
             outer_grid.set_margin_end(8);
 

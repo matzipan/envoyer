@@ -1,7 +1,7 @@
 .folder_conversation_item {
     padding-right: 5px;
     padding-left: 14px;
-    border-bottom: 1px solid #efefef;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .folder_conversation_item .addresses,
@@ -40,7 +40,7 @@
 
 .folder_conversation_item:selected .addresses,
 .folder_conversation_item:selected .received {
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .folder_conversation_item:selected .subject,
