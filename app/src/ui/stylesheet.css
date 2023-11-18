@@ -1,13 +1,3 @@
-@define-color background_secondary_color rgb(238, 238, 238);
-
-.conversation_viewer {
-    background: @background_secondary_color;
-}
-
-.conversation_viewer .conversation_message_item {
-    background: #fff;
-}
-
 .folder_conversation_item {
     padding-right: 5px;
     padding-left: 14px;
