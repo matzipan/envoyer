@@ -1,26 +1,5 @@
 @define-color background_secondary_color rgb(238, 238, 238);
 
-.welcome_dialog {
-    background: #fff;
-}
-
-.welcome_dialog .h1,
-.please_wait_loading_contents_grid .h1 {
-    font-size: 30px;
-}
-
-.welcome_dialog .initial-information-grid {
-    margin-top: 40px;
-}
-
-.welcome_dialog .form_entry {
-    margin-left: 30px;
-}
-
-.welcome_dialog .button {
-    margin-top: 30px;
-}
-
 .conversation_viewer {
     background: @background_secondary_color;
 }
@@ -100,8 +79,4 @@
 .folder_conversation_item.unseen .subject,
 .folder_conversation_item.unseen .unseen_dot {
     color: #0777D4;
-}
-
-.folders_sidebar {
-    background-color: @background_secondary_color;
 }
