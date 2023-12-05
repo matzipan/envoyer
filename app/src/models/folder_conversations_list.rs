@@ -174,3 +174,132 @@ pub mod row_data {
         }
     }
 }
+
+#[derive(PartialEq, Debug)]
+enum MismatchState {
+    None,
+    Started {
+        old_summaries_index_start: usize,
+        new_summaries_index_start: usize,
+    },
+    Ended {
+        old_summaries_index_start: usize,
+        new_summaries_index_start: usize,
+        new_summaries_index_end: usize,
+    },
+}
+
+fn diff_summaries(old_summaries: &Vec<models::MessageSummary>, new_summaries: &Vec<models::MessageSummary>) -> Vec<(usize, usize, usize)> {
+    //@TODO at the moment handling only newly added items
+    let mut new_summaries_cursor = 0;
+
+    let mut mismatch_state_machine = MismatchState::None;
+
+    let mut diff = Vec::new();
+
+    for (old_summaries_index, old_item) in old_summaries.iter().enumerate() {
+        for (new_summaries_index, new_item) in new_summaries.iter().enumerate().skip(new_summaries_cursor) {
+            if new_item.message_id == old_item.message_id {
+                new_summaries_cursor = new_summaries_index + 1;
+
+                if let MismatchState::Started {
+                    old_summaries_index_start,
+                    new_summaries_index_start,
+                } = mismatch_state_machine
+                {
+                    mismatch_state_machine = MismatchState::Ended {
+                        old_summaries_index_start,
+                        new_summaries_index_start,
+                        new_summaries_index_end: new_summaries_index,
+                    };
+                }
+                break;
+            } else if MismatchState::None == mismatch_state_machine {
+                mismatch_state_machine = MismatchState::Started {
+                    old_summaries_index_start: old_summaries_index,
+                    new_summaries_index_start: new_summaries_index,
+                };
+            }
+        }
+
+        if let MismatchState::Ended {
+            old_summaries_index_start,
+            new_summaries_index_start,
+            new_summaries_index_end,
+        } = mismatch_state_machine
+        {
+            let new_change = (old_summaries_index_start, 0, new_summaries_index_end - new_summaries_index_start);
+            diff.push(new_change);
+
+            mismatch_state_machine = MismatchState::None;
+        }
+    }
+
+    if new_summaries_cursor < new_summaries.len() {
+        diff.push((old_summaries.len(), 0, new_summaries.len() - new_summaries_cursor));
+    }
+
+    diff
+}
+
+#[cfg(test)]
+pub mod test {
+    use chrono::NaiveDateTime;
+
+    use crate::models::MessageSummary;
+
+    use super::*;
+
+    fn create_message_summary(id: i32) -> models::MessageSummary {
+        models::MessageSummary {
+            id,
+            message_id: format!("id_{}", id).to_string(),
+            subject: format!("subject {}", id).to_string(),
+            from: format!("from {}", id).to_string(),
+            time_received: chrono::offset::Utc::now().naive_utc(),
+        }
+    }
+
+    #[test]
+    fn test_diff_summaries() {
+        let old_summaries = vec![create_message_summary(0), create_message_summary(1)];
+
+        let mut new_summaries = old_summaries.clone();
+
+        assert_eq!(diff_summaries(&old_summaries, &new_summaries), vec![]);
+
+        let mut new_summaries = old_summaries.clone();
+
+        new_summaries.insert(1, create_message_summary(4));
+        new_summaries.insert(2, create_message_summary(5));
+
+        assert_eq!(diff_summaries(&old_summaries, &new_summaries), vec![(1, 0, 2)]);
+
+        let mut new_summaries = old_summaries.clone();
+
+        new_summaries.insert(1, create_message_summary(4));
+        new_summaries.insert(2, create_message_summary(5));
+
+        new_summaries.push(create_message_summary(6));
+        new_summaries.push(create_message_summary(7));
+
+        assert_eq!(diff_summaries(&old_summaries, &new_summaries), vec![(1, 0, 2), (2, 0, 2)]);
+
+        let old_summaries = vec![create_message_summary(0), create_message_summary(1)];
+
+        let mut new_summaries = old_summaries.clone();
+        new_summaries.insert(0, create_message_summary(2));
+        new_summaries.insert(1, create_message_summary(3));
+
+        new_summaries.insert(3, create_message_summary(4));
+        new_summaries.insert(4, create_message_summary(5));
+
+        new_summaries.push(create_message_summary(6));
+        new_summaries.push(create_message_summary(7));
+
+        assert_eq!(
+            diff_summaries(&old_summaries, &new_summaries),
+            vec![(0, 0, 2), (1, 0, 2), (2, 0, 2)]
+        );
+    }
+}
