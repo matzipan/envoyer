@@ -41,6 +41,9 @@ fn main() {
         .file("lib/litehtml_container/container.cpp")
         .file("lib/litehtml_container/setup.cpp")
         .include(&include_path)
+        .flag("-Wno-unused-parameter")
+        .flag("-Wno-reorder")
+        .flag("-Wno-switch")
         .compile("litehtml_container");
 
     // Create the Rust bindings for the C++ code
