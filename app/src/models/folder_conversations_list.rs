@@ -80,44 +80,62 @@ pub mod model {
             self_.store.replace(Some(store));
         }
 
+        fn load_summaries(&self) -> Option<Vec<models::MessageSummary>> {
+            let self_ = imp::FolderModel::from_obj(self);
+
+            if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
+                let new_summaries = self_
+                    .store
+                    .borrow()
+                    .as_ref()
+                    .unwrap()
+                    .get_message_summaries_for_folder(currently_loaded_folder)
+                    .expect("Unable to get message summary");
+
+                return Some(new_summaries);
+            }
+
+            None
+        }
+
         pub fn load_folder(self, folder: models::Folder) {
             let self_ = imp::FolderModel::from_obj(&self);
 
             self_.currently_loaded_folder.replace(Some(folder));
 
-            self.update_list();
+            let previous_count = self_.n_items();
+
+            let new_summaries = self.load_summaries();
+
+            self_.summaries.replace(new_summaries);
+
+            let new_count = self_.n_items();
+
+            self.items_changed(0, previous_count, new_count);
         }
 
-        fn update_list(&self) {
+        pub fn handle_new_messages_for_folder(&self, folder: &models::Folder) {
             let self_ = imp::FolderModel::from_obj(self);
 
             if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
-                let previous_count = self_.n_items();
-
-                self_.summaries.replace(Some(
-                    self_
-                        .store
-                        .borrow()
-                        .as_ref()
-                        .unwrap()
-                        .get_message_summaries_for_folder(currently_loaded_folder)
-                        .expect("Unable to get message summary"),
-                ));
-
-                let new_count = self_.n_items();
-
-                self.items_changed(0, previous_count, new_count);
-            }
-        }
-
-        pub fn handle_new_messages_for_folder(self, folder: &models::Folder) {
-            let self_ = imp::FolderModel::from_obj(&self);
-
-            if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
                 if currently_loaded_folder.folder_name == folder.folder_name && currently_loaded_folder.identity_id == folder.identity_id {
-                    // This creates ugly flicker and loss of selection. Should
-                    // be fixed with issue #227
-                    // self.update_list();
+                    let self_ = imp::FolderModel::from_obj(self);
+
+                    let new_summaries = self.load_summaries();
+
+                    // The only case in which it can be None is when a folder is not selected, but we already checked
+                    // above if it is selected, so it's okay to unwrap.
+                    let new_summaries = new_summaries.unwrap();
+
+                    let diffs = diff_summary_lists(&self_.summaries.borrow().as_ref().unwrap(), &new_summaries);
+
+                    let changes = adjust_diffs_for_items_changed_notification(diffs);
+
+                    self_.summaries.replace(Some(new_summaries));
+
+                    for change in changes {
+                        self.items_changed(change.position, change.removed, change.added);
+                    }
                 }
             }
         }
