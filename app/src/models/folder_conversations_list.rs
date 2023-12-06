@@ -189,7 +189,14 @@ enum MismatchState {
     },
 }
 
-fn diff_summaries(old_summaries: &Vec<models::MessageSummary>, new_summaries: &Vec<models::MessageSummary>) -> Vec<(usize, usize, usize)> {
+#[derive(PartialEq, Debug)]
+pub struct SummaryListsDiff {
+    pub position: u32,
+    pub removed: u32,
+    pub added: u32,
+}
+
+fn diff_summary_lists(old_summaries: &Vec<models::MessageSummary>, new_summaries: &Vec<models::MessageSummary>) -> Vec<SummaryListsDiff> {
     //@TODO at the moment handling only newly added items
     let mut new_summaries_cursor = 0;
 
@@ -228,7 +235,12 @@ fn diff_summaries(old_summaries: &Vec<models::MessageSummary>, new_summaries: &V
             new_summaries_index_end,
         } = mismatch_state_machine
         {
-            let new_change = (old_summaries_index_start, 0, new_summaries_index_end - new_summaries_index_start);
+            let new_change = SummaryListsDiff {
+                position: old_summaries_index_start as u32,
+                removed: 0,
+                added: (new_summaries_index_end - new_summaries_index_start) as u32,
+            };
+
             diff.push(new_change);
 
             mismatch_state_machine = MismatchState::None;
@@ -236,18 +248,37 @@ fn diff_summaries(old_summaries: &Vec<models::MessageSummary>, new_summaries: &V
     }
 
     if new_summaries_cursor < new_summaries.len() {
-        diff.push((old_summaries.len(), 0, new_summaries.len() - new_summaries_cursor));
+        diff.push(SummaryListsDiff {
+            position: old_summaries.len() as u32,
+            removed: 0,
+            added: (new_summaries.len() - new_summaries_cursor) as u32,
+        });
     }
 
     diff
 }
 
+fn adjust_diffs_for_items_changed_notification(diffs: Vec<SummaryListsDiff>) -> Vec<SummaryListsDiff> {
+    let mut changes = Vec::new();
+
+    let mut accumulator: i32 = 0;
+
+    for diff in diffs {
+        changes.push(SummaryListsDiff {
+            position: diff.position + accumulator as u32,
+            removed: diff.removed,
+            added: diff.added,
+        });
+
+        accumulator -= diff.removed as i32;
+        accumulator += diff.added as i32;
+    }
+
+    changes
+}
+
 #[cfg(test)]
 pub mod test {
-    use chrono::NaiveDateTime;
-
-    use crate::models::MessageSummary;
-
     use super::*;
 
     fn create_message_summary(id: i32) -> models::MessageSummary {
@@ -261,19 +292,26 @@ pub mod test {
     }
 
     #[test]
-    fn test_diff_summaries() {
+    fn test_diff_summary_lists() {
         let old_summaries = vec![create_message_summary(0), create_message_summary(1)];
 
         let mut new_summaries = old_summaries.clone();
 
-        assert_eq!(diff_summaries(&old_summaries, &new_summaries), vec![]);
+        assert_eq!(diff_summary_lists(&old_summaries, &new_summaries), vec![]);
 
         let mut new_summaries = old_summaries.clone();
 
         new_summaries.insert(1, create_message_summary(4));
         new_summaries.insert(2, create_message_summary(5));
 
-        assert_eq!(diff_summaries(&old_summaries, &new_summaries), vec![(1, 0, 2)]);
+        assert_eq!(
+            diff_summary_lists(&old_summaries, &new_summaries),
+            vec![SummaryListsDiff {
+                position: 1,
+                removed: 0,
+                added: 2
+            }]
+        );
 
         let mut new_summaries = old_summaries.clone();
 
@@ -283,7 +321,21 @@ pub mod test {
         new_summaries.push(create_message_summary(6));
         new_summaries.push(create_message_summary(7));
 
-        assert_eq!(diff_summaries(&old_summaries, &new_summaries), vec![(1, 0, 2), (2, 0, 2)]);
+        assert_eq!(
+            diff_summary_lists(&old_summaries, &new_summaries),
+            vec![
+                SummaryListsDiff {
+                    position: 1,
+                    removed: 0,
+                    added: 2
+                },
+                SummaryListsDiff {
+                    position: 2,
+                    removed: 0,
+                    added: 2
+                }
+            ]
+        );
 
         let old_summaries = vec![create_message_summary(0), create_message_summary(1)];
 
@@ -298,8 +350,130 @@ pub mod test {
         new_summaries.push(create_message_summary(7));
 
         assert_eq!(
-            diff_summaries(&old_summaries, &new_summaries),
-            vec![(0, 0, 2), (1, 0, 2), (2, 0, 2)]
+            diff_summary_lists(&old_summaries, &new_summaries),
+            vec![
+                SummaryListsDiff {
+                    position: 0,
+                    removed: 0,
+                    added: 2
+                },
+                SummaryListsDiff {
+                    position: 1,
+                    removed: 0,
+                    added: 2
+                },
+                SummaryListsDiff {
+                    position: 2,
+                    removed: 0,
+                    added: 2
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn test_adjust_diffs_for_items_changed_notification() {
+        let diffs = vec![SummaryListsDiff {
+            position: 1,
+            removed: 0,
+            added: 2,
+        }];
+
+        assert_eq!(
+            adjust_diffs_for_items_changed_notification(diffs),
+            vec![SummaryListsDiff {
+                position: 1,
+                removed: 0,
+                added: 2,
+            }]
+        );
+
+        let diffs = vec![
+            SummaryListsDiff {
+                position: 0,
+                removed: 0,
+                added: 2,
+            },
+            SummaryListsDiff {
+                position: 1,
+                removed: 0,
+                added: 2,
+            },
+            SummaryListsDiff {
+                position: 2,
+                removed: 0,
+                added: 2,
+            },
+        ];
+
+        assert_eq!(
+            adjust_diffs_for_items_changed_notification(diffs),
+            vec![
+                SummaryListsDiff {
+                    position: 0,
+                    removed: 0,
+                    added: 2,
+                },
+                SummaryListsDiff {
+                    position: 3,
+                    removed: 0,
+                    added: 2,
+                },
+                SummaryListsDiff {
+                    position: 6,
+                    removed: 0,
+                    added: 2,
+                },
+            ]
+        );
+
+        let diffs = vec![
+            SummaryListsDiff {
+                position: 0,
+                removed: 1,
+                added: 2,
+            },
+            SummaryListsDiff {
+                position: 1,
+                removed: 0,
+                added: 2,
+            },
+            SummaryListsDiff {
+                position: 2,
+                removed: 3,
+                added: 2,
+            },
+            SummaryListsDiff {
+                position: 3,
+                removed: 0,
+                added: 1,
+            },
+        ];
+
+        assert_eq!(
+            adjust_diffs_for_items_changed_notification(diffs),
+            vec![
+                SummaryListsDiff {
+                    position: 0,
+                    removed: 1,
+                    added: 2,
+                },
+                SummaryListsDiff {
+                    position: 2,
+                    removed: 0,
+                    added: 2,
+                },
+                SummaryListsDiff {
+                    position: 6,
+                    removed: 3,
+                    added: 2,
+                },
+                SummaryListsDiff {
+                    position: 6,
+                    removed: 0,
+                    added: 1,
+                },
+            ]
         );
     }
 }
