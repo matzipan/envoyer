@@ -90,30 +90,24 @@ pub mod model {
             self_.store.replace(Some(store));
         }
 
-        fn load_summaries(&self) -> Option<Vec<models::MessageSummary>> {
-            let self_ = imp::FolderModel::from_obj(self);
+        fn load_summaries(&self, folder: &models::Folder) -> Vec<models::MessageSummary> {
+            let self_ = imp::FolderModel::from_obj(&self);
 
-            if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
-                let new_summaries = self_
-                    .store
-                    .borrow()
-                    .as_ref()
-                    .unwrap()
-                    .get_message_summaries_for_folder(currently_loaded_folder)
-                    .expect("Unable to get message summary");
-
-                return Some(new_summaries);
-            }
-
-            None
+            return self_
+                .store
+                .borrow()
+                .as_ref()
+                .unwrap()
+                .get_message_summaries_for_folder(folder)
+                .expect("Unable to get message summary");
         }
 
         pub fn load_folder(self, folder: models::Folder) {
             let self_ = imp::FolderModel::from_obj(&self);
 
-            self_.currently_loaded_folder.replace(Some(folder));
+            self_.summaries.replace(Some(self.load_summaries(&folder)));
 
-            self_.summaries.replace(self.load_summaries());
+            self_.currently_loaded_folder.replace(Some(folder));
 
             self_.obj().emit_by_name::<()>("folder-loaded", &[]);
         }
@@ -125,11 +119,7 @@ pub mod model {
                 if currently_loaded_folder.folder_name == folder.folder_name && currently_loaded_folder.identity_id == folder.identity_id {
                     let self_ = imp::FolderModel::from_obj(self);
 
-                    let new_summaries = self.load_summaries();
-
-                    // The only case in which it can be None is when a folder is not selected, but we already checked
-                    // above if it is selected, so it's okay to unwrap.
-                    let new_summaries = new_summaries.unwrap();
+                    let new_summaries = self.load_summaries(currently_loaded_folder);
 
                     let diffs = diff_summary_lists(&self_.summaries.borrow().as_ref().unwrap(), &new_summaries);
 
