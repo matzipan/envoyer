@@ -5,8 +5,12 @@ use gtk::prelude::*;
 use glib::subclass::prelude::*;
 use gtk::subclass::prelude::*;
 
+use gtk::glib::subclass::Signal;
+
 use std::cell::RefCell;
 use std::rc::Rc;
+
+use once_cell::sync::Lazy;
 
 use crate::models;
 use crate::services;
@@ -15,6 +19,7 @@ pub mod model {
     use super::*;
     use row_data::ConversationRowData;
     mod imp {
+
         use super::*;
 
         #[derive(Debug)]
@@ -41,7 +46,12 @@ pub mod model {
                 }
             }
         }
-        impl ObjectImpl for FolderModel {}
+        impl ObjectImpl for FolderModel {
+            fn signals() -> &'static [Signal] {
+                static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| vec![Signal::builder("folder-loaded").build()]);
+                SIGNALS.as_ref()
+            }
+        }
         impl ListModelImpl for FolderModel {
             fn item_type(&self) -> glib::Type {
                 ConversationRowData::static_type()
@@ -103,15 +113,9 @@ pub mod model {
 
             self_.currently_loaded_folder.replace(Some(folder));
 
-            let previous_count = self_.n_items();
+            self_.summaries.replace(self.load_summaries());
 
-            let new_summaries = self.load_summaries();
-
-            self_.summaries.replace(new_summaries);
-
-            let new_count = self_.n_items();
-
-            self.items_changed(0, previous_count, new_count);
+            self_.obj().emit_by_name::<()>("folder-loaded", &[]);
         }
 
         pub fn handle_new_messages_for_folder(&self, folder: &models::Folder) {

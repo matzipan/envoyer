@@ -103,12 +103,13 @@ mod imp {
         }
 
         pub fn set_conversations_list_model(&self, conversations_list_model: FolderModel) {
-            let obj = self.obj().clone();
             let first_item_clone = self.first_item.clone();
             let last_item_clone = self.last_item.clone();
             let vertical_adjustment_clone = self.vertical_adjustment.clone();
 
-            conversations_list_model.connect_items_changed(move |_, _, _, _| {
+            let obj = self.obj().clone();
+
+            conversations_list_model.connect_local("folder-loaded", false, move |_| {
                 // Currently there is no ability to refresh folder contents while they are
                 // loaded, so I'm hijacking this to signify loading a new folder. Will have to
                 // change in the future.
@@ -127,6 +128,14 @@ mod imp {
                 *first_item_clone.borrow_mut() = 0;
                 *last_item_clone.borrow_mut() = 0;
 
+                obj.queue_allocate();
+
+                None
+            });
+
+            let obj = self.obj().clone();
+
+            conversations_list_model.connect_items_changed(move |_, _, _, _| {
                 obj.queue_allocate();
             });
 
