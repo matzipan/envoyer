@@ -5,8 +5,12 @@ use gtk::prelude::*;
 use glib::subclass::prelude::*;
 use gtk::subclass::prelude::*;
 
+use gtk::glib::subclass::Signal;
+
 use std::cell::RefCell;
 use std::rc::Rc;
+
+use once_cell::sync::Lazy;
 
 use crate::models;
 use crate::services;
@@ -15,6 +19,7 @@ pub mod model {
     use super::*;
     use row_data::ConversationRowData;
     mod imp {
+
         use super::*;
 
         #[derive(Debug)]
@@ -41,7 +46,12 @@ pub mod model {
                 }
             }
         }
-        impl ObjectImpl for FolderModel {}
+        impl ObjectImpl for FolderModel {
+            fn signals() -> &'static [Signal] {
+                static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| vec![Signal::builder("folder-loaded").build()]);
+                SIGNALS.as_ref()
+            }
+        }
         impl ListModelImpl for FolderModel {
             fn item_type(&self) -> glib::Type {
                 ConversationRowData::static_type()
@@ -80,44 +90,46 @@ pub mod model {
             self_.store.replace(Some(store));
         }
 
+        fn load_summaries(&self, folder: &models::Folder) -> Vec<models::MessageSummary> {
+            let self_ = imp::FolderModel::from_obj(&self);
+
+            return self_
+                .store
+                .borrow()
+                .as_ref()
+                .unwrap()
+                .get_message_summaries_for_folder(folder)
+                .expect("Unable to get message summary");
+        }
+
         pub fn load_folder(self, folder: models::Folder) {
             let self_ = imp::FolderModel::from_obj(&self);
 
+            self_.summaries.replace(Some(self.load_summaries(&folder)));
+
             self_.currently_loaded_folder.replace(Some(folder));
 
-            self.update_list();
+            self_.obj().emit_by_name::<()>("folder-loaded", &[]);
         }
 
-        fn update_list(&self) {
+        pub fn handle_new_messages_for_folder(&self, folder: &models::Folder) {
             let self_ = imp::FolderModel::from_obj(self);
 
             if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
-                let previous_count = self_.n_items();
-
-                self_.summaries.replace(Some(
-                    self_
-                        .store
-                        .borrow()
-                        .as_ref()
-                        .unwrap()
-                        .get_message_summaries_for_folder(currently_loaded_folder)
-                        .expect("Unable to get message summary"),
-                ));
-
-                let new_count = self_.n_items();
-
-                self.items_changed(0, previous_count, new_count);
-            }
-        }
-
-        pub fn handle_new_messages_for_folder(self, folder: &models::Folder) {
-            let self_ = imp::FolderModel::from_obj(&self);
-
-            if let Some(currently_loaded_folder) = self_.currently_loaded_folder.borrow().as_ref() {
                 if currently_loaded_folder.folder_name == folder.folder_name && currently_loaded_folder.identity_id == folder.identity_id {
-                    // This creates ugly flicker and loss of selection. Should
-                    // be fixed with issue #227
-                    // self.update_list();
+                    let self_ = imp::FolderModel::from_obj(self);
+
+                    let new_summaries = self.load_summaries(currently_loaded_folder);
+
+                    let diffs = diff_summary_lists(&self_.summaries.borrow().as_ref().unwrap(), &new_summaries);
+
+                    let changes = adjust_diffs_for_items_changed_notification(diffs);
+
+                    self_.summaries.replace(Some(new_summaries));
+
+                    for change in changes {
+                        self.items_changed(change.position, change.removed, change.added);
+                    }
                 }
             }
         }
@@ -172,5 +184,308 @@ pub mod row_data {
             let self_ = imp::ConversationRowData::from_obj(self);
             self_.conversation.clone()
         }
+    }
+}
+
+#[derive(PartialEq, Debug)]
+enum MismatchState {
+    None,
+    Started {
+        old_summaries_index_start: usize,
+        new_summaries_index_start: usize,
+    },
+    Ended {
+        old_summaries_index_start: usize,
+        new_summaries_index_start: usize,
+        new_summaries_index_end: usize,
+    },
+}
+
+#[derive(PartialEq, Debug)]
+pub struct SummaryListsDiff {
+    pub position: u32,
+    pub removed: u32,
+    pub added: u32,
+}
+
+fn diff_summary_lists(old_summaries: &Vec<models::MessageSummary>, new_summaries: &Vec<models::MessageSummary>) -> Vec<SummaryListsDiff> {
+    //@TODO at the moment handling only newly added items
+    let mut new_summaries_cursor = 0;
+
+    let mut mismatch_state_machine = MismatchState::None;
+
+    let mut diff = Vec::new();
+
+    for (old_summaries_index, old_item) in old_summaries.iter().enumerate() {
+        for (new_summaries_index, new_item) in new_summaries.iter().enumerate().skip(new_summaries_cursor) {
+            if new_item.message_id == old_item.message_id {
+                new_summaries_cursor = new_summaries_index + 1;
+
+                if let MismatchState::Started {
+                    old_summaries_index_start,
+                    new_summaries_index_start,
+                } = mismatch_state_machine
+                {
+                    mismatch_state_machine = MismatchState::Ended {
+                        old_summaries_index_start,
+                        new_summaries_index_start,
+                        new_summaries_index_end: new_summaries_index,
+                    };
+                }
+                break;
+            } else if MismatchState::None == mismatch_state_machine {
+                mismatch_state_machine = MismatchState::Started {
+                    old_summaries_index_start: old_summaries_index,
+                    new_summaries_index_start: new_summaries_index,
+                };
+            }
+        }
+
+        if let MismatchState::Ended {
+            old_summaries_index_start,
+            new_summaries_index_start,
+            new_summaries_index_end,
+        } = mismatch_state_machine
+        {
+            let new_change = SummaryListsDiff {
+                position: old_summaries_index_start as u32,
+                removed: 0,
+                added: (new_summaries_index_end - new_summaries_index_start) as u32,
+            };
+
+            diff.push(new_change);
+
+            mismatch_state_machine = MismatchState::None;
+        }
+    }
+
+    if new_summaries_cursor < new_summaries.len() {
+        diff.push(SummaryListsDiff {
+            position: old_summaries.len() as u32,
+            removed: 0,
+            added: (new_summaries.len() - new_summaries_cursor) as u32,
+        });
+    }
+
+    diff
+}
+
+fn adjust_diffs_for_items_changed_notification(diffs: Vec<SummaryListsDiff>) -> Vec<SummaryListsDiff> {
+    let mut changes = Vec::new();
+
+    let mut accumulator: i32 = 0;
+
+    for diff in diffs {
+        changes.push(SummaryListsDiff {
+            position: diff.position + accumulator as u32,
+            removed: diff.removed,
+            added: diff.added,
+        });
+
+        accumulator -= diff.removed as i32;
+        accumulator += diff.added as i32;
+    }
+
+    changes
+}
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+
+    fn create_message_summary(id: i32) -> models::MessageSummary {
+        models::MessageSummary {
+            id,
+            message_id: format!("id_{}", id).to_string(),
+            subject: format!("subject {}", id).to_string(),
+            from: format!("from {}", id).to_string(),
+            time_received: chrono::offset::Utc::now().naive_utc(),
+        }
+    }
+
+    #[test]
+    fn test_diff_summary_lists() {
+        let old_summaries = vec![create_message_summary(0), create_message_summary(1)];
+
+        let mut new_summaries = old_summaries.clone();
+
+        assert_eq!(diff_summary_lists(&old_summaries, &new_summaries), vec![]);
+
+        let mut new_summaries = old_summaries.clone();
+
+        new_summaries.insert(1, create_message_summary(4));
+        new_summaries.insert(2, create_message_summary(5));
+
+        assert_eq!(
+            diff_summary_lists(&old_summaries, &new_summaries),
+            vec![SummaryListsDiff {
+                position: 1,
+                removed: 0,
+                added: 2
+            }]
+        );
+
+        let mut new_summaries = old_summaries.clone();
+
+        new_summaries.insert(1, create_message_summary(4));
+        new_summaries.insert(2, create_message_summary(5));
+
+        new_summaries.push(create_message_summary(6));
+        new_summaries.push(create_message_summary(7));
+
+        assert_eq!(
+            diff_summary_lists(&old_summaries, &new_summaries),
+            vec![
+                SummaryListsDiff {
+                    position: 1,
+                    removed: 0,
+                    added: 2
+                },
+                SummaryListsDiff {
+                    position: 2,
+                    removed: 0,
+                    added: 2
+                }
+            ]
+        );
+
+        let old_summaries = vec![create_message_summary(0), create_message_summary(1)];
+
+        let mut new_summaries = old_summaries.clone();
+        new_summaries.insert(0, create_message_summary(2));
+        new_summaries.insert(1, create_message_summary(3));
+
+        new_summaries.insert(3, create_message_summary(4));
+        new_summaries.insert(4, create_message_summary(5));
+
+        new_summaries.push(create_message_summary(6));
+        new_summaries.push(create_message_summary(7));
+
+        assert_eq!(
+            diff_summary_lists(&old_summaries, &new_summaries),
+            vec![
+                SummaryListsDiff {
+                    position: 0,
+                    removed: 0,
+                    added: 2
+                },
+                SummaryListsDiff {
+                    position: 1,
+                    removed: 0,
+                    added: 2
+                },
+                SummaryListsDiff {
+                    position: 2,
+                    removed: 0,
+                    added: 2
+                }
+            ]
+        );
+    }
+
+    #[test]
+    fn test_adjust_diffs_for_items_changed_notification() {
+        let diffs = vec![SummaryListsDiff {
+            position: 1,
+            removed: 0,
+            added: 2,
+        }];
+
+        assert_eq!(
+            adjust_diffs_for_items_changed_notification(diffs),
+            vec![SummaryListsDiff {
+                position: 1,
+                removed: 0,
+                added: 2,
+            }]
+        );
+
+        let diffs = vec![
+            SummaryListsDiff {
+                position: 0,
+                removed: 0,
+                added: 2,
+            },
+            SummaryListsDiff {
+                position: 1,
+                removed: 0,
+                added: 2,
+            },
+            SummaryListsDiff {
+                position: 2,
+                removed: 0,
+                added: 2,
+            },
+        ];
+
+        assert_eq!(
+            adjust_diffs_for_items_changed_notification(diffs),
+            vec![
+                SummaryListsDiff {
+                    position: 0,
+                    removed: 0,
+                    added: 2,
+                },
+                SummaryListsDiff {
+                    position: 3,
+                    removed: 0,
+                    added: 2,
+                },
+                SummaryListsDiff {
+                    position: 6,
+                    removed: 0,
+                    added: 2,
+                },
+            ]
+        );
+
+        let diffs = vec![
+            SummaryListsDiff {
+                position: 0,
+                removed: 1,
+                added: 2,
+            },
+            SummaryListsDiff {
+                position: 1,
+                removed: 0,
+                added: 2,
+            },
+            SummaryListsDiff {
+                position: 2,
+                removed: 3,
+                added: 2,
+            },
+            SummaryListsDiff {
+                position: 3,
+                removed: 0,
+                added: 1,
+            },
+        ];
+
+        assert_eq!(
+            adjust_diffs_for_items_changed_notification(diffs),
+            vec![
+                SummaryListsDiff {
+                    position: 0,
+                    removed: 1,
+                    added: 2,
+                },
+                SummaryListsDiff {
+                    position: 2,
+                    removed: 0,
+                    added: 2,
+                },
+                SummaryListsDiff {
+                    position: 6,
+                    removed: 3,
+                    added: 2,
+                },
+                SummaryListsDiff {
+                    position: 6,
+                    removed: 0,
+                    added: 1,
+                },
+            ]
+        );
     }
 }
